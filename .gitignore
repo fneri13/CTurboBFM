@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+# Various
+*.json
+*.csv
+*.plist
+*.yml
+*.dSYM

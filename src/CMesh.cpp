@@ -8,6 +8,7 @@
 CMesh::CMesh(std::string filename) {
     _filename = filename;
     readPoints();
+    allocateMemory();
     printMeshInfo();
 }
 
@@ -33,7 +34,7 @@ void CMesh::readPoints() {
             break;
     }
     _nPointsTotal = _nPointsI * _nPointsJ * _nPointsK;
-    _points.resize(_nPointsI, std::vector<std::vector<Point3D>>(_nPointsJ, std::vector<Point3D>(_nPointsK)));
+    _vertices.resize(_nPointsI, std::vector<std::vector<Point3D>>(_nPointsJ, std::vector<Point3D>(_nPointsK)));
 
     // Read coordinate data
     unsigned long int nPoint = 0;
@@ -46,7 +47,7 @@ void CMesh::readPoints() {
             i = nPoint / (_nPointsJ * _nPointsK);
             j = (nPoint % (_nPointsJ * _nPointsK)) / _nPointsK;
             k = nPoint % _nPointsK;
-            _points[i][j][k] = point;
+            _vertices[i][j][k] = point;
             nPoint ++;
         }
            
@@ -54,6 +55,16 @@ void CMesh::readPoints() {
 
     file.close();
 }
+
+void CMesh::allocateMemory() {
+    _surfacesI.resize(_nPointsI, _nPointsJ, _nPointsK, 3);
+    _surfacesJ.resize(_nPointsI, _nPointsJ, _nPointsK, 3);
+    _surfacesK.resize(_nPointsI, _nPointsJ, _nPointsK, 3);
+    _volumes.resize(_nPointsI, _nPointsJ, _nPointsK);
+    _centers.resize(_nPointsI, _nPointsJ, _nPointsK, 3);
+}
+
+
 
 void CMesh::printMeshInfo() {
     std::cout << "=========================================\n";

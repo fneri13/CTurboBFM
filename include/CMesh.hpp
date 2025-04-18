@@ -18,17 +18,25 @@ class CMesh {
 
     private:
         unsigned long int _nPointsI, _nPointsJ, _nPointsK, _nPointsTotal;
+        
         unsigned short int _nDimensions;
-        std::string _filename;
-        ArrayPoints _points;
 
-        /// Read the points from the CSV file
+        Matrix4D<FloatType> _surfacesI, _surfacesJ, _surfacesK;  // array of interfaces
+
+        Matrix3D<FloatType> _volumes; // array of cell volumes
+
+        std::string _filename; // name of the CSV file containing the mesg
+
+        ArrayPoints _vertices; // array of vertices coordinates
+
+        Matrix4D<FloatType> _centers; // array of cell center coordinates
+
         void readPoints();
 
-        /// Compute the mesh interfaces based on vertex centered approach
+        void allocateMemory();
+
         void computeMeshInterfaces();
 
-        /// Compute the volumes of the mesh cells
         void computeMeshVolumes();
         
         void computeMeshQuality();

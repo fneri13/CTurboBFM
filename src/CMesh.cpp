@@ -8,6 +8,7 @@
 CMesh::CMesh(std::string filename) {
     _filename = filename;
     readPoints();
+    printMeshInfo();
 }
 
 void CMesh::readPoints() {
@@ -52,8 +53,9 @@ void CMesh::readPoints() {
     }
 
     file.close();
+}
 
-    // Output results
+void CMesh::printMeshInfo() {
     std::cout << "=========================================\n";
     std::cout << "        INFORMATION OF GRID FILE        \n";
     std::cout << "=========================================\n";

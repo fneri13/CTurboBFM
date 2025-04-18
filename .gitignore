@@ -31,6 +31,12 @@
 *.out
 *.app
 
+# weird files
+*DS_Store
+
+# temp executables
+.a
+
 # Various
 *.json
 *.csv

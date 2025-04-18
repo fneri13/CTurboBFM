@@ -1,20 +1,37 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "types.hpp"
 
-struct Point3D {
-    double x, y, z;
-};
-
+/** 
+  *  \brief     Class handling mesh capabilities.
+  *  \details   It computes the finite volume mesh.
+  *  \author    Francesco Neri
+  */
 class CMesh {
-    using arrayPoints = std::vector<std::vector<std::vector<Point3D>>>;
+    using ArrayPoints = std::vector<std::vector<std::vector<Point3D>>>;
+    
     public:
         CMesh(std::string filename);
         ~CMesh() {};
+
+
     private:
         unsigned long int _nPointsI, _nPointsJ, _nPointsK, _nPointsTotal;
         unsigned short int _nDimensions;
         std::string _filename;
-        arrayPoints _points;
+        ArrayPoints _points;
+
+        /// Read the points from the CSV file
         void readPoints();
+
+        /// Compute the mesh interfaces based on vertex centered approach
+        void computeMeshInterfaces();
+
+        /// Compute the volumes of the mesh cells
+        void computeMeshVolumes();
+        
+        void computeMeshQuality();
+        void computeBoundaryAreas();
+        void printMeshInfo();
 };

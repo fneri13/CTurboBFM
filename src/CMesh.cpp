@@ -9,6 +9,10 @@ CMesh::CMesh(std::string filename) {
     _filename = filename;
     readPoints();
     allocateMemory();
+    computeMeshInterfaces();
+    computeMeshVolumes();
+    computeMeshQuality();
+    computeBoundaryAreas();
     printMeshInfo();
 }
 
@@ -34,34 +38,41 @@ void CMesh::readPoints() {
             break;
     }
     _nPointsTotal = _nPointsI * _nPointsJ * _nPointsK;
-    _vertices.resize(_nPointsI, std::vector<std::vector<Point3D>>(_nPointsJ, std::vector<Point3D>(_nPointsK)));
+    _nDualPointsI = _nPointsI + 1;
+    _nDualPointsJ = _nPointsJ + 1;
+    _nDualPointsK = _nPointsK + 1;
+    _nDualPointsTotal = _nDualPointsI * _nDualPointsJ * _nDualPointsK;
+
+    _vertices.resize(_nPointsI, _nPointsJ, _nPointsK);
 
     // Read coordinate data
     unsigned long int nPoint = 0;
     unsigned long int i,j,k;
     while (std::getline(file, line)) {
         std::stringstream ss(line);
-        Point3D point;
+        Vector3D point;
         char comma;
-        if (ss >> point.x >> comma >> point.y >> comma >> point.z){
+        if (ss >> point.x() >> comma >> point.y() >> comma >> point.z()){
             i = nPoint / (_nPointsJ * _nPointsK);
             j = (nPoint % (_nPointsJ * _nPointsK)) / _nPointsK;
             k = nPoint % _nPointsK;
-            _vertices[i][j][k] = point;
+            _vertices(i,j,k) = point;
             nPoint ++;
         }
-           
     }
-
     file.close();
 }
 
 void CMesh::allocateMemory() {
-    _surfacesI.resize(_nPointsI, _nPointsJ, _nPointsK, 3);
-    _surfacesJ.resize(_nPointsI, _nPointsJ, _nPointsK, 3);
-    _surfacesK.resize(_nPointsI, _nPointsJ, _nPointsK, 3);
+    _surfacesI.resize(_nDualPointsI, _nDualPointsJ-1, _nDualPointsK-1);
+    _surfacesJ.resize(_nDualPointsI-1, _nDualPointsJ, _nDualPointsK-1);
+    _surfacesK.resize(_nDualPointsI-1, _nDualPointsJ-1, _nDualPointsK);
+    
+    _centersI.resize(_nDualPointsI, _nDualPointsJ-1, _nDualPointsK-1);
+    _centersJ.resize(_nDualPointsI-1, _nDualPointsJ, _nDualPointsK-1);
+    _centersK.resize(_nDualPointsI-1, _nDualPointsJ-1, _nDualPointsK);
+
     _volumes.resize(_nPointsI, _nPointsJ, _nPointsK);
-    _centers.resize(_nPointsI, _nPointsJ, _nPointsK, 3);
 }
 
 
@@ -80,4 +91,54 @@ void CMesh::printMeshInfo() {
 
     std::cout << "The grid file '" << _filename << "' contains a total of " << _nPointsTotal << " points.\n";
     std::cout << "=========================================\n";
+}
+
+
+void CMesh::computeMeshInterfaces() {
+    std::cout << "Computing cell elements interfaces\n";
+
+    // Computing the i-interfaces
+    for (int i = 0; i < _nDualPointsI; i++) {
+        for (int j = 0; j < _nDualPointsJ-1; j++) {
+            for (int k = 0; k < _nDualPointsK-1; k++) {
+                computeSurfaceVectorAndCG(_vertices(i,j,k), _vertices(i,j+1,k), _vertices(i,j+1,k+1), _vertices(i,j,k+1), _surfacesI(i,j,k), _centersI(i,j,k));
+            }
+        }
+    }
+
+
+}
+
+void CMesh::computeSurfaceVectorAndCG(const Vector3D &p1, const Vector3D &p2, const Vector3D &p3, const Vector3D &p4, Vector3D &normal, Vector3D &center){
+    // sides used to compute areas
+    Vector3D a1, b1, a2, b2;
+    a1 = p2 - p1;
+    b1 = p3 - p2;
+    a2 = p3 - p1;
+    b2 = p4 - p3;
+
+    // compute areas
+    Vector3D surf1, surf2;
+    surf1 = a1.cross(b1);
+    surf2 = a2.cross(b2);
+    normal = surf1 + surf2;
+    normal *= 0.5;
+
+    // compute centers
+    Vector3D center1, center2;
+    center1 = (p1 + p2 + p3) / 3.0;
+    center2 = (p1 + p3 + p4) / 3.0;
+    center = (center1 * surf1.magnitude() + center2 * surf2.magnitude()) / (surf1.magnitude() + surf2.magnitude());
+}
+
+void CMesh::computeMeshVolumes() {
+    std::cout << "Copy from TurboBFM\n";
+}
+
+void CMesh::computeMeshQuality() {
+    std::cout << "Copy from TurboBFM\n";
+}
+
+void CMesh::computeBoundaryAreas() {
+    std::cout << "Copy from TurboBFM\n";
 }

@@ -1,9 +1,101 @@
 #pragma once
+#include <iostream>
 
 using FloatType = double;
 
-struct Point3D {
-    FloatType x, y, z;
+
+// This class represents a 3D vector with basic operations
+class Vector3D {
+private:
+    std::array<FloatType, 3> _data;
+
+public:
+    // Constructors
+    Vector3D() : _data{0.0, 0.0, 0.0} {}
+    Vector3D(FloatType x, FloatType y, FloatType z) : _data{x, y, z} {}
+
+    // Accessors
+    FloatType& operator()(size_t index) {
+        if (index >= 3) throw std::out_of_range("Index out of bounds");
+        return _data[index];
+    }
+
+    const FloatType& operator()(size_t index) const {
+        if (index >= 3) throw std::out_of_range("Index out of bounds");
+        return _data[index];
+    }
+
+    FloatType& x() { return _data[0]; }
+    FloatType& y() { return _data[1]; }
+    FloatType& z() { return _data[2]; }
+
+    const FloatType& x() const { return _data[0]; }
+    const FloatType& y() const { return _data[1]; }
+    const FloatType& z() const { return _data[2]; }
+
+    // Operator Overloads
+    Vector3D operator+(const Vector3D& other) const {
+        return Vector3D(x() + other.x(), y() + other.y(), z() + other.z());
+    }
+
+    Vector3D operator-(const Vector3D& other) const {
+        return Vector3D(x() - other.x(), y() - other.y(), z() - other.z());
+    }
+
+    Vector3D operator*(FloatType scalar) const {
+        return Vector3D(x() * scalar, y() * scalar, z() * scalar);
+    }
+
+    Vector3D operator/(FloatType scalar) const {
+        return Vector3D(x() / scalar, y() / scalar, z() / scalar);
+    }
+
+    Vector3D& operator+=(const Vector3D& other) {
+        x() += other.x(); y() += other.y(); z() += other.z();
+        return *this;
+    }
+
+    Vector3D& operator-=(const Vector3D& other) {
+        x() -= other.x(); y() -= other.y(); z() -= other.z();
+        return *this;
+    }
+
+    Vector3D& operator*=(FloatType scalar) {
+        x() *= scalar; y() *= scalar; z() *= scalar;
+        return *this;
+    }
+
+    Vector3D& operator/=(FloatType scalar) {
+        x() /= scalar; y() /= scalar; z() /= scalar;
+        return *this;
+    }
+
+    bool operator==(const Vector3D& other) const {
+        return x() == other.x() && y() == other.y() && z() == other.z();
+    }
+
+    // Magnitude and normalization
+    FloatType magnitude() const {
+        return std::sqrt(x() * x() + y() * y() + z() * z());
+    }
+
+    Vector3D normalized() const {
+        FloatType mag = magnitude();
+        return (mag == 0) ? Vector3D(0, 0, 0) : *this / mag;
+    }
+
+    Vector3D cross(const Vector3D& other) const {
+        return Vector3D(
+            y() * other.z() - z() * other.y(),
+            z() * other.x() - x() * other.z(),
+            x() * other.y() - y() * other.x()
+        );
+    }
+
+    // Add this inside the Vector3D class (outside public/private blocks is fine)
+    friend std::ostream& operator<<(std::ostream& os, const Vector3D& v) {
+    return os << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
+    }
 };
 
 enum class BFM_Model {
@@ -47,51 +139,15 @@ enum class ConvectionScheme {
     JST = 0
 };
 
+
 template<typename T>
-class Matrix1D {
-public:
-    Matrix1D(size_t n)
-        : _n(n), _data(n) {}
-
-    // Access and modify with bounds checking
-    T& at(size_t i) {
-        check_bounds(i);
-        return _data[i];
-    }
-
-    const T& at(size_t i) const {
-        check_bounds(i);
-        return _data[i];
-    }
-
-    size_t size() const { return _n; }
-
-private:
-    size_t _n;
-    std::vector<T> _data;
-
-    void check_bounds(size_t i) const {
-        if (i >= _n) {
-            throw std::out_of_range("Matrix1D::at() index out of range");
-        }
-    }
-};
-
-template <typename T>
 class Matrix2D {
 public:
-    // Default constructor (initially no size)
+    // Default constructor
     Matrix2D() : _ni(0), _nj(0) {}
 
-    // Constructor with known dimensions
-    Matrix2D(size_t ni, size_t nj, const std::vector<T>& initial_data = {})
-        : _ni(ni), _nj(nj) {
-        if (!initial_data.empty()) {
-            _data = initial_data;
-        } else {
-            _data.resize(ni * nj);
-        }
-    }
+    // Constructor with dimensions
+    Matrix2D(size_t ni, size_t nj) : _ni(ni), _nj(nj), _data(ni * nj) {}
 
     // Resize the matrix to new dimensions
     void resize(size_t ni, size_t nj) {
@@ -100,13 +156,13 @@ public:
         _data.resize(ni * nj);
     }
 
-    // Access and modify with bounds checking
-    T& at(size_t i, size_t j) {
+    // Overloaded () operator for access with bounds checking
+    T& operator()(size_t i, size_t j) {
         check_bounds(i, j);
         return _data[i * _nj + j];
     }
 
-    const T& at(size_t i, size_t j) const {
+    const T& operator()(size_t i, size_t j) const {
         check_bounds(i, j);
         return _data[i * _nj + j];
     }
@@ -120,7 +176,7 @@ private:
 
     void check_bounds(size_t i, size_t j) const {
         if (i >= _ni || j >= _nj) {
-            throw std::out_of_range("Matrix2D::at() index out of range");
+            throw std::out_of_range("Matrix2D::operator() index out of range");
         }
     }
 };
@@ -129,20 +185,23 @@ private:
 template <typename T>
 class Matrix3D {
 public:
-    // Default constructor (initially no size)
+    // Default constructor
     Matrix3D() : _ni(0), _nj(0), _nk(0) {}
 
-    // Constructor with known dimensions
+    // Constructor with dimensions and optional initial data
     Matrix3D(size_t ni, size_t nj, size_t nk, const std::vector<T>& initial_data = {})
         : _ni(ni), _nj(nj), _nk(nk) {
         if (!initial_data.empty()) {
+            if (initial_data.size() != ni * nj * nk) {
+                throw std::invalid_argument("Initial data size does not match matrix dimensions");
+            }
             _data = initial_data;
         } else {
             _data.resize(ni * nj * nk);
         }
     }
 
-    // Resize the matrix to new dimensions
+    // Resize the matrix
     void resize(size_t ni, size_t nj, size_t nk) {
         _ni = ni;
         _nj = nj;
@@ -150,17 +209,18 @@ public:
         _data.resize(ni * nj * nk);
     }
 
-    // Access and modify with bounds checking
-    T& at(size_t i, size_t j, size_t k) {
+    // Access and modify using operator() with bounds checking
+    T& operator()(size_t i, size_t j, size_t k) {
         check_bounds(i, j, k);
         return _data[i * _nj * _nk + j * _nk + k];
     }
 
-    const T& at(size_t i, size_t j, size_t k) const {
+    const T& operator()(size_t i, size_t j, size_t k) const {
         check_bounds(i, j, k);
         return _data[i * _nj * _nk + j * _nk + k];
     }
 
+    // Size getters
     size_t sizeI() const { return _ni; }
     size_t sizeJ() const { return _nj; }
     size_t sizeK() const { return _nk; }
@@ -171,62 +231,9 @@ private:
 
     void check_bounds(size_t i, size_t j, size_t k) const {
         if (i >= _ni || j >= _nj || k >= _nk) {
-            throw std::out_of_range("Matrix3D::at() index out of range");
+            throw std::out_of_range("Matrix3D::operator() index out of range");
         }
     }
 };
 
-
-
-template <typename T>
-class Matrix4D {
-public:
-    // Default constructor (initially no size)
-    Matrix4D() : _ni(0), _nj(0), _nk(0), _nl(0) {}
-
-    // Constructor with known dimensions
-    Matrix4D(size_t ni, size_t nj, size_t nk, size_t nl, const std::vector<T>& initial_data = {})
-        : _ni(ni), _nj(nj), _nk(nk), _nl(nl) {
-        if (!initial_data.empty()) {
-            _data = initial_data;
-        } else {
-            _data.resize(ni * nj * nk * nl);
-        }
-    }
-
-    // Resize the matrix to new dimensions
-    void resize(size_t ni, size_t nj, size_t nk, size_t nl) {
-        _ni = ni;
-        _nj = nj;
-        _nk = nk;
-        _nl = nl;
-        _data.resize(ni * nj * nk * nl);
-    }
-
-    // Access and modify with bounds checking
-    T& at(size_t i, size_t j, size_t k, size_t l) {
-        check_bounds(i, j, k, l);
-        return _data[i * _nj * _nk * _nl + j * _nk * _nl + k * _nl + l];
-    }
-
-    const T& at(size_t i, size_t j, size_t k, size_t l) const {
-        check_bounds(i, j, k, l);
-        return _data[i * _nj * _nk * _nl + j * _nk * _nl + k * _nl + l];
-    }
-
-    size_t sizeI() const { return _ni; }
-    size_t sizeJ() const { return _nj; }
-    size_t sizeK() const { return _nk; }
-    size_t sizeL() const { return _nl; }
-
-private:
-    size_t _ni, _nj, _nk, _nl;
-    std::vector<T> _data;
-
-    void check_bounds(size_t i, size_t j, size_t k, size_t l) const {
-        if (i >= _ni || j >= _nj || k >= _nk || l >= _nl) {
-            throw std::out_of_range("Matrix4D::at() index out of range");
-        }
-    }
-};
 

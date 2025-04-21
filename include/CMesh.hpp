@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include "types.hpp"
+#include "Config.hpp"
 
 /** 
   *  \brief     Class handling mesh capabilities.
@@ -11,11 +12,13 @@
 class CMesh {
     
     public:
-        CMesh(std::string filename);
+        CMesh(Config &config);
         ~CMesh() {};
 
 
     private:
+        Config _config;
+
         unsigned long int _nPointsI, _nPointsJ, _nPointsK, _nPointsTotal;
 
         unsigned long int _nDualPointsI, _nDualPointsJ, _nDualPointsK, _nDualPointsTotal;
@@ -30,11 +33,17 @@ class CMesh {
 
         Matrix3D<Vector3D> _vertices; // array of vertices coordinates
 
+        Matrix3D<Vector3D> _dualNodes; // array of dual nodes coordinates
+
         Matrix3D<Vector3D> _centersI, _centersJ, _centersK; // array of cell center coordinates
 
         void readPoints();
 
         void allocateMemory();
+
+        void computeDualGrid2D();
+        
+        void computeDualGrid3D();
 
         void computeMeshInterfaces();
 

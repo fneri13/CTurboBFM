@@ -50,6 +50,7 @@ private:
     }
 
 public:
+    Config () = default;
     Config (const std::string& filename);
     ~Config () = default;
     

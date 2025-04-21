@@ -4,11 +4,22 @@
 #include <vector>
 #include <string>
 #include "../include/CMesh.hpp"
+#include "../include/Config.hpp"
 
-CMesh::CMesh(std::string filename) {
-    _filename = filename;
+CMesh::CMesh(Config &config) {
+    _config = config;
+    _filename = config.gridFilePath();
     readPoints();
     allocateMemory();
+
+    auto topology = config.getTopology();
+    if (topology == Topology::TWO_DIMENSIONAL || topology == Topology::AXISYMMETRIC) {
+        computeDualGrid2D();
+    } 
+    else {
+        computeDualGrid3D();
+    }
+
     computeMeshInterfaces();
     computeMeshVolumes();
     computeMeshQuality();

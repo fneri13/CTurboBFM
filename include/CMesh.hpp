@@ -17,6 +17,14 @@ class CMesh {
 
         FloatType computeElementVolume(const std::vector<Vector3D> &boundSurfaces, const std::vector<Vector3D> &boundCenters);
 
+        const Matrix3D<Vector3D> getSurfacesI() {return _surfacesI;}
+        const Matrix3D<Vector3D> getSurfacesJ() {return _surfacesJ;}
+        const Matrix3D<Vector3D> getSurfacesK() {return _surfacesK;}
+        const Matrix3D<Vector3D> getVertices() {return _vertices;}
+        const Matrix3D<Vector3D> getDualNodes() {return _dualNodes;}
+
+        // compute the surface vector and center of surface given 4 points
+        void computeSurfaceVectorAndCG(const Vector3D &p1, const Vector3D &p2, const Vector3D &p3, const Vector3D &p4, Vector3D &normal, Vector3D &center);
 
     private:
         Config _config;
@@ -68,6 +76,4 @@ class CMesh {
         // print some info on screen
         void printMeshInfo();
 
-        // compute the surface vector and center of surface given 4 points
-        void computeSurfaceVectorAndCG(const Vector3D &p1, const Vector3D &p2, const Vector3D &p3, const Vector3D &p4, Vector3D &normal, Vector3D &center);
 };

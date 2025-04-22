@@ -151,10 +151,9 @@ void CMesh::computeSurfaceVectorAndCG(const Vector3D &p1, const Vector3D &p2, co
 
     // compute areas
     Vector3D surf1, surf2;
-    surf1 = a1.cross(b1);
-    surf2 = a2.cross(b2);
+    surf1 = a1.cross(b1) / 2.0;
+    surf2 = a2.cross(b2) / 2.0;
     normal = surf1 + surf2;
-    normal *= 0.5;
 
     // compute centers
     Vector3D center1, center2;
@@ -217,6 +216,9 @@ void CMesh::computeDualGrid2D() {
     // find internal dual nodes
     for (int i = 1; i < _nDualPointsI-1; i++) {
         for (int j = 1; j < _nDualPointsJ-1; j++) {
+            if (i==1 && j==1){
+                std::cout << "this should be the problematic one\n";
+            }
             nodes(i,j) = (_vertices(i-1,j-1,0) + _vertices(i,j-1,0) + _vertices(i,j,0) + _vertices(i-1,j,0)) / 4.0;
         }
     }
@@ -234,7 +236,7 @@ void CMesh::computeDualGrid2D() {
     }
     for (int j = 1; j < _nDualPointsJ-1; j++) {
         nodes(0, j) = (_vertices(0, j-1, 0) + _vertices(0, j, 0)) / 2.0;    
-        nodes(_nDimensions-1, j) = (_vertices(_nPointsI-1, j-1, 0) + _vertices(_nPointsI-1, j, 0)) / 2.0;    
+        nodes(_nDualPointsI-1, j) = (_vertices(_nPointsI-1, j-1, 0) + _vertices(_nPointsI-1, j, 0)) / 2.0;    
     }
 
     if (_config.getTopology() == Topology::AXISYMMETRIC) {

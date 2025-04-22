@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <math.h>
 #include "../include/CMesh.hpp"
 #include "../include/Config.hpp"
 
@@ -17,7 +18,7 @@ CMesh::CMesh(Config &config) {
         computeDualGrid2D();
     } 
     else {
-        computeDualGrid3D();
+        // computeDualGrid3D();
     }
 
     computeMeshInterfaces();
@@ -75,6 +76,8 @@ void CMesh::readPoints() {
 }
 
 void CMesh::allocateMemory() {
+    _dualNodes.resize(_nDualPointsI, _nDualPointsJ, _nDualPointsK);
+
     _surfacesI.resize(_nDualPointsI, _nDualPointsJ-1, _nDualPointsK-1);
     _surfacesJ.resize(_nDualPointsI-1, _nDualPointsJ, _nDualPointsK-1);
     _surfacesK.resize(_nDualPointsI-1, _nDualPointsJ-1, _nDualPointsK);
@@ -112,7 +115,25 @@ void CMesh::computeMeshInterfaces() {
     for (int i = 0; i < _nDualPointsI; i++) {
         for (int j = 0; j < _nDualPointsJ-1; j++) {
             for (int k = 0; k < _nDualPointsK-1; k++) {
-                computeSurfaceVectorAndCG(_vertices(i,j,k), _vertices(i,j+1,k), _vertices(i,j+1,k+1), _vertices(i,j,k+1), _surfacesI(i,j,k), _centersI(i,j,k));
+                computeSurfaceVectorAndCG(_dualNodes(i,j,k), _dualNodes(i,j+1,k), _dualNodes(i,j+1,k+1), _dualNodes(i,j,k+1), _surfacesI(i,j,k), _centersI(i,j,k));
+            }
+        }
+    }
+
+    // Computing the j-interfaces
+    for (int i = 0; i < _nDualPointsI-1; i++) {
+        for (int j = 0; j < _nDualPointsJ; j++) {
+            for (int k = 0; k < _nDualPointsK-1; k++) {
+                computeSurfaceVectorAndCG(_dualNodes(i,j,k), _dualNodes(i,j,k+1), _dualNodes(i+1,j,k+1), _dualNodes(i+1,j,k), _surfacesJ(i,j,k), _centersJ(i,j,k));
+            }
+        }
+    }
+
+    // Computing the k-interfaces
+    for (int i = 0; i < _nDualPointsI-1; i++) {
+        for (int j = 0; j < _nDualPointsJ-1; j++) {
+            for (int k = 0; k < _nDualPointsK; k++) {
+                computeSurfaceVectorAndCG(_dualNodes(i,j,k), _dualNodes(i+1,j,k), _dualNodes(i+1,j+1,k), _dualNodes(i,j+1,k), _surfacesK(i,j,k), _centersK(i,j,k));
             }
         }
     }
@@ -142,8 +163,42 @@ void CMesh::computeSurfaceVectorAndCG(const Vector3D &p1, const Vector3D &p2, co
     center = (center1 * surf1.magnitude() + center2 * surf2.magnitude()) / (surf1.magnitude() + surf2.magnitude());
 }
 
+FloatType CMesh::computeElementVolume(const std::vector<Vector3D> &boundSurfaces, const std::vector<Vector3D> &boundCenters) {
+    // Compute the volume using the Green-Gauss theorem
+    FloatType volume {0.0};
+    for (size_t i = 0; i < boundSurfaces.size(); ++i) {
+        volume += boundSurfaces[i].x() * boundCenters[i].x();
+    }
+    return volume;
+}
+
 void CMesh::computeMeshVolumes() {
-    std::cout << "Copy from TurboBFM\n";
+    std::cout << "Compute element volumes\n";
+
+    for (int i = 0; i< _nPointsI; i++) {
+        for (int j = 0; j<_nPointsJ; j++) {
+            for (int k = 0; k<_nPointsK; k++) {
+                std::vector<Vector3D> boundSurfaces (6);
+                std::vector<Vector3D> boundCenters (6);
+        
+                boundSurfaces[0] = - _surfacesI(i,j,k);
+                boundSurfaces[1] = - _surfacesJ(i,j,k);
+                boundSurfaces[2] = - _surfacesK(i,j,k);
+                boundSurfaces[3] = _surfacesI(i+1,j,k);
+                boundSurfaces[4] = _surfacesJ(i,j+1,k);
+                boundSurfaces[5] = _surfacesK(i,j,k+1);
+                boundCenters[0] = _centersI(i,j,k);
+                boundCenters[1] = _centersJ(i,j,k);
+                boundCenters[2] = _centersK(i,j,k); 
+                boundCenters[3] = _centersI(i+1,j,k);
+                boundCenters[4] = _centersJ(i,j+1,k);
+                boundCenters[5] = _centersK(i,j,k+1);
+
+                // Compute the volume using the Green-Gauss theorem
+                _volumes(i,j,k) = computeElementVolume(boundSurfaces, boundCenters);
+            }
+        }
+    }
 }
 
 void CMesh::computeMeshQuality() {
@@ -153,3 +208,65 @@ void CMesh::computeMeshQuality() {
 void CMesh::computeBoundaryAreas() {
     std::cout << "Copy from TurboBFM\n";
 }
+
+void CMesh::computeDualGrid2D() {
+    std::cout << "Computing dual grid coordinates for 2D mesh\n";
+
+    Matrix2D<Vector3D> nodes(_nDualPointsI, _nDualPointsJ);
+
+    // find internal dual nodes
+    for (int i = 1; i < _nDualPointsI-1; i++) {
+        for (int j = 1; j < _nDualPointsJ-1; j++) {
+            nodes(i,j) = (_vertices(i-1,j-1,0) + _vertices(i,j-1,0) + _vertices(i,j,0) + _vertices(i-1,j,0)) / 4.0;
+        }
+    }
+    
+    // find the corner dual nodes
+    nodes(0,0) = _vertices(0,0,0);
+    nodes(0, _nDualPointsJ-1) = _vertices(0, _nPointsJ-1, 0);
+    nodes(_nDualPointsI-1, 0) = _vertices(_nPointsI-1, 0, 0);
+    nodes(_nDualPointsI-1, _nDualPointsJ-1) = _vertices(_nPointsI-1, _nPointsJ-1, 0);
+
+    // find dual nodes on edges
+    for (int i = 1; i < _nDualPointsI-1; i++) {
+        nodes(i, 0) = (_vertices(i-1,0,0) + _vertices(i,0,0)) / 2.0;
+        nodes(i, _nDualPointsJ-1) = (_vertices(i-1, _nPointsJ-1, 0) + _vertices(i, _nPointsJ-1, 0)) / 2.0;
+    }
+    for (int j = 1; j < _nDualPointsJ-1; j++) {
+        nodes(0, j) = (_vertices(0, j-1, 0) + _vertices(0, j, 0)) / 2.0;    
+        nodes(_nDimensions-1, j) = (_vertices(_nPointsI-1, j-1, 0) + _vertices(_nPointsI-1, j, 0)) / 2.0;    
+    }
+
+    if (_config.getTopology() == Topology::AXISYMMETRIC) {
+        _wedgeAngle = 1.0 * M_PI / 180.0;
+        for (int i = 0; i < _nDualPointsI; i++) {
+            for (int j = 0; j < _nDualPointsJ; j++) {
+                _dualNodes(i,j,0).x() = nodes(i,j).x();
+                _dualNodes(i,j,1).x() = nodes(i,j).x();
+
+                _dualNodes(i,j,0).y() = nodes(i,j).y() * cos(-_wedgeAngle/2.0);
+                _dualNodes(i,j,1).y() = nodes(i,j).y() * cos(+_wedgeAngle/2.0);
+
+                _dualNodes(i,j,0).z() = nodes(i,j).y() * sin(-_wedgeAngle/2.0);
+                _dualNodes(i,j,1).z() = nodes(i,j).y() * sin(+_wedgeAngle/2.0);
+            }
+        }
+    }
+    else {
+        _cellThickness = 1.0;
+        for (int i = 0; i < _nDualPointsI; i++) {
+            for (int j = 0; j < _nDualPointsJ; j++) {
+                _dualNodes(i,j,0).x() = nodes(i,j).x();
+                _dualNodes(i,j,1).x() = nodes(i,j).x();
+
+                _dualNodes(i,j,0).y() = nodes(i,j).y();
+                _dualNodes(i,j,1).y() = nodes(i,j).y();
+
+                _dualNodes(i,j,0).z() = -_cellThickness / 2.0;
+                _dualNodes(i,j,1).z() = +_cellThickness / 2.0;
+            }
+        }
+            
+    }
+}
+

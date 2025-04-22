@@ -60,6 +60,10 @@ public:
         return *this;
     }
 
+    Vector3D operator-() const {
+        return Vector3D(- x(), - y(), - z());
+    }
+
     Vector3D& operator*=(FloatType scalar) {
         x() *= scalar; y() *= scalar; z() *= scalar;
         return *this;

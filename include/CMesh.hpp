@@ -15,6 +15,8 @@ class CMesh {
         CMesh(Config &config);
         ~CMesh() {};
 
+        FloatType computeElementVolume(const std::vector<Vector3D> &boundSurfaces, const std::vector<Vector3D> &boundCenters);
+
 
     private:
         Config _config;
@@ -37,23 +39,35 @@ class CMesh {
 
         Matrix3D<Vector3D> _centersI, _centersJ, _centersK; // array of cell center coordinates
 
+        FloatType _wedgeAngle {0.0}, _cellThickness {0.0}; // angle of the wedge used to compute the cell volume, or the thickness for 2d
+
+        // read the coordinates from the mesh CSV file
         void readPoints();
 
+        // allocate memory for nodes, surfaces, volumes and surface centers
         void allocateMemory();
 
+        // compute the dual grid coordinates for a 2d mesh
         void computeDualGrid2D();
         
+        // compute the dual grid coordinates for a 3d mesh
         void computeDualGrid3D();
 
+        // compute the surface normals and centers 
         void computeMeshInterfaces();
 
+        // compute the cell volumes
         void computeMeshVolumes();
         
+        // compute the mesh quality
         void computeMeshQuality();
 
+        // compute the areas of the boundaries
         void computeBoundaryAreas();
         
+        // print some info on screen
         void printMeshInfo();
 
+        // compute the surface vector and center of surface given 4 points
         void computeSurfaceVectorAndCG(const Vector3D &p1, const Vector3D &p2, const Vector3D &p3, const Vector3D &p4, Vector3D &normal, Vector3D &center);
 };

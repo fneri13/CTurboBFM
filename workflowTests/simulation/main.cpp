@@ -7,7 +7,6 @@
 int main() {
     Config config("input.ini");
     CMesh mesh(config);    
-    // KindSolver solverType = config.getKindSolver();
     CEulerSolver solver(config, mesh);
 
     return 0;

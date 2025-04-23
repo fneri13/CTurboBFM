@@ -7,4 +7,9 @@ CSolverBase::CSolverBase(Config& config, CMesh& mesh)
     _nPointsI = _mesh.getNumberPointsI();
     _nPointsJ = _mesh.getNumberPointsJ();
     _nPointsK = _mesh.getNumberPointsK();
+    _timeStep.resize(_nPointsI, _nPointsJ, _nPointsK);
+
+    _fluidGamma = _config.getFluidGamma();
+    _fluidGasConstant = _config.getFluidGasConstant();
+    _kinemViscosity = _config.getFluidKinematicViscosity();
 }

@@ -1,36 +1,41 @@
-# Compiler and flags
+# Makefile
+
 CXX = g++
-CXXFLAGS = -std=c++20 -g -Wall
+CXXFLAGS = -std=c++20 -I ~/libraries/include/ -g -Wall
+LDFLAGS = -L ~/libraries/lib -lgtest
 
-# Source files
-SRCS = main.cpp ../../src/CMesh.cpp ../../src/Config.cpp ../../src/commonFunctions.cpp ../../src/CSolverBase.cpp ../../src/CEulerSolver.cpp
-
-# Object files
-OBJS = $(SRCS:.cpp=.o)
-
-# Output folder
+SRC_DIR = ../../src
 BUILD_DIR = build
+INCLUDES = ~/libraries/include/
 
-# Final executable
-EXEC = $(BUILD_DIR)/main.out
+OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/CMesh.o $(BUILD_DIR)/Config.o $(BUILD_DIR)/commonFunctions.o $(BUILD_DIR)/CSolverBase.o $(BUILD_DIR)/CEulerSolver.o 
+TARGET = $(BUILD_DIR)/main.out
 
-# Default target
-all: $(BUILD_DIR) $(EXEC)
+all: $(TARGET)
 
-# Create the build directory if it doesn't exist
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-# Link object files to create the final executable
-$(EXEC): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $(EXEC)
-
-# Compile .cpp files to .o files
-$(BUILD_DIR)/%.o: %.cpp
+$(BUILD_DIR)/main.o: main.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Clean up the build folder
+$(BUILD_DIR)/CMesh.o: $(SRC_DIR)/CMesh.cpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/Config.o: $(SRC_DIR)/Config.cpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/commonFunctions.o: $(SRC_DIR)/commonFunctions.cpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/CSolverBase.o: $(SRC_DIR)/CSolverBase.cpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/CEulerSolver.o: $(SRC_DIR)/CEulerSolver.cpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) $(OBJS) -o $(TARGET) $(LDFLAGS)
+
 clean:
 	rm -rf $(BUILD_DIR)
-
-.PHONY: all clean

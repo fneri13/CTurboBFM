@@ -17,8 +17,6 @@ class CSolverBase {
         
         virtual ~CSolverBase() {}
 
-        virtual void instantiateSolutionArrays() = 0;
-
         // virtual void initializeSolutionArrays() = 0;
 
         // virtual void solve() = 0;
@@ -43,5 +41,8 @@ class CSolverBase {
         const Config& _config;
         const CMesh& _mesh;
         int _nDimensions {0}, _nPointsI, _nPointsJ, _nPointsK;
+        Matrix3D<FloatType> _timeStep;
+        FloatType _fluidGamma, _fluidGasConstant, _kinemViscosity;
+
 
 };

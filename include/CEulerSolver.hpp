@@ -16,8 +16,6 @@ public:
     // Destructor
     ~CEulerSolver() override = default;
 
-    void instantiateSolutionArrays() override;
-
     // void initializeSolutionArrays() override;
     // void solve() override;
     // void computeFluxes() override;

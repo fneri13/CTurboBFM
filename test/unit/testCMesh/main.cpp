@@ -1,32 +1,32 @@
+#include <iostream>
 #include "../../../include/CMesh.hpp"
 #include "../../../include/Config.hpp"
 #include "gtest/gtest.h"
-#include <iostream>
 
 
-TEST(CMeshTest, TestComputeElementVolume) {
+TEST(CMeshTest, TestComputeVolumes2D) {
     Config config("input.ini");
     CMesh mesh(config);
-    
-    std::vector<Vector3D> boundSurfaces = {Vector3D(-1.0, 0.0, 0.0), 
-                                           Vector3D(0.0, -1.0, 0.0), 
-                                           Vector3D(0.0, 0.0, -1.0), 
-                                           Vector3D(1.0, 0, 0),
-                                           Vector3D(0, 1.0, 0),
-                                           Vector3D(0, 0, 1.0)};
 
-    std::vector<Vector3D> boundCenters = {Vector3D(0.0, 0.5, 0.5), 
-                                          Vector3D(0.5, 0.0, 0.5), 
-                                          Vector3D(0.5, 0.5, 0.0), 
-                                          Vector3D(1.0, 0.5, 0.5),
-                                          Vector3D(0.5, 1.0, 0.5),
-                                          Vector3D(0.5, 0.5, 1.0)};
+    auto volumes = mesh.getVolumes();
+    auto ni = volumes.sizeI();
+    auto nj = volumes.sizeJ();
+
+    std::vector<FloatType> testVolumes = {volumes(0,0,0),
+                                          volumes(1,0,0),
+                                          volumes(1,1,0),
+                                          volumes(ni-1,nj-1,0),
+                                          volumes(ni-2,nj-2,0)};
     
-    FloatType volume = mesh.computeElementVolume(boundSurfaces, boundCenters);
-    FloatType expectedVolumeValue = 1.0; // Replace with the expected volume value
-    FloatType tolerance = 1e-6; // Define a tolerance for floating-point comparison
+    std::vector<FloatType> expectedVolumes = {0.25,
+                                              0.5,
+                                              1.0,
+                                              0.25,
+                                              1.0};                                      
     
-    EXPECT_NEAR(volume, expectedVolumeValue, tolerance);
+    for (int i=0; i<testVolumes.size(); i++){
+        ASSERT_DOUBLE_EQ(testVolumes[i], expectedVolumes[i]);
+    }
 }
 
 TEST(CMeshTest, TestReadMesh) {
@@ -157,10 +157,19 @@ TEST(CMeshTest, TestComputeInterfaces) {
         ASSERT_DOUBLE_EQ(versor.y(), 0.0);
         ASSERT_DOUBLE_EQ(versor.z(), 1.0);
     }
-    
 }
 
+TEST(CMeshTest, TestComputeBoundaryAreas){
+    Config config("input.ini");
+    CMesh mesh(config);
 
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::I_START), 5.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::I_END), 5.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::J_START), 5.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::J_END), 5.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::K_START), 25.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::K_END), 25.0);
+}
 
 
 

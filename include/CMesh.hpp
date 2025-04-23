@@ -17,11 +17,16 @@ class CMesh {
 
         FloatType computeElementVolume(const std::vector<Vector3D> &boundSurfaces, const std::vector<Vector3D> &boundCenters);
 
-        const Matrix3D<Vector3D> getSurfacesI() {return _surfacesI;}
-        const Matrix3D<Vector3D> getSurfacesJ() {return _surfacesJ;}
-        const Matrix3D<Vector3D> getSurfacesK() {return _surfacesK;}
-        const Matrix3D<Vector3D> getVertices() {return _vertices;}
-        const Matrix3D<Vector3D> getDualNodes() {return _dualNodes;}
+        const Matrix3D<Vector3D> getSurfacesI() const {return _surfacesI;}
+        const Matrix3D<Vector3D> getSurfacesJ() const {return _surfacesJ;}
+        const Matrix3D<Vector3D> getSurfacesK() const {return _surfacesK;}
+        const Matrix3D<Vector3D> getVertices() const {return _vertices;}
+        const Matrix3D<Vector3D> getDualNodes() const {return _dualNodes;}
+        const Matrix3D<FloatType> getVolumes() const {return _volumes;}
+
+        const Matrix2D<Vector3D> getBoundarySurface(BoundaryIndices boundIndex) const;
+
+        FloatType getBoundaryTotalArea(BoundaryIndices boundIndex) const {return _boundaryAreas.at(boundIndex);}
 
         // compute the surface vector and center of surface given 4 points
         void computeSurfaceVectorAndCG(const Vector3D &p1, const Vector3D &p2, const Vector3D &p3, const Vector3D &p4, Vector3D &normal, Vector3D &center);
@@ -48,6 +53,10 @@ class CMesh {
         Matrix3D<Vector3D> _centersI, _centersJ, _centersK; // array of cell center coordinates
 
         FloatType _wedgeAngle {0.0}, _cellThickness {0.0}; // angle of the wedge used to compute the cell volume, or the thickness for 2d
+
+        std::map<BoundaryIndices, FloatType> _boundaryAreas;
+
+        std::map<BoundaryIndices, Matrix2D<Vector3D>> _boundarySurfaces;
 
         // read the coordinates from the mesh CSV file
         void readPoints();

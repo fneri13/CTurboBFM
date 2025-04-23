@@ -96,6 +96,11 @@ public:
         );
     }
 
+    FloatType dot(const Vector3D& other) const {
+        FloatType result = x() * other.x() + y() * other.y() + z() * other.z();
+        return result;
+    }
+
     // Add this inside the Vector3D class (outside public/private blocks is fine)
     friend std::ostream& operator<<(std::ostream& os, const Vector3D& v) {
     return os << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
@@ -107,6 +112,15 @@ enum class BFM_Model {
     HALL = 1,
     HALL_THOLLET = 2,
     LIFT_DRAG = 3
+};
+
+enum class BoundaryIndices {
+    I_START = 0,
+    I_END = 1,
+    J_START = 2,
+    J_END = 3,
+    K_START = 4,
+    K_END = 5
 };
 
 enum class KindSolver {

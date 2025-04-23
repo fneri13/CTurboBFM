@@ -6,6 +6,7 @@
 #include <math.h>
 #include "../include/CMesh.hpp"
 #include "../include/Config.hpp"
+#include "../include/commonFunctions.hpp"
 
 CMesh::CMesh(Config &config) {
     _config = config;
@@ -23,7 +24,7 @@ CMesh::CMesh(Config &config) {
 
     computeMeshInterfaces();
     computeMeshVolumes();
-    computeMeshQuality();
+    // computeMeshQuality();
     computeBoundaryAreas();
     printMeshInfo();
 }
@@ -204,8 +205,101 @@ void CMesh::computeMeshQuality() {
     std::cout << "Copy from TurboBFM\n";
 }
 
+
 void CMesh::computeBoundaryAreas() {
-    std::cout << "Copy from TurboBFM\n";
+    std::array<BoundaryIndices, 6> BoundaryIndicesArray = {
+        BoundaryIndices::I_START,
+        BoundaryIndices::I_END,
+        BoundaryIndices::J_START,
+        BoundaryIndices::J_END,
+        BoundaryIndices::K_START,
+        BoundaryIndices::K_END
+    };
+    
+    // get the slices of boundary areas
+    for (const auto& index : BoundaryIndicesArray) {
+        _boundarySurfaces[index] = getBoundarySurface(index);
+    }
+
+    // compute the areas for each boundary
+    for (const auto& index : BoundaryIndicesArray) {
+        _boundaryAreas[index] = computeSurfaceIntegral(_boundarySurfaces[index]);
+    }
+
+}
+
+const Matrix2D<Vector3D> CMesh::getBoundarySurface(BoundaryIndices index) const {
+    Matrix2D<Vector3D> boundary;
+
+    // i slices
+    if (index==BoundaryIndices::I_START || index==BoundaryIndices::I_END){
+        auto boundaryNormals = getSurfacesI();
+        int ni = boundaryNormals.sizeI();
+        int nj = boundaryNormals.sizeJ();
+        int nk = boundaryNormals.sizeK();
+        boundary.resize(nj, nk);
+
+        if (index==BoundaryIndices::I_START){
+            for (int j=0; j<nj; j++){
+                for (int k=0; k<nk; k++){
+                    boundary(j,k) = boundaryNormals(0, j, k);
+                }
+            }
+        } else {
+            for (int j=0; j<nj; j++){
+                for (int k=0; k<nk; k++){
+                    boundary(j,k) = boundaryNormals(ni-1, j, k);
+                }
+            }
+        }
+    }
+
+    // j slices
+    else if (index==BoundaryIndices::J_START || index==BoundaryIndices::J_END){
+        auto boundaryNormals = getSurfacesJ();
+        int ni = boundaryNormals.sizeI();
+        int nj = boundaryNormals.sizeJ();
+        int nk = boundaryNormals.sizeK();
+        boundary.resize(ni, nk);
+
+        if (index==BoundaryIndices::J_START){
+            for (int i=0; i<ni; i++){
+                for (int k=0; k<nk; k++){
+                    boundary(i,k) = boundaryNormals(i, 0, k);
+                }
+            }
+        } else {
+            for (int i=0; i<ni; i++){
+                for (int k=0; k<nk; k++){
+                    boundary(i,k) = boundaryNormals(i, nj-1, k);
+                }
+            }
+        }
+    }
+
+    // k slices
+    else{
+        auto boundaryNormals = getSurfacesK();
+        int ni = boundaryNormals.sizeI();
+        int nj = boundaryNormals.sizeJ();
+        int nk = boundaryNormals.sizeK();
+        boundary.resize(ni, nj);
+
+        if (index==BoundaryIndices::K_START){
+            for (int i=0; i<ni; i++){
+                for (int j=0; j<nj; j++){
+                    boundary(i,j) = boundaryNormals(i, j, 0);
+                }
+            }
+        } else {
+            for (int i=0; i<ni; i++){
+                for (int j=0; j<nj; j++){
+                    boundary(i,j) = boundaryNormals(i, j, nk-1);
+                }
+            }
+        }
+    }
+    return boundary;
 }
 
 void CMesh::computeDualGrid2D() {

@@ -8,6 +8,7 @@ int main() {
     Config config("input.ini");
     CMesh mesh(config);    
     CEulerSolver solver(config, mesh);
+    solver.solve();
 
     return 0;
 }

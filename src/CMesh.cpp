@@ -363,3 +363,13 @@ void CMesh::computeDualGrid2D() {
     }
 }
 
+void CMesh::getElementEdges(int i, int j, int k, Vector3D &iEdge, Vector3D &jEdge, Vector3D &kEdge) const {
+    Vector3D pt0, ptI, ptJ, ptK;
+    pt0 = _dualNodes(i, j, k);
+    ptI = _dualNodes(i+1, j, k);
+    ptJ = _dualNodes(i, j+1, k);
+    ptK = _dualNodes(i, j, k+1);
+    iEdge = ptI - pt0;
+    jEdge = ptJ - pt0;
+    kEdge = ptK - pt0;
+}

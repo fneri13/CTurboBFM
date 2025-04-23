@@ -80,13 +80,7 @@ public:
     
     FloatType getFluidKinematicViscosity() const {return parseFloat("FLUID_KINEMATIC_VISCOSITY");} 
 
-    std::vector<BoundaryType> getBoundaryTypes(const char dir) const;
-
-    std::vector<BoundaryType> getBoundaryTypeI() const { return getBoundaryTypes('i');}
-
-    std::vector<BoundaryType> getBoundaryTypeJ() const { return getBoundaryTypes('j');}
-
-    std::vector<BoundaryType> getBoundaryTypeK() const { return getBoundaryTypes('k');}
+    BoundaryType getBoundaryType(const BoundaryIndices) const;
 
     std::vector<FloatType> getInletBCValues() const { return parseVector<FloatType>("INLET_VALUE");}
 
@@ -98,7 +92,7 @@ public:
     
     FloatType getInitTemperature() const { return parseFloat("INIT_TEMPERATURE");}
     
-    std::vector<FloatType> getInitDirection() const { return parseVector<FloatType>("INIT_DIRECTION");}
+    Vector3D getInitDirection() const ;
     
     FloatType getCFL() const {return parseFloat("CFL");}
 

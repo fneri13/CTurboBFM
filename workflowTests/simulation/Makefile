@@ -8,7 +8,7 @@ SRC_DIR = ../../src
 BUILD_DIR = build
 INCLUDES = ~/libraries/include/
 
-OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/CMesh.o $(BUILD_DIR)/Config.o $(BUILD_DIR)/commonFunctions.o $(BUILD_DIR)/CSolverBase.o $(BUILD_DIR)/CEulerSolver.o 
+OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/CMesh.o $(BUILD_DIR)/Config.o $(BUILD_DIR)/commonFunctions.o $(BUILD_DIR)/CSolverBase.o $(BUILD_DIR)/CEulerSolver.o $(BUILD_DIR)/CFluid.o 
 TARGET = $(BUILD_DIR)/main.out
 
 all: $(TARGET)
@@ -32,6 +32,9 @@ $(BUILD_DIR)/CSolverBase.o: $(SRC_DIR)/CSolverBase.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/CEulerSolver.o: $(SRC_DIR)/CEulerSolver.cpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/CFluid.o: $(SRC_DIR)/CFluid.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJS)

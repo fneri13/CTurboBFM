@@ -7,3 +7,7 @@ FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces, const Matri
 
 // overloaded function, where only the summation is done
 FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces);
+
+std::array<FloatType, 5> getEulerPrimitiveFromConservative(std::array<FloatType, 5> conservative);
+
+std::array<FloatType, 5> getEulerConservativeFromPrimitive(std::array<FloatType, 5> primitive);

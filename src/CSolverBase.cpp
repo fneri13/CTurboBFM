@@ -1,4 +1,5 @@
 #include "../include/CSolverBase.hpp"
+#include <iostream>
 
 CSolverBase::CSolverBase(Config& config, CMesh& mesh)
     : _config(config), _mesh(mesh)
@@ -9,7 +10,35 @@ CSolverBase::CSolverBase(Config& config, CMesh& mesh)
     _nPointsK = _mesh.getNumberPointsK();
     _timeStep.resize(_nPointsI, _nPointsJ, _nPointsK);
 
-    _fluidGamma = _config.getFluidGamma();
-    _fluidGasConstant = _config.getFluidGasConstant();
-    _kinemViscosity = _config.getFluidKinematicViscosity();
+    _fluid = std::make_unique<CFluid>(_config.getFluidGamma(), _config.getFluidGasConstant());
+
+    readBoundaryConditions();
+    
+}
+
+void CSolverBase::readBoundaryConditions(){
+    std::array<BoundaryIndices, 6> bounds = {BoundaryIndices::I_START,
+        BoundaryIndices::I_END,
+        BoundaryIndices::J_START,
+        BoundaryIndices::J_END,
+        BoundaryIndices::K_START,
+        BoundaryIndices::K_END};
+    
+    // read the boundaries type
+    for (auto& bound : bounds) {
+        _boundaryTypes[bound] = _config.getBoundaryType(bound);
+    }
+
+    // read the boundaries values
+    for (auto& bound : bounds) {
+        if (_boundaryTypes[bound] == BoundaryType::INLET){
+            _boundaryValues[bound] = _config.getInletBCValues();
+        }
+        else if (_boundaryTypes[bound] == BoundaryType::OUTLET){
+            _boundaryValues[bound] = _config.getOutletBCValues();
+        }
+        else {
+            _boundaryValues[bound] = std::vector<FloatType> {};
+        }
+    }
 }

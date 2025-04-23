@@ -164,36 +164,52 @@ Topology Config::getTopology() const {
     return topology;
 }
 
-std::vector<BoundaryType> Config::getBoundaryTypes(char dir) const{
-    std::vector<BoundaryType> boundaryTypes;
-    std::vector<std::string> boundaryTypeStrings;
+BoundaryType Config::getBoundaryType(BoundaryIndices bcIndex) const{
+    BoundaryType boundaryType;
+    std::string boundaryString;
 
-    if (dir == 'i'){
-        boundaryTypeStrings = parseVector<std::string>("BOUNDARY_TYPE_I");
-    } else if (dir == 'j'){
-        boundaryTypeStrings = parseVector<std::string>("BOUNDARY_TYPE_J");
-    } else if (dir == 'k'){
-        boundaryTypeStrings = parseVector<std::string>("BOUNDARY_TYPE_K");
-    } else {
-        throw std::runtime_error("Invalid direction character passed to getBoundaryType. Expected 'i', 'j', or 'k'.");
+    if (bcIndex == BoundaryIndices::I_START){
+        boundaryString = parseVector<std::string>("BOUNDARY_TYPE_I")[0];
+    } 
+    else if (bcIndex == BoundaryIndices::I_END){
+        boundaryString = parseVector<std::string>("BOUNDARY_TYPE_I")[1];
+    } 
+    else if (bcIndex == BoundaryIndices::J_START){
+        boundaryString = parseVector<std::string>("BOUNDARY_TYPE_J")[0];
+    } 
+    else if (bcIndex == BoundaryIndices::J_END){
+        boundaryString = parseVector<std::string>("BOUNDARY_TYPE_J")[1];
+    }
+    else if (bcIndex == BoundaryIndices::K_START){
+        boundaryString = parseVector<std::string>("BOUNDARY_TYPE_K")[0];
+    }
+    else if (bcIndex == BoundaryIndices::K_END){
+        boundaryString = parseVector<std::string>("BOUNDARY_TYPE_K")[1];
+    } 
+    else {
+        throw std::runtime_error("Invalid direction Bounday Index");
     }
     
-    for (const std::string& boundaryTypeString : boundaryTypeStrings) {
-        if (boundaryTypeString == "inlet") {
-            boundaryTypes.push_back(BoundaryType::INLET);
-        } else if (boundaryTypeString == "outlet") {
-            boundaryTypes.push_back(BoundaryType::OUTLET);
-        } else if (boundaryTypeString == "outlet_re") {
-            boundaryTypes.push_back(BoundaryType::OUTLET_RADIAL_EQUILIBRIUM);
-        } else if (boundaryTypeString == "wall") {
-            boundaryTypes.push_back(BoundaryType::WALL);
-        } else if (boundaryTypeString == "wedge") {
-            boundaryTypes.push_back(BoundaryType::WEDGE);
-        } else {
-            throw std::runtime_error("Invalid value for key \"BOUNDARY_TYPES\" in configuration.");
-        }
+    if (boundaryString == "inlet") {
+        boundaryType = BoundaryType::INLET;
+    } 
+    else if (boundaryString == "outlet") {
+        boundaryType = BoundaryType::OUTLET;
+    } 
+    else if (boundaryString == "outlet_re") {
+        boundaryType = BoundaryType::OUTLET_RADIAL_EQUILIBRIUM;
+    } 
+    else if (boundaryString == "wall") {
+        boundaryType = BoundaryType::WALL;
+    } 
+    else if (boundaryString == "wedge") {
+        boundaryType = BoundaryType::WEDGE;
+    } 
+    else {
+        throw std::runtime_error("Invalid value for key \"BOUNDARY_TYPES\" in configuration.");
     }
-    return boundaryTypes;
+
+    return boundaryType;
 }
 
 TimeIntegration Config::getTimeIntegration() const {
@@ -240,3 +256,8 @@ ConvectionScheme Config::getConvectionScheme() const {
 }
 
 
+Vector3D Config::getInitDirection() const { 
+    std::vector<FloatType> direction = parseVector<FloatType>("INIT_DIRECTION");
+    Vector3D dir {direction[0], direction[1], direction[2]};
+    return dir;
+}

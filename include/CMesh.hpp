@@ -32,6 +32,8 @@ class CMesh {
         const int getNumberPointsJ() const {return _nPointsJ;}
         const int getNumberPointsK() const {return _nPointsK;}
 
+        void getElementEdges(int i, int j, int k, Vector3D &iEdge, Vector3D &jEdge, Vector3D &kEdge) const;
+
         FloatType getBoundaryTotalArea(BoundaryIndices boundIndex) const {return _boundaryAreas.at(boundIndex);}
 
         // compute the surface vector and center of surface given 4 points

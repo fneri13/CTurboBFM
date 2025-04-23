@@ -16,11 +16,19 @@ public:
     // Destructor
     ~CEulerSolver() override = default;
 
-    // void initializeSolutionArrays() override;
-    // void solve() override;
+    // Initialize the solution based on the input file (or restart file)
+    void initializeSolutionArrays() override;
+
+    void solve() override;
+
     // void computeFluxes() override;
     // void spatialIntegration() override;
-    // void computeTimestepArray() override;
+
+    // given a certain conservative solution, compute the dt corresponding to the CFL condition
+    Matrix3D<FloatType> computeTimestepArray(const EulerConservativeVariables &solution, Matrix3D<FloatType> &timestep);
+    
+    void updateMassFlows(const EulerConservativeVariables &solution);
+
     // void checkConvergence() override;
     // void printInfoResiduals() override;
     // void saveSolution() override;

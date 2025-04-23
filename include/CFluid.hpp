@@ -46,6 +46,9 @@ public:
 
     FloatType computeEntropy_p_rho(FloatType pressure, FloatType density) const;
 
+    void computeInitFields(FloatType initMach, FloatType initTemperature, FloatType initPressure, Vector3D initDirection, FloatType &density, Vector3D &velocity, FloatType &totEnergy);
+
+
 private:
     FloatType _gamma;
     FloatType _R;

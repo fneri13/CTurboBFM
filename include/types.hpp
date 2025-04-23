@@ -254,4 +254,31 @@ private:
     }
 };
 
+struct EulerConservativeVariables {
+    Matrix3D<FloatType> rho;
+    Matrix3D<FloatType> rhoU;
+    Matrix3D<FloatType> rhoV;
+    Matrix3D<FloatType> rhoW;
+    Matrix3D<FloatType> rhoE;
+
+    std::array<FloatType, 5> at(size_t i, size_t j, size_t k) const {
+        return {rho(i,j,k), rhoU(i,j,k), rhoV(i,j,k), rhoW(i,j,k), rhoE(i,j,k)};
+    }
+
+    void set(size_t i, size_t j, size_t k, const std::array<FloatType, 5>& vals) {
+        rho(i,j,k) = vals[0];
+        rhoU(i,j,k) = vals[1];
+        rhoV(i,j,k) = vals[2];
+        rhoW(i,j,k) = vals[3];
+        rhoE(i,j,k) = vals[4];
+    }
+
+    void resize(size_t i, size_t j, size_t k){
+        rho.resize(i,j,k);
+        rhoU.resize(i,j,k);
+        rhoV.resize(i,j,k);
+        rhoW.resize(i,j,k);
+        rhoE.resize(i,j,k);
+    }
+};
 

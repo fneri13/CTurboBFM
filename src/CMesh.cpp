@@ -8,12 +8,10 @@
 #include "../include/Config.hpp"
 #include "../include/commonFunctions.hpp"
 
-CMesh::CMesh(Config &config) {
-    _config = config;
+CMesh::CMesh(Config& config) : _config(config) {
     _filename = config.gridFilePath();
     readPoints();
     allocateMemory();
-
     auto topology = config.getTopology();
     if (topology == Topology::TWO_DIMENSIONAL || topology == Topology::AXISYMMETRIC) {
         computeDualGrid2D();
@@ -21,12 +19,11 @@ CMesh::CMesh(Config &config) {
     else {
         // computeDualGrid3D();
     }
-
     computeMeshInterfaces();
     computeMeshVolumes();
     // computeMeshQuality();
     computeBoundaryAreas();
-    printMeshInfo();
+    // printMeshInfo();
 }
 
 void CMesh::readPoints() {
@@ -215,7 +212,7 @@ void CMesh::computeBoundaryAreas() {
         BoundaryIndices::K_START,
         BoundaryIndices::K_END
     };
-    
+
     // get the slices of boundary areas
     for (const auto& index : BoundaryIndicesArray) {
         _boundarySurfaces[index] = getBoundarySurface(index);

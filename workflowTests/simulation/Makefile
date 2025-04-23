@@ -3,7 +3,7 @@ CXX = g++
 CXXFLAGS = -std=c++20 -g -Wall
 
 # Source files
-SRCS = main.cpp ../../src/CMesh.cpp ../../src/Config.cpp ../../src/commonFunctions.cpp
+SRCS = main.cpp ../../src/CMesh.cpp ../../src/Config.cpp ../../src/commonFunctions.cpp ../../src/CSolverBase.cpp ../../src/CEulerSolver.cpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)

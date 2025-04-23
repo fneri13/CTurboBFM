@@ -26,13 +26,19 @@ class CMesh {
 
         const Matrix2D<Vector3D> getBoundarySurface(BoundaryIndices boundIndex) const;
 
+        const int getNumberDimensions() const {return _nDimensions;}
+
+        const int getNumberPointsI() const {return _nPointsI;}
+        const int getNumberPointsJ() const {return _nPointsJ;}
+        const int getNumberPointsK() const {return _nPointsK;}
+
         FloatType getBoundaryTotalArea(BoundaryIndices boundIndex) const {return _boundaryAreas.at(boundIndex);}
 
         // compute the surface vector and center of surface given 4 points
         void computeSurfaceVectorAndCG(const Vector3D &p1, const Vector3D &p2, const Vector3D &p3, const Vector3D &p4, Vector3D &normal, Vector3D &center);
 
     private:
-        Config _config;
+        const Config& _config;
 
         unsigned long int _nPointsI, _nPointsJ, _nPointsK, _nPointsTotal;
 

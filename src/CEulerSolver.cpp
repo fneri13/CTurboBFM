@@ -41,20 +41,32 @@ void CEulerSolver::initializeSolutionArrays(){
 
 void CEulerSolver::solve(){
     unsigned long int nIterMax = _config.getMaxIterations();
-    FloatType physicalTime {0.0};
+    // FloatType physicalTime {0.0};
     Matrix3D<FloatType> dt(_nPointsI, _nPointsJ, _nPointsK);
+    std::vector<FloatType> timeIntegrationCoeffs = _config.getTimeIntegrationCoeffs();
+    FlowSolution fluxResiduals(_nPointsI, _nPointsJ, _nPointsK);
+    FlowSolution solutionOld = _conservativeVars;
 
     for (unsigned long int it=0; it<nIterMax; it++){
         std::cout << "Iteration number " << it+1 << std::endl;
-        EulerConservativeVariables solutionOld = _conservativeVars;
+        
+        // replicate flux calculation
         computeTimestepArray(solutionOld, dt);
-        updateMassFlows(solutionOld);
+        
+        // updateMassFlows(solutionOld); for the moment no need
+        
+        // time-integration steps (runge-kutta in general)
+        for (auto &integrationCoeff: timeIntegrationCoeffs){
+            // physicalTime += integrationCoeff * dt(0,0,0);
+            computeFluxResiduals(solutionOld, it, fluxResiduals);
 
 
+
+        }
     }
 }
 
-Matrix3D<FloatType> CEulerSolver::computeTimestepArray(const EulerConservativeVariables &solution, Matrix3D<FloatType> &timestep){
+Matrix3D<FloatType> CEulerSolver::computeTimestepArray(const FlowSolution &solution, Matrix3D<FloatType> &timestep){
     FloatType cflMax = _config.getCFL();
     Vector3D iEdge, jEdge, kEdge;
     Vector3D iDir, jDir, kDir;
@@ -91,7 +103,7 @@ Matrix3D<FloatType> CEulerSolver::computeTimestepArray(const EulerConservativeVa
 }
 
 
-void CEulerSolver::updateMassFlows(const EulerConservativeVariables &solution){
+void CEulerSolver::updateMassFlows(const FlowSolution&solution){
     std::array<BoundaryIndices, 6> bcIndices {BoundaryIndices::I_START,
                                               BoundaryIndices::I_END,
                                               BoundaryIndices::J_START,
@@ -99,10 +111,62 @@ void CEulerSolver::updateMassFlows(const EulerConservativeVariables &solution){
                                               BoundaryIndices::K_START,
                                               BoundaryIndices::K_END};
     
-    for (auto &id: bcIndices){
-        auto surfaces = _mesh.getBoundarySurface(id);
-        // we need slices of the arrays
-        std::cout << "Must take slices of the arrays";
-    }
+    // for (auto &id: bcIndices){
+    //     auto surfaces = _mesh.getBoundarySurface(id);
+    //     // we need slices of the arrays
+    //     std::cout << "Must take slices of the arrays";
+    // }
     
 }
+
+void CEulerSolver::computeFluxResiduals(const FlowSolution solution, unsigned long int it, FlowSolution &residuals) const {
+    computeAdvectionResiduals(FluxDirection::I, solution, it, residuals);
+    computeAdvectionResiduals(FluxDirection::J, solution, it, residuals);
+    computeAdvectionResiduals(FluxDirection::K, solution, it, residuals);
+}
+
+void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const FlowSolution solution, unsigned long int itCounter, FlowSolution &residuals) const {
+    const auto stepMask = getStepMask(direction);
+    const Matrix3D<Vector3D>& surfaces = _mesh.getSurfaces(direction);
+    const Matrix3D<Vector3D>& midPoints = _mesh.getMidPoints(direction);
+
+    auto ni = surfaces.sizeI(); 
+    auto nj = surfaces.sizeJ(); 
+    auto nk = surfaces.sizeK();
+
+    for (auto iFace = 0UL; iFace < ni; ++iFace) {
+        for (auto jFace = 0UL; jFace < nj; ++jFace) {
+            for (auto kFace = 0UL; kFace < nk; ++kFace) {
+                auto dirFace = 0UL;
+                auto stopFace = 0UL;
+                switch (direction)
+                {
+                case (FluxDirection::I):
+                    dirFace = iFace;
+                    stopFace = ni-1;
+                    break;
+                case (FluxDirection::J):
+                    dirFace = jFace;
+                    stopFace = nj-1;
+                    break;
+                case (FluxDirection::K):
+                    dirFace = kFace;
+                    stopFace = nk-1;
+                    break;
+                default:
+                    throw std::runtime_error("Invalid FluxDirection.");
+                }
+                
+                // fluxes calculation here, also boundary conditions.
+                
+
+            
+            }
+        }
+    }
+
+
+    
+    
+}
+

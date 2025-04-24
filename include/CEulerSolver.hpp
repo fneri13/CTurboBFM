@@ -25,9 +25,13 @@ public:
     // void spatialIntegration() override;
 
     // given a certain conservative solution, compute the dt corresponding to the CFL condition
-    Matrix3D<FloatType> computeTimestepArray(const EulerConservativeVariables &solution, Matrix3D<FloatType> &timestep);
+    Matrix3D<FloatType> computeTimestepArray(const FlowSolution &solution, Matrix3D<FloatType> &timestep);
     
-    void updateMassFlows(const EulerConservativeVariables &solution);
+    void updateMassFlows(const FlowSolution &solution);
+
+    void computeFluxResiduals(const FlowSolution solution, unsigned long int itCounter, FlowSolution &residuals) const;
+
+    void computeAdvectionResiduals(FluxDirection direction, const FlowSolution solution, unsigned long int itCounter, FlowSolution &residuals) const;
 
     // void checkConvergence() override;
     // void printInfoResiduals() override;
@@ -37,7 +41,7 @@ public:
 
 private:
     // // Add CEulerSolver-specific member variables here
-    EulerConservativeVariables _conservativeVars;
+    FlowSolution _conservativeVars;
 
     // std::vector<FloatType> _residualNorms;
     

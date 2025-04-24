@@ -112,4 +112,6 @@ public:
 
     ConvectionScheme getConvectionScheme() const;
 
+    std::vector<FloatType> getTimeIntegrationCoeffs() const ;
+
 };

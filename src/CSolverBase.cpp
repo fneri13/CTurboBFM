@@ -42,3 +42,15 @@ void CSolverBase::readBoundaryConditions(){
         }
     }
 }
+
+
+const std::array<int, 3> CSolverBase::getStepMask(FluxDirection direction) const {
+    switch (direction) {
+        case FluxDirection::I: return {1, 0, 0};
+        case FluxDirection::J: return {0, 1, 0};
+        case FluxDirection::K: return {0, 0, 1};
+        default:
+            throw std::runtime_error("Invalid flux direction.");
+    }
+}
+

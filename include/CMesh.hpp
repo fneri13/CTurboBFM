@@ -17,11 +17,26 @@ class CMesh {
 
         FloatType computeElementVolume(const std::vector<Vector3D> &boundSurfaces, const std::vector<Vector3D> &boundCenters);
 
-        const Matrix3D<Vector3D> getSurfacesI() const {return _surfacesI;}
-        const Matrix3D<Vector3D> getSurfacesJ() const {return _surfacesJ;}
-        const Matrix3D<Vector3D> getSurfacesK() const {return _surfacesK;}
+        const Matrix3D<Vector3D>& getSurfaces(FluxDirection direction) const;
+
+        const Matrix3D<Vector3D>& getMidPoints(FluxDirection direction) const;
+
+        const Matrix3D<Vector3D>& getSurfacesI() const {return _surfacesI;}
+        
+        const Matrix3D<Vector3D>& getMidPointsI() const {return _centersI;}
+
+        const Matrix3D<Vector3D>& getSurfacesJ() const {return _surfacesJ;}
+        
+        const Matrix3D<Vector3D>& getMidPointsJ() const {return _centersJ;}
+
+        const Matrix3D<Vector3D>& getSurfacesK() const {return _surfacesK;}
+
+        const Matrix3D<Vector3D>& getMidPointsK() const {return _centersK;}
+        
         const Matrix3D<Vector3D> getVertices() const {return _vertices;}
+        
         const Matrix3D<Vector3D> getDualNodes() const {return _dualNodes;}
+        
         const Matrix3D<FloatType> getVolumes() const {return _volumes;}
 
         const Matrix2D<Vector3D> getBoundarySurface(BoundaryIndices boundIndex) const;

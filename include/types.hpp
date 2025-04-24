@@ -254,12 +254,20 @@ private:
     }
 };
 
-struct EulerConservativeVariables {
+struct FlowSolution {
     Matrix3D<FloatType> rho;
     Matrix3D<FloatType> rhoU;
     Matrix3D<FloatType> rhoV;
     Matrix3D<FloatType> rhoW;
     Matrix3D<FloatType> rhoE;
+
+    // Constructor
+    FlowSolution(size_t ni, size_t nj, size_t nk) {
+        resize(ni, nj, nk);
+    }
+
+    FlowSolution() = default;
+
 
     std::array<FloatType, 5> at(size_t i, size_t j, size_t k) const {
         return {rho(i,j,k), rhoU(i,j,k), rhoV(i,j,k), rhoW(i,j,k), rhoE(i,j,k)};
@@ -282,3 +290,8 @@ struct EulerConservativeVariables {
     }
 };
 
+enum class FluxDirection {
+    I=0,
+    J=1,
+    K=2,
+};

@@ -225,6 +225,27 @@ void CMesh::computeBoundaryAreas() {
 
 }
 
+const Matrix3D<Vector3D>& CMesh::getSurfaces(FluxDirection direction) const {
+    switch (direction) {
+        case FluxDirection::I: return _surfacesI;
+        case FluxDirection::J: return _surfacesJ;
+        case FluxDirection::K: return _surfacesK;
+        default:
+            throw std::runtime_error("Invalid flux direction.");
+    }
+}
+
+const Matrix3D<Vector3D>& CMesh::getMidPoints(FluxDirection direction) const {
+    switch (direction) {
+        case FluxDirection::I: return _centersI;
+        case FluxDirection::J: return _centersJ;
+        case FluxDirection::K: return _centersK;
+        default:
+            throw std::runtime_error("Invalid flux direction.");
+    }
+}
+
+
 const Matrix2D<Vector3D> CMesh::getBoundarySurface(BoundaryIndices index) const {
     Matrix2D<Vector3D> boundary;
 

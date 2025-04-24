@@ -261,3 +261,17 @@ Vector3D Config::getInitDirection() const {
     Vector3D dir {direction[0], direction[1], direction[2]};
     return dir;
 }
+
+std::vector<FloatType> Config::getTimeIntegrationCoeffs() const {
+    TimeIntegration integration = getTimeIntegration();
+    if (integration == TimeIntegration::RUNGE_KUTTA_4) {
+        return {1.0/4.0, 5.0/14.0, 14.0/25.0, 1.0};
+    } 
+    else if (integration == TimeIntegration::RUNGE_KUTTA_3) {
+        return {8.0/17.0, 17.0/20.0, 1.0};
+    }
+    else {
+        throw std::runtime_error("Invalid value for key \"TIME_INTEGRATION\" in configuration.");
+    }
+}
+

@@ -24,6 +24,8 @@ class CSolverBase {
 
         virtual void solve() = 0;
 
+        const std::array<int, 3> getStepMask(FluxDirection direction) const;
+
         // virtual void computeFluxes() = 0;
 
         // virtual void spatialIntegration() = 0;

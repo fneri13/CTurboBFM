@@ -1,6 +1,5 @@
 #pragma once
-#include <string>
-#include <vector>
+
 #include "types.hpp"
 #include "Config.hpp"
 
@@ -43,13 +42,15 @@ class CMesh {
 
         const Matrix2D<Vector3D> getBoundarySurface(BoundaryIndices boundIndex) const;
 
-        const int getNumberDimensions() const {return _nDimensions;}
+        const size_t getNumberDimensions() const {return _nDimensions;}
 
-        const int getNumberPointsI() const {return _nPointsI;}
-        const int getNumberPointsJ() const {return _nPointsJ;}
-        const int getNumberPointsK() const {return _nPointsK;}
+        const size_t getNumberPointsI() const {return _nPointsI;}
+        
+        const size_t getNumberPointsJ() const {return _nPointsJ;}
+        
+        const size_t getNumberPointsK() const {return _nPointsK;}
 
-        void getElementEdges(int i, int j, int k, Vector3D &iEdge, Vector3D &jEdge, Vector3D &kEdge) const;
+        void getElementEdges(size_t i, size_t j, size_t k, Vector3D &iEdge, Vector3D &jEdge, Vector3D &kEdge) const;
 
         FloatType getBoundaryTotalArea(BoundaryIndices boundIndex) const {return _boundaryAreas.at(boundIndex);}
 

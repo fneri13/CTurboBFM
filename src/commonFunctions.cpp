@@ -1,6 +1,7 @@
 #include "../include/commonFunctions.hpp"
 #include <iostream>
 
+
 FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces, const Matrix2D<Vector3D> &vectors){
     auto ni = surfaces.sizeI();
     auto nj = surfaces.sizeJ();
@@ -13,6 +14,7 @@ FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces, const Matri
     }
     return sum;
 }
+
 
 FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces){
     auto ni = surfaces.sizeI();
@@ -27,6 +29,7 @@ FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces){
     return sum;
 }
 
+
 StateVector getEulerPrimitiveFromConservative(StateVector conservative){
     StateVector primitive;
     primitive[0] = conservative[0];
@@ -36,6 +39,7 @@ StateVector getEulerPrimitiveFromConservative(StateVector conservative){
     primitive[4] = conservative[4] / conservative[0];
     return primitive;
 }
+
 
 StateVector getEulerConservativeFromPrimitive(StateVector primitive){
     StateVector conservative;
@@ -47,19 +51,20 @@ StateVector getEulerConservativeFromPrimitive(StateVector primitive){
     return conservative;
 }
 
-StateVector computeEulerFluxFromPrimitive(StateVector state, Vector3D surface, CFluid fluid){
+
+StateVector computeEulerFluxFromPrimitive(StateVector primitive, Vector3D surface, CFluid fluid){
     Vector3D normal = surface / surface.magnitude();
-    Vector3D velocity = {state[1], state[2], state[3]};
+    Vector3D velocity = {primitive[1], primitive[2], primitive[3]};
     FloatType normalVelocity = velocity.dot(normal);
-    FloatType pressure = fluid.computePressure_rho_u_et(state[0], velocity, state[4]);
-    FloatType totEnthalpy = fluid.computeTotalEnthalpy_rho_u_et(state[0], velocity, state[4]);
+    FloatType pressure = fluid.computePressure_rho_u_et(primitive[0], velocity, primitive[4]);
+    FloatType totEnthalpy = fluid.computeTotalEnthalpy_rho_u_et(primitive[0], velocity, primitive[4]);
 
     StateVector flux {};
-    flux[0] = state[0] * normalVelocity;
-    flux[1] = state[0] * normalVelocity * velocity.x() + pressure * normal.x();
-    flux[2] = state[0] * normalVelocity * velocity.y() + pressure * normal.y();
-    flux[3] = state[0] * normalVelocity * velocity.z() + pressure * normal.z();
-    flux[4] = state[0] * normalVelocity * totEnthalpy;
+    flux[0] = primitive[0] * normalVelocity;
+    flux[1] = primitive[0] * normalVelocity * velocity.x() + pressure * normal.x();
+    flux[2] = primitive[0] * normalVelocity * velocity.y() + pressure * normal.y();
+    flux[3] = primitive[0] * normalVelocity * velocity.z() + pressure * normal.z();
+    flux[4] = primitive[0] * normalVelocity * totEnthalpy;
     return flux;
 
 }

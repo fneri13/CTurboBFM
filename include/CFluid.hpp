@@ -1,11 +1,11 @@
 #pragma once
 #include "types.hpp"
 
+// Class for ideal gases
 class CFluid {
 public:
     CFluid(FloatType gamma, FloatType R);
 
-    // Thermodynamic functions
     FloatType computeStaticEnergy_p_rho(FloatType p, FloatType rho) const;
     
     FloatType computePressure_rho_e(FloatType rho, FloatType e) const;

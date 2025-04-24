@@ -39,6 +39,8 @@ class CMesh {
         
         const Matrix3D<FloatType> getVolumes() const {return _volumes;}
 
+        const FloatType getVolume(size_t i, size_t j, size_t k) const {return _volumes(i,j,k);}
+
         const Matrix2D<Vector3D> getBoundarySurface(BoundaryIndices boundIndex) const;
 
         const int getNumberDimensions() const {return _nDimensions;}

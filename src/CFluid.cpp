@@ -108,3 +108,9 @@ void CFluid::computeInitFields(FloatType initMach, FloatType initTemperature, Fl
     FloatType energy = computeStaticEnergy_p_rho(initPressure, density);
     totEnergy = energy + 0.5 * pow(velocity.magnitude(), 2);
 }
+
+FloatType CFluid::computePressure_primitive(StateVector primitive) const {
+    Vector3D velocity = {primitive[1], primitive[2], primitive[3]};
+    auto pressure = computePressure_rho_u_et(primitive[0], velocity, primitive[4]);
+    return pressure;
+}

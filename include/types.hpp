@@ -243,6 +243,19 @@ public:
     size_t sizeJ() const { return _nj; }
     size_t sizeK() const { return _nk; }
 
+    // Compute L2 norm of all components of the matrix
+    T norm() const {
+        T sum = 0;
+        for (size_t i = 0; i < _ni; ++i) {
+            for (size_t j = 0; j < _nj; ++j) {
+                for (size_t k = 0; k < _nk; ++k) {
+                    sum += std::pow(operator()(i, j, k), 2);  // Square each element
+                }
+            }
+        }
+        return std::sqrt(sum);  // Return the square root of the sum
+    }
+
 private:
     size_t _ni, _nj, _nk;
     std::vector<T> _data;
@@ -254,12 +267,126 @@ private:
     }
 };
 
+
+class StateVector {
+    public:
+        static constexpr std::size_t Size = 5;
+        std::array<FloatType, Size> data{};
+    
+        // Default constructor
+        StateVector() = default;
+    
+        // Constructor from std::array
+        explicit StateVector(const std::array<FloatType, Size>& arr) : data(arr) {}
+    
+        // Access operators
+        FloatType& operator[](std::size_t idx) { return data[idx]; }
+        const FloatType& operator[](std::size_t idx) const { return data[idx]; }
+    
+        // Element-wise addition
+        StateVector operator+(const StateVector& other) const {
+            StateVector result;
+            for (std::size_t i = 0; i < Size; ++i)
+                result[i] = data[i] + other[i];
+            return result;
+        }
+    
+        // Element-wise subtraction
+        StateVector operator-(const StateVector& other) const {
+            StateVector result;
+            for (std::size_t i = 0; i < Size; ++i)
+                result[i] = data[i] - other[i];
+            return result;
+        }
+    
+        // Element-wise multiplication
+        StateVector operator*(const StateVector& other) const {
+            StateVector result;
+            for (std::size_t i = 0; i < Size; ++i)
+                result[i] = data[i] * other[i];
+            return result;
+        }
+    
+        // Element-wise division
+        StateVector operator/(const StateVector& other) const {
+            StateVector result;
+            for (std::size_t i = 0; i < Size; ++i) {
+                if (other[i] == 0.0)
+                    throw std::runtime_error("Division by zero in StateVector");
+                result[i] = data[i] / other[i];
+            }
+            return result;
+        }
+    
+        // Scalar operations
+        StateVector operator*(FloatType scalar) const {
+            StateVector result;
+            for (std::size_t i = 0; i < Size; ++i)
+                result[i] = data[i] * scalar;
+            return result;
+        }
+    
+        StateVector operator/(FloatType scalar) const {
+            if (scalar == 0.0)
+                throw std::runtime_error("Division by zero in scalar operation");
+            StateVector result;
+            for (std::size_t i = 0; i < Size; ++i)
+                result[i] = data[i] / scalar;
+            return result;
+        }
+    
+        StateVector operator+(FloatType scalar) const {
+            StateVector result;
+            for (std::size_t i = 0; i < Size; ++i)
+                result[i] = data[i] + scalar;
+            return result;
+        }
+    
+        StateVector operator-(FloatType scalar) const {
+            StateVector result;
+            for (std::size_t i = 0; i < Size; ++i)
+                result[i] = data[i] - scalar;
+            return result;
+        }
+    
+        // Assignment operators
+        StateVector& operator+=(const StateVector& other) {
+            for (std::size_t i = 0; i < Size; ++i)
+                data[i] += other[i];
+            return *this;
+        }
+    
+        StateVector& operator-=(const StateVector& other) {
+            for (std::size_t i = 0; i < Size; ++i)
+                data[i] -= other[i];
+            return *this;
+        }
+    
+        // Convenience conversion to std::array
+        operator std::array<FloatType, Size>() const {
+            return data;
+        }
+    
+        // Optional: dot product
+        FloatType dot(const StateVector& other) const {
+            FloatType result = 0.0;
+            for (std::size_t i = 0; i < Size; ++i)
+                result += data[i] * other[i];
+            return result;
+        }
+    
+        // Optional: L2 norm
+        FloatType norm() const {
+            return std::sqrt(this->dot(*this));
+        }
+    };
+
 struct FlowSolution {
-    Matrix3D<FloatType> rho;
-    Matrix3D<FloatType> rhoU;
-    Matrix3D<FloatType> rhoV;
-    Matrix3D<FloatType> rhoW;
-    Matrix3D<FloatType> rhoE;
+    Matrix3D<FloatType> _rho;
+    Matrix3D<FloatType> _rhoU;
+    Matrix3D<FloatType> _rhoV;
+    Matrix3D<FloatType> _rhoW;
+    Matrix3D<FloatType> _rhoE;
 
     // Constructor
     FlowSolution(size_t ni, size_t nj, size_t nk) {
@@ -268,25 +395,58 @@ struct FlowSolution {
 
     FlowSolution() = default;
 
+    FloatType norm(int i) const {
+        switch (i)
+        {
+        case 0:
+            return _rho.norm();
+        case 1:
+            return _rhoU.norm();
+        case 2:
+            return _rhoV.norm();
+        case 3:
+            return _rhoW.norm();
+        case 4:
+            return _rhoE.norm();        
+        default:
+            throw std::out_of_range("Index out of range for norm calculation");
+        }
+    }
 
-    std::array<FloatType, 5> at(size_t i, size_t j, size_t k) const {
-        return {rho(i,j,k), rhoU(i,j,k), rhoV(i,j,k), rhoW(i,j,k), rhoE(i,j,k)};
+    void add(size_t i, size_t j, size_t k, const StateVector& delta) {
+        _rho(i,j,k)   += delta[0];
+        _rhoU(i,j,k)  += delta[1];
+        _rhoV(i,j,k)  += delta[2];
+        _rhoW(i,j,k)  += delta[3];
+        _rhoE(i,j,k)  += delta[4];
+    }
+
+    void subtract(size_t i, size_t j, size_t k, const StateVector& delta) {
+        _rho(i,j,k)   -= delta[0];
+        _rhoU(i,j,k)  -= delta[1];
+        _rhoV(i,j,k)  -= delta[2];
+        _rhoW(i,j,k)  -= delta[3];
+        _rhoE(i,j,k)  -= delta[4];
+    }
+
+    StateVector at(size_t i, size_t j, size_t k) const {
+        return StateVector({_rho(i,j,k), _rhoU(i,j,k), _rhoV(i,j,k), _rhoW(i,j,k), _rhoE(i,j,k)});
     }
 
     void set(size_t i, size_t j, size_t k, const std::array<FloatType, 5>& vals) {
-        rho(i,j,k) = vals[0];
-        rhoU(i,j,k) = vals[1];
-        rhoV(i,j,k) = vals[2];
-        rhoW(i,j,k) = vals[3];
-        rhoE(i,j,k) = vals[4];
+        _rho(i,j,k) = vals[0];
+        _rhoU(i,j,k) = vals[1];
+        _rhoV(i,j,k) = vals[2];
+        _rhoW(i,j,k) = vals[3];
+        _rhoE(i,j,k) = vals[4];
     }
 
     void resize(size_t i, size_t j, size_t k){
-        rho.resize(i,j,k);
-        rhoU.resize(i,j,k);
-        rhoV.resize(i,j,k);
-        rhoW.resize(i,j,k);
-        rhoE.resize(i,j,k);
+        _rho.resize(i,j,k);
+        _rhoU.resize(i,j,k);
+        _rhoV.resize(i,j,k);
+        _rhoW.resize(i,j,k);
+        _rhoE.resize(i,j,k);
     }
 };
 
@@ -295,3 +455,4 @@ enum class FluxDirection {
     J=1,
     K=2,
 };
+

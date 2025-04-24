@@ -29,15 +29,17 @@ public:
     
     void updateMassFlows(const FlowSolution &solution);
 
-    void computeFluxResiduals(const FlowSolution solution, unsigned long int itCounter, FlowSolution &residuals) const;
+    FlowSolution computeFluxResiduals(const FlowSolution solution, unsigned long int itCounter) const;
 
     void computeAdvectionResiduals(FluxDirection direction, const FlowSolution solution, unsigned long int itCounter, FlowSolution &residuals) const;
 
-    // void checkConvergence() override;
-    // void printInfoResiduals() override;
-    // void saveSolution() override;
-    // void computeGradient() override;
-    // void interpolateScalar() override;
+    void updateSolution(FlowSolution &solOld, FlowSolution &solNew, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt);
+
+    void printInfoResiduals(FlowSolution &residuals, unsigned long int it) const;
+
+    void printHeader() const;
+
+    StateVector computeLogResidualNorm(const FlowSolution &residuals) const;
 
 private:
     // // Add CEulerSolver-specific member variables here

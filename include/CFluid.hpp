@@ -48,6 +48,7 @@ public:
 
     void computeInitFields(FloatType initMach, FloatType initTemperature, FloatType initPressure, Vector3D initDirection, FloatType &density, Vector3D &velocity, FloatType &totEnergy);
 
+    FloatType computePressure_primitive(StateVector primitive) const;
 
 private:
     FloatType _gamma;

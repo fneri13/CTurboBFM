@@ -12,6 +12,18 @@ CSolverBase::CSolverBase(Config& config, CMesh& mesh)
 
     _fluid = std::make_unique<CFluid>(_config.getFluidGamma(), _config.getFluidGasConstant());
 
+    ConvectionScheme advScheme = _config.getConvectionScheme();
+
+    switch (advScheme)
+    {
+    case ConvectionScheme::JST:
+        _advectionScheme = std::make_unique<CJSTScheme>(*_fluid);
+        break;
+
+    default:
+        throw std::runtime_error("Unsupported convection scheme selected.");
+    }
+
     readBoundaryConditions();
     
 }

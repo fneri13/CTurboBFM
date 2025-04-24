@@ -1,44 +1,68 @@
-# Makefile
-
 CXX = g++
-CXXFLAGS = -std=c++20 -I ~/libraries/include/ -g -Wall
-LDFLAGS = -L ~/libraries/lib -lgtest
-
 SRC_DIR = ../../src
-BUILD_DIR = build
 INCLUDES = ~/libraries/include/
 
-OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/CMesh.o $(BUILD_DIR)/Config.o $(BUILD_DIR)/commonFunctions.o $(BUILD_DIR)/CSolverBase.o $(BUILD_DIR)/CEulerSolver.o $(BUILD_DIR)/CFluid.o 
-TARGET = $(BUILD_DIR)/main.out
+# Source files
+SOURCES = \
+	main.cpp \
+	$(SRC_DIR)/CMesh.cpp \
+	$(SRC_DIR)/Config.cpp \
+	$(SRC_DIR)/commonFunctions.cpp \
+	$(SRC_DIR)/CSolverBase.cpp \
+	$(SRC_DIR)/CEulerSolver.cpp \
+	$(SRC_DIR)/CFluid.cpp \
+	$(SRC_DIR)/CJSTScheme.cpp
 
-all: $(TARGET)
+# Common compiler flags
+INCLUDE_FLAGS = -I $(INCLUDES)
 
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+# Build types
+DEBUG_DIR = build/debug
+RELEASE_DIR = build/release
 
-$(BUILD_DIR)/main.o: main.cpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+DEBUG_FLAGS = -std=c++20 $(INCLUDE_FLAGS) -g -O0 -Wall
+RELEASE_FLAGS = -std=c++20 $(INCLUDE_FLAGS) -O3 -Wall
 
-$(BUILD_DIR)/CMesh.o: $(SRC_DIR)/CMesh.cpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+DEBUG_OBJS = $(patsubst %.cpp, $(DEBUG_DIR)/%.o, $(notdir $(SOURCES)))
+RELEASE_OBJS = $(patsubst %.cpp, $(RELEASE_DIR)/%.o, $(notdir $(SOURCES)))
 
-$(BUILD_DIR)/Config.o: $(SRC_DIR)/Config.cpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+DEBUG_TARGET = $(DEBUG_DIR)/main.out
+RELEASE_TARGET = $(RELEASE_DIR)/main.out
 
-$(BUILD_DIR)/commonFunctions.o: $(SRC_DIR)/commonFunctions.cpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+.PHONY: all debug release clean
 
-$(BUILD_DIR)/CSolverBase.o: $(SRC_DIR)/CSolverBase.cpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+all: release
 
-$(BUILD_DIR)/CEulerSolver.o: $(SRC_DIR)/CEulerSolver.cpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+debug: $(DEBUG_TARGET)
+release: $(RELEASE_TARGET)
 
-$(BUILD_DIR)/CFluid.o: $(SRC_DIR)/CFluid.cpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+# Make sure the folders exist
+$(DEBUG_DIR):
+	mkdir -p $(DEBUG_DIR)
 
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $(TARGET) $(LDFLAGS)
+$(RELEASE_DIR):
+	mkdir -p $(RELEASE_DIR)
+
+# Compile each .cpp to .o in the debug folder
+$(DEBUG_DIR)/%.o: $(SRC_DIR)/%.cpp | $(DEBUG_DIR)
+	$(CXX) $(DEBUG_FLAGS) -c $< -o $@
+
+$(DEBUG_DIR)/main.o: main.cpp | $(DEBUG_DIR)
+	$(CXX) $(DEBUG_FLAGS) -c $< -o $@
+
+# Compile each .cpp to .o in the release folder
+$(RELEASE_DIR)/%.o: $(SRC_DIR)/%.cpp | $(RELEASE_DIR)
+	$(CXX) $(RELEASE_FLAGS) -c $< -o $@
+
+$(RELEASE_DIR)/main.o: main.cpp | $(RELEASE_DIR)
+	$(CXX) $(RELEASE_FLAGS) -c $< -o $@
+
+# Link final binaries
+$(DEBUG_TARGET): $(DEBUG_OBJS)
+	$(CXX) $(DEBUG_FLAGS) $(DEBUG_OBJS) -o $@
+
+$(RELEASE_TARGET): $(RELEASE_OBJS)
+	$(CXX) $(RELEASE_FLAGS) $(RELEASE_OBJS) -o $@
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf build

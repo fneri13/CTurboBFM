@@ -5,6 +5,8 @@
 #include "Config.hpp"
 #include "CMesh.hpp"
 #include "CFluid.hpp"
+#include "CAdvectionScheme.hpp"
+#include "CJSTScheme.hpp"
 
 /** 
   *  \brief     Class handling base solver capabilities.
@@ -50,6 +52,8 @@ class CSolverBase {
         Matrix3D<FloatType> _timeStep;
         
         std::unique_ptr<CFluid> _fluid;
+
+        std::unique_ptr<CAdvectionScheme> _advectionScheme;
         
         std::map<BoundaryIndices, std::vector<FloatType>> _massFlows;
         

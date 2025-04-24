@@ -129,6 +129,10 @@ void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const Flow
     const auto stepMask = getStepMask(direction);
     const Matrix3D<Vector3D>& surfaces = _mesh.getSurfaces(direction);
     const Matrix3D<Vector3D>& midPoints = _mesh.getMidPoints(direction);
+    std::array<FloatType, 5> Uleft{}, Uright{}, Uleftleft {}, Urightright {}, flux {};
+    Vector3D surface {};
+    FloatType area {};
+    CAdvectionScheme advectionScheme();
 
     auto ni = surfaces.sizeI(); 
     auto nj = surfaces.sizeJ(); 
@@ -158,7 +162,33 @@ void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const Flow
                 }
                 
                 // fluxes calculation here, also boundary conditions.
-                
+                if (dirFace == 0) {
+                    // boundary flux calculation at the beginning
+                } else if (dirFace == stopFace) {
+                    // boundary flux calculation at the end
+                } else {
+                    // internal flux calculation
+                    Uleft = solution.at(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2]);
+                    Uright = solution.at(iFace, jFace, kFace);
+
+                    if (dirFace==1){
+                        Uleftleft = Uleft;
+                        Urightright = solution.at(iFace+1*stepMask[0], jFace+1*stepMask[1], kFace+1*stepMask[2]);
+                    }
+                    else if (dirFace==stopFace-1){
+                        Uleftleft = solution.at(iFace-2*stepMask[0], jFace-2*stepMask[1], kFace-2*stepMask[2]);
+                        Urightright = Uright;
+                    }
+                    else {
+                        Uleftleft = solution.at(iFace-2*stepMask[0], jFace-2*stepMask[1], kFace-2*stepMask[2]);
+                        Urightright = solution.at(iFace+1*stepMask[0], jFace+1*stepMask[1], kFace+1*stepMask[2]);
+                    }
+
+                    surface = surfaces(iFace, jFace, kFace);
+                    area = surface.magnitude();
+                    // flux = computeAdvectionFlux(Uleftleft, Uleft, Uright, Urightright);
+                }
+
 
             
             }

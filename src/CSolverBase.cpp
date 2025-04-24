@@ -10,6 +10,8 @@ CSolverBase::CSolverBase(Config& config, CMesh& mesh)
     _nPointsK = _mesh.getNumberPointsK();
     _timeStep.resize(_nPointsI, _nPointsJ, _nPointsK);
 
+    _topology = _config.getTopology();
+
     _fluid = std::make_unique<CFluid>(_config.getFluidGamma(), _config.getFluidGasConstant());
 
     ConvectionScheme advScheme = _config.getConvectionScheme();

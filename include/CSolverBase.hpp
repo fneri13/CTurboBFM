@@ -61,4 +61,6 @@ class CSolverBase {
 
         std::map<BoundaryIndices, std::vector<FloatType>> _boundaryValues;
 
+        Topology _topology;
+
 };

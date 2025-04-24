@@ -53,15 +53,12 @@ void CEulerSolver::solve(){
         // replicate flux calculation
         computeTimestepArray(solutionOld, dt);
         
-        // updateMassFlows(solutionOld); for the moment no need
         
         // time-integration steps (runge-kutta in general)
         for (auto &integrationCoeff: timeIntegrationCoeffs){
-            
             fluxResiduals = computeFluxResiduals(solutionOld, it);
-            
             updateSolution(solutionOld, solutionNew, fluxResiduals, integrationCoeff, dt);
-
+            solutionOld = solutionNew;
         }
 
         _conservativeVars = solutionNew;
@@ -72,21 +69,31 @@ void CEulerSolver::solve(){
 void CEulerSolver::printInfoResiduals(FlowSolution &residuals, unsigned long int it) const {
     if (it == 0) {printHeader();}
     auto logRes = computeLogResidualNorm(residuals);
+    printLogResiduals(logRes, it);
+}
 
-    std::cout << "|" << std::setw(14) << std::setfill(' ') << std::left << it+1 << "|"
-                << std::setw(14) << std::left << 0.0 << "|"
-                << std::setw(14) << std::right << logRes[0] << "|"
-                << std::setw(14) << std::right << logRes[1] << "|"
-                << std::setw(14) << std::right << logRes[2] << "|"
-                << std::setw(14) << std::right << logRes[3] << "|"
-                << std::setw(14) << std::right << logRes[4] << "|"
+void CEulerSolver::printLogResiduals(const StateVector &logRes, unsigned long int it) const {
+    int col_width = 14;
+    std::cout << "|" << std::setw(col_width) << std::setfill(' ') << std::left << it+1 << "|"
+                << std::setw(col_width) << std::left << 0.0 << "|"
+                << std::setw(col_width) << std::right << logRes[0] << "|"
+                << std::setw(col_width) << std::right << logRes[1] << "|"
+                << std::setw(col_width) << std::right << logRes[2] << "|"
+                << std::setw(col_width) << std::right << logRes[3] << "|"
+                << std::setw(col_width) << std::right << logRes[4] << "|"
                 << std::endl;
 }
+
 
 StateVector CEulerSolver::computeLogResidualNorm(const FlowSolution &residuals) const {
     StateVector logResidualNorm{};
     for (int i=0; i<5; i++){
-        logResidualNorm[i] = std::log10(residuals.norm(i) / (_nPointsI*_nPointsJ*_nPointsK));
+        auto residualNorm = residuals.norm(i);
+        if (residualNorm >= 1E-12) {
+            logResidualNorm[i] = std::log10(residuals.norm(i) / (_nPointsI*_nPointsJ*_nPointsK));
+        } else{
+            logResidualNorm[i] = 0.0;
+        }
     }
     return logResidualNorm;
 }
@@ -169,7 +176,9 @@ FlowSolution CEulerSolver::computeFluxResiduals(const FlowSolution solution, uns
     FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK);
     computeAdvectionResiduals(FluxDirection::I, solution, it, residuals);
     computeAdvectionResiduals(FluxDirection::J, solution, it, residuals);
-    computeAdvectionResiduals(FluxDirection::K, solution, it, residuals);
+    if (_topology==Topology::THREE_DIMENSIONAL || _topology==Topology::AXISYMMETRIC){
+        computeAdvectionResiduals(FluxDirection::K, solution, it, residuals);
+    }
     return residuals;
 }
 
@@ -179,7 +188,6 @@ void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const Flow
     const Matrix3D<Vector3D>& midPoints = _mesh.getMidPoints(direction);
     StateVector Uleft{}, Uright{}, Uleftleft {}, Urightright {}, flux {};
     Vector3D surface {};
-    // CAdvectionScheme advectionScheme();
 
     auto ni = surfaces.sizeI(); 
     auto nj = surfaces.sizeJ(); 
@@ -249,10 +257,10 @@ void CEulerSolver::updateSolution(FlowSolution &solOld, FlowSolution &solNew, co
     for (size_t i = 0; i < _nPointsI; i++) {
         for (size_t j = 0; j < _nPointsJ; j++) {
             for (size_t k = 0; k < _nPointsK; k++) {
-                solNew.set(i, j, k, solOld.at(i, j, k) - (residuals.at(i, j, k) * integrationCoeff * dt(i, j, k) / _mesh.getVolume(i, j, k)));
+                auto newConservative = solOld.at(i, j, k) - (residuals.at(i, j, k) * integrationCoeff * dt(i, j, k) / _mesh.getVolume(i, j, k));
+                solNew.set(i, j, k, newConservative);
             }
         }
     }
-    solOld = solNew;
 }
 

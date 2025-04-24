@@ -41,6 +41,8 @@ public:
 
     StateVector computeLogResidualNorm(const FlowSolution &residuals) const;
 
+    void printLogResiduals(const StateVector &logRes, unsigned long int it) const;
+
 private:
     // // Add CEulerSolver-specific member variables here
     FlowSolution _conservativeVars;

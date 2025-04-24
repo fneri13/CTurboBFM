@@ -4,15 +4,14 @@
 using FloatType = double;
 
 
-// This class represents a 3D vector with basic operations
+// This class represents a 3D vector with basic operations. FloatType is always the individual data type
 class Vector3D {
 private:
     std::array<FloatType, 3> _data;
 
 public:
-    // Constructors
-    Vector3D() : _data{0.0, 0.0, 0.0} {}
-    Vector3D(FloatType x, FloatType y, FloatType z) : _data{x, y, z} {}
+    Vector3D() : _data{0.0, 0.0, 0.0} {} // default constructor
+    Vector3D(FloatType x, FloatType y, FloatType z) : _data{x, y, z} {} //overloaded
 
     // Accessors
     FloatType& operator()(size_t index) {
@@ -101,11 +100,12 @@ public:
         return result;
     }
 
-    // Add this inside the Vector3D class (outside public/private blocks is fine)
+    // print the content
     friend std::ostream& operator<<(std::ostream& os, const Vector3D& v) {
     return os << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
     }
 };
+
 
 enum class BFM_Model {
     NONE = 0,
@@ -113,6 +113,7 @@ enum class BFM_Model {
     HALL_THOLLET = 2,
     LIFT_DRAG = 3
 };
+
 
 enum class BoundaryIndices {
     I_START = 0,
@@ -123,16 +124,19 @@ enum class BoundaryIndices {
     K_END = 5
 };
 
+
 enum class KindSolver {
     EULER = 0,
     RANS = 1
 };
+
 
 enum class Topology{
     TWO_DIMENSIONAL = 0,
     THREE_DIMENSIONAL = 1,
     AXISYMMETRIC = 2
 };
+
 
 enum class BoundaryType {
     INLET = 0,
@@ -143,21 +147,25 @@ enum class BoundaryType {
     WEDGE = 5
 };
 
+
 enum class TimeIntegration {
     RUNGE_KUTTA_4 = 0,
     RUNGE_KUTTA_3 = 1
 };
+
 
 enum class TimeStepMethod {
     LOCAL = 0,
     GLOBAL = 1
 };
 
+
 enum class ConvectionScheme {
     JST = 0
 };
 
 
+// 2D matrix that can include floats or vectors inside
 template<typename T>
 class Matrix2D {
 public:
@@ -200,6 +208,7 @@ private:
 };
 
 
+// 3D matrix that can include floats or vectors inside
 template <typename T>
 class Matrix3D {
 public:
@@ -268,26 +277,29 @@ private:
 };
 
 
+// Wrapper of std::array<FloatType, 5> that is used for primitive, conservative variables. Overloaded methods
 class StateVector {
-    public:
-        static constexpr std::size_t Size = 5;
-        std::array<FloatType, Size> data{};
+    private:
+        static constexpr std::size_t Size = 5; // for the moment always 5, later it could grow
+        std::array<FloatType, Size> _data;
     
+    public:
         // Default constructor
         StateVector() = default;
     
         // Constructor from std::array
-        explicit StateVector(const std::array<FloatType, Size>& arr) : data(arr) {}
+        explicit StateVector(const std::array<FloatType, Size>& arr) : _data(arr) {}
     
         // Access operators
-        FloatType& operator[](std::size_t idx) { return data[idx]; }
-        const FloatType& operator[](std::size_t idx) const { return data[idx]; }
+        FloatType& operator[](std::size_t idx) { return _data[idx]; }
+
+        const FloatType& operator[](std::size_t idx) const { return _data[idx]; }
     
         // Element-wise addition
         StateVector operator+(const StateVector& other) const {
             StateVector result;
             for (std::size_t i = 0; i < Size; ++i)
-                result[i] = data[i] + other[i];
+                result[i] = _data[i] + other[i];
             return result;
         }
     
@@ -295,7 +307,7 @@ class StateVector {
         StateVector operator-(const StateVector& other) const {
             StateVector result;
             for (std::size_t i = 0; i < Size; ++i)
-                result[i] = data[i] - other[i];
+                result[i] = _data[i] - other[i];
             return result;
         }
     
@@ -303,7 +315,7 @@ class StateVector {
         StateVector operator*(const StateVector& other) const {
             StateVector result;
             for (std::size_t i = 0; i < Size; ++i)
-                result[i] = data[i] * other[i];
+                result[i] = _data[i] * other[i];
             return result;
         }
     
@@ -313,7 +325,7 @@ class StateVector {
             for (std::size_t i = 0; i < Size; ++i) {
                 if (other[i] == 0.0)
                     throw std::runtime_error("Division by zero in StateVector");
-                result[i] = data[i] / other[i];
+                result[i] = _data[i] / other[i];
             }
             return result;
         }
@@ -322,7 +334,7 @@ class StateVector {
         StateVector operator*(FloatType scalar) const {
             StateVector result;
             for (std::size_t i = 0; i < Size; ++i)
-                result[i] = data[i] * scalar;
+                result[i] = _data[i] * scalar;
             return result;
         }
     
@@ -331,47 +343,47 @@ class StateVector {
                 throw std::runtime_error("Division by zero in scalar operation");
             StateVector result;
             for (std::size_t i = 0; i < Size; ++i)
-                result[i] = data[i] / scalar;
+                result[i] = _data[i] / scalar;
             return result;
         }
     
         StateVector operator+(FloatType scalar) const {
             StateVector result;
             for (std::size_t i = 0; i < Size; ++i)
-                result[i] = data[i] + scalar;
+                result[i] = _data[i] + scalar;
             return result;
         }
     
         StateVector operator-(FloatType scalar) const {
             StateVector result;
             for (std::size_t i = 0; i < Size; ++i)
-                result[i] = data[i] - scalar;
+                result[i] = _data[i] - scalar;
             return result;
         }
     
         // Assignment operators
         StateVector& operator+=(const StateVector& other) {
             for (std::size_t i = 0; i < Size; ++i)
-                data[i] += other[i];
+                _data[i] += other[i];
             return *this;
         }
     
         StateVector& operator-=(const StateVector& other) {
             for (std::size_t i = 0; i < Size; ++i)
-                data[i] -= other[i];
+                _data[i] -= other[i];
             return *this;
         }
     
         // Convenience conversion to std::array
         operator std::array<FloatType, Size>() const {
-            return data;
+            return _data;
         }
     
-        // Optional: dot product
+        // dot product
         FloatType dot(const StateVector& other) const {
             FloatType result = 0.0;
             for (std::size_t i = 0; i < Size; ++i)
-                result += data[i] * other[i];
+                result += _data[i] * other[i];
             return result;
         }
     
@@ -380,6 +392,8 @@ class StateVector {
             return std::sqrt(this->dot(*this));
         }
     };
+
+
 
 struct FlowSolution {
     Matrix3D<FloatType> _rho;
@@ -395,8 +409,8 @@ struct FlowSolution {
 
     FlowSolution() = default;
 
-    FloatType norm(int i) const {
-        switch (i)
+    FloatType norm(size_t iVar) const {
+        switch (iVar)
         {
         case 0:
             return _rho.norm();
@@ -433,7 +447,7 @@ struct FlowSolution {
         return StateVector({_rho(i,j,k), _rhoU(i,j,k), _rhoV(i,j,k), _rhoW(i,j,k), _rhoE(i,j,k)});
     }
 
-    void set(size_t i, size_t j, size_t k, const std::array<FloatType, 5>& vals) {
+    void set(size_t i, size_t j, size_t k, const StateVector& vals) {
         _rho(i,j,k) = vals[0];
         _rhoU(i,j,k) = vals[1];
         _rhoV(i,j,k) = vals[2];

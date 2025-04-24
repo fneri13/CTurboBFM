@@ -10,45 +10,44 @@
  */
 class CEulerSolver : public CSolverBase {
 public:
-    // Constructor
     CEulerSolver(Config& config, CMesh& mesh);
 
-    // Destructor
     ~CEulerSolver() override = default;
 
     // Initialize the solution based on the input file (or restart file)
     void initializeSolutionArrays() override;
 
+    // start the explicit time-marching solution
     void solve() override;
 
-    // void computeFluxes() override;
-    // void spatialIntegration() override;
-
-    // given a certain conservative solution, compute the dt corresponding to the CFL condition
+    // given a certain conservative solution, compute the dt array corresponding to the CFL condition
     Matrix3D<FloatType> computeTimestepArray(const FlowSolution &solution, Matrix3D<FloatType> &timestep);
     
     void updateMassFlows(const FlowSolution &solution);
 
+    // compute the residuals of all fluxes
     FlowSolution computeFluxResiduals(const FlowSolution solution, unsigned long int itCounter) const;
 
+    // compute the residuals for the advection fluxes
     void computeAdvectionResiduals(FluxDirection direction, const FlowSolution solution, unsigned long int itCounter, FlowSolution &residuals) const;
 
+    // update the solution new with the onl and residuals
     void updateSolution(FlowSolution &solOld, FlowSolution &solNew, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt);
 
+    // print information about the residuals
     void printInfoResiduals(FlowSolution &residuals, unsigned long int it) const;
 
+    // print header at first iteration
     void printHeader() const;
 
+    // compute the log10 of the norm of residuals
     StateVector computeLogResidualNorm(const FlowSolution &residuals) const;
 
+    // print the residuals log10
     void printLogResiduals(const StateVector &logRes, unsigned long int it) const;
 
 private:
-    // // Add CEulerSolver-specific member variables here
-    FlowSolution _conservativeVars;
-
-    // std::vector<FloatType> _residualNorms;
     
-    // // Example: time step
-    // FloatType _dt;
+    FlowSolution _conservativeVars; // conservative variables solution
+
 };

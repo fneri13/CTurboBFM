@@ -28,20 +28,6 @@ class CSolverBase {
 
         const std::array<int, 3> getStepMask(FluxDirection direction) const;
 
-        // virtual void computeFluxes() = 0;
-
-        // virtual void spatialIntegration() = 0;
-
-        // virtual void checkConvergence() = 0;
-
-        // virtual void printInfoResiduals() = 0;
-
-        // virtual void saveSolution() = 0;
-
-        // virtual void computeGradient() = 0;
-
-        // virtual void interpolateScalar() = 0;
-
     protected:
         const Config& _config;
         

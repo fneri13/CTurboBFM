@@ -11,7 +11,10 @@ SOURCES = \
 	$(SRC_DIR)/CSolverBase.cpp \
 	$(SRC_DIR)/CEulerSolver.cpp \
 	$(SRC_DIR)/CFluid.cpp \
-	$(SRC_DIR)/CJSTScheme.cpp
+	$(SRC_DIR)/CJSTScheme.cpp \
+	$(SRC_DIR)/CBoundaryConditionEulerWall.cpp \
+	$(SRC_DIR)/CBoundaryConditionInlet.cpp \
+	$(SRC_DIR)/CBoundaryConditionOutlet.cpp \
 
 # Common compiler flags
 INCLUDE_FLAGS = -I $(INCLUDES)

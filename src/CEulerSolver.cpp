@@ -186,8 +186,23 @@ void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const Flow
     const auto stepMask = getStepMask(direction);
     const Matrix3D<Vector3D>& surfaces = _mesh.getSurfaces(direction);
     const Matrix3D<Vector3D>& midPoints = _mesh.getMidPoints(direction);
+    
+    BoundaryIndices boundaryStart, boundaryEnd;
+    if (direction==FluxDirection::I){
+        boundaryStart = BoundaryIndices::I_START;
+        boundaryEnd = BoundaryIndices::I_END;
+    }
+    else if (direction==FluxDirection::J){
+        boundaryStart = BoundaryIndices::J_START;
+        boundaryEnd = BoundaryIndices::J_END;
+    }
+    else {
+        boundaryStart = BoundaryIndices::K_START;
+        boundaryEnd = BoundaryIndices::K_END;
+    }
+    
     StateVector Uleft{}, Uright{}, Uleftleft {}, Urightright {}, flux {};
-    Vector3D surface {};
+    Vector3D surface {}, midPoint {};
 
     auto ni = surfaces.sizeI(); 
     auto nj = surfaces.sizeJ(); 
@@ -218,9 +233,17 @@ void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const Flow
                 
                 // fluxes calculation here, also boundary conditions.
                 if (dirFace == 0) {
-                    // boundary flux calculation at the beginning
+                    Uright = solution.at(iFace, jFace, kFace);
+                    surface = -surfaces(iFace, jFace, kFace);
+                    midPoint = midPoints(iFace, jFace, kFace);
+                    flux = _boundaryConditions.at(boundaryStart)->computeBoundaryFlux(Uright, surface, midPoint);
+                    residuals.add(iFace, jFace, kFace, flux * surface.magnitude());
                 } else if (dirFace == stopFace) {
-                    // boundary flux calculation at the end
+                    Uright = solution.at(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2]);
+                    surface = surfaces(iFace, jFace, kFace);
+                    midPoint = midPoints(iFace, jFace, kFace);
+                    flux = _boundaryConditions.at(boundaryEnd)->computeBoundaryFlux(Uright, surface, midPoint);
+                    residuals.add(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2], flux * surface.magnitude());
                 } else {
                     // internal flux calculation
                     Uleft = solution.at(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2]);

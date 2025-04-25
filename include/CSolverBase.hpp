@@ -6,6 +6,10 @@
 #include "CFluid.hpp"
 #include "CAdvectionScheme.hpp"
 #include "CJSTScheme.hpp"
+#include "CBoundaryConditionBase.hpp"
+#include "CBoundaryConditionEulerWall.hpp"
+#include "CBoundaryConditionInlet.hpp"
+#include "CBoundaryConditionOutlet.hpp"
 
 /** 
   *  \brief     Class handling base solver capabilities.
@@ -45,6 +49,8 @@ class CSolverBase {
         std::map<BoundaryIndices, BoundaryType> _boundaryTypes;
 
         std::map<BoundaryIndices, std::vector<FloatType>> _boundaryValues;
+
+        std::map<BoundaryIndices, std::unique_ptr<CBoundaryConditionBase>> _boundaryConditions;
 
         Topology _topology;
 

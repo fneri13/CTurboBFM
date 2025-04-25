@@ -55,6 +55,19 @@ void CSolverBase::readBoundaryConditions(){
             _boundaryValues[bound] = std::vector<FloatType> {};
         }
     }
+
+    // instantiate boundary condition objects
+    for (auto& bound : bounds) {
+        if (_boundaryTypes[bound] == BoundaryType::WALL){
+            _boundaryConditions[bound] = std::make_unique<CBoundaryConditionEulerWall>(_config, _mesh, *_fluid, bound);
+        }
+        else if (_boundaryTypes[bound] == BoundaryType::INLET){
+            _boundaryConditions[bound] = std::make_unique<CBoundaryConditionInlet>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
+        }
+        else if (_boundaryTypes[bound] == BoundaryType::OUTLET){
+            _boundaryConditions[bound] = std::make_unique<CBoundaryConditionOutlet>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
+        }
+    }
 }
 
 

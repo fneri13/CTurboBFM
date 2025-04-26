@@ -14,6 +14,7 @@ class CBoundaryConditionInlet : public CBoundaryConditionBase {
             
         virtual ~CBoundaryConditionInlet() {}
 
+        // Formulation taken from 'Formulation and Implementation of Inflow/Outflow Boundary Conditions to Simulate Propulsive Effects', Rodriguez et al.
         virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint) override;
         
     protected:

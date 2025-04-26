@@ -50,6 +50,8 @@ public:
 
     FloatType computePressure_primitive(StateVector primitive) const;
 
+    FloatType getGamma() const { return _gamma; }
+
 private:
     FloatType _gamma;
     FloatType _R;

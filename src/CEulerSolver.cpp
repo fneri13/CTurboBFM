@@ -41,27 +41,23 @@ void CEulerSolver::initializeSolutionArrays(){
 }
 
 void CEulerSolver::solve(){
-    unsigned long int nIterMax = _config.getMaxIterations();
-    // FloatType physicalTime {0.0};
-    Matrix3D<FloatType> dt(_nPointsI, _nPointsJ, _nPointsK);
+    size_t nIterMax = _config.getMaxIterations();
+    Matrix3D<FloatType> timestep(_nPointsI, _nPointsJ, _nPointsK);
     std::vector<FloatType> timeIntegrationCoeffs = _config.getTimeIntegrationCoeffs();
     FlowSolution fluxResiduals(_nPointsI, _nPointsJ, _nPointsK);
-    FlowSolution solutionOld = _conservativeVars;
-    FlowSolution solutionNew = _conservativeVars;
 
     for (unsigned long int it=0; it<nIterMax; it++){        
-        // replicate flux calculation
-        computeTimestepArray(solutionOld, dt);
+        FlowSolution solutionOld = _conservativeVars; // place holder for the solution
+        computeTimestepArray(solutionOld, timestep);
         
-        
-        // time-integration steps (runge-kutta in general)
+        // inner iterations
         for (auto &integrationCoeff: timeIntegrationCoeffs){
             fluxResiduals = computeFluxResiduals(solutionOld, it);
-            updateSolution(solutionOld, solutionNew, fluxResiduals, integrationCoeff, dt);
-            solutionOld = solutionNew;
+            // solutionOld = solutionOld - fluxResiduals * timestep * integrationCoeff;
+            updateSolution(solutionOld, fluxResiduals, integrationCoeff, timestep);
         }
 
-        _conservativeVars = solutionNew;
+        _conservativeVars = solutionOld;
         printInfoResiduals(fluxResiduals, it);
     }
 }
@@ -275,13 +271,11 @@ void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const Flow
     
 }
 
-void CEulerSolver::updateSolution(FlowSolution &solOld, FlowSolution &solNew, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt){
-
+void CEulerSolver::updateSolution(FlowSolution &solOld, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt){
     for (size_t i = 0; i < _nPointsI; i++) {
         for (size_t j = 0; j < _nPointsJ; j++) {
             for (size_t k = 0; k < _nPointsK; k++) {
-                auto newConservative = solOld.at(i, j, k) - (residuals.at(i, j, k) * integrationCoeff * dt(i, j, k) / _mesh.getVolume(i, j, k));
-                solNew.set(i, j, k, newConservative);
+                solOld.set(i, j, k, solOld.at(i, j, k) - residuals.at(i, j, k) * integrationCoeff * dt(i, j, k));
             }
         }
     }

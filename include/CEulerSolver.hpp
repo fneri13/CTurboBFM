@@ -32,7 +32,7 @@ public:
     void computeAdvectionResiduals(FluxDirection direction, const FlowSolution solution, unsigned long int itCounter, FlowSolution &residuals) const;
 
     // update the solution new with the onl and residuals
-    void updateSolution(FlowSolution &solOld, FlowSolution &solNew, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt);
+    void updateSolution(FlowSolution &solOld, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt);
 
     // print information about the residuals
     void printInfoResiduals(FlowSolution &residuals, unsigned long int it) const;

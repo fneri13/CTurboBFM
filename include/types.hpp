@@ -265,6 +265,46 @@ public:
         return std::sqrt(sum);  // Return the square root of the sum
     }
 
+    // In-place addition
+    Matrix3D& operator+=(const Matrix3D& other) {
+        if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
+            throw std::invalid_argument("Matrix3D::operator+= dimension mismatch");
+        }
+        for (size_t idx = 0; idx < _data.size(); ++idx) {
+            _data[idx] += other._data[idx];
+        }
+        return *this;
+    }
+
+    // In-place multiplication
+    Matrix3D& operator*=(const Matrix3D& other) {
+        if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
+            throw std::invalid_argument("Matrix3D::operator+= dimension mismatch");
+        }
+        for (size_t idx = 0; idx < _data.size(); ++idx) {
+            _data[idx] *= other._data[idx];
+        }
+        return *this;
+    }
+
+    Matrix3D& operator*=(T scalar) {
+        for (size_t idx = 0; idx < _data.size(); ++idx) {
+            _data[idx] *= scalar;
+        }
+        return *this;
+    }
+
+    // In-place subtraction
+    Matrix3D& operator-=(const Matrix3D& other) {
+        if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
+            throw std::invalid_argument("Matrix3D::operator-= dimension mismatch");
+        }
+        for (size_t idx = 0; idx < _data.size(); ++idx) {
+            _data[idx] -= other._data[idx];
+        }
+        return *this;
+    }
+
 private:
     size_t _ni, _nj, _nk;
     std::vector<T> _data;
@@ -455,12 +495,93 @@ struct FlowSolution {
         _rhoE(i,j,k) = vals[4];
     }
 
+    void set(size_t i, size_t j, size_t k, size_t eq, FloatType val) {
+        switch (eq) {
+            case 0:
+                _rho(i, j, k) = val;
+                break;
+            case 1:
+                _rhoU(i, j, k) = val;
+                break;
+            case 2:
+                _rhoV(i, j, k) = val;
+                break;
+            case 3:
+                _rhoW(i, j, k) = val;
+                break;
+            case 4:
+                _rhoE(i, j, k) = val;
+                break;
+            default:
+                throw std::out_of_range("Invalid equation index: " + std::to_string(eq));
+        }
+    }
+
     void resize(size_t i, size_t j, size_t k){
         _rho.resize(i,j,k);
         _rhoU.resize(i,j,k);
         _rhoV.resize(i,j,k);
         _rhoW.resize(i,j,k);
         _rhoE.resize(i,j,k);
+    }
+
+    // Addition: FlowSolution + FlowSolution
+    FlowSolution operator+(const FlowSolution& other) const {
+        FlowSolution result = *this;
+        result += other;
+        return result;
+    }
+
+    // In-place addition: FlowSolution += FlowSolution
+    FlowSolution& operator+=(const FlowSolution& other) {
+        _rho  += other._rho;
+        _rhoU += other._rhoU;
+        _rhoV += other._rhoV;
+        _rhoW += other._rhoW;
+        _rhoE += other._rhoE;
+        return *this;
+    }
+
+    FlowSolution& operator*(const Matrix3D<FloatType>& other) {
+        _rho  *= other;
+        _rhoU += other;
+        _rhoV += other;
+        _rhoW += other;
+        _rhoE += other;
+        return *this;
+    }
+
+    // Subtraction: FlowSolution - FlowSolution
+    FlowSolution operator-(const FlowSolution& other) const {
+        FlowSolution result = *this;
+        result -= other;
+        return result;
+    }
+
+    // In-place subtraction: FlowSolution -= FlowSolution
+    FlowSolution& operator-=(const FlowSolution& other) {
+        _rho  -= other._rho;
+        _rhoU -= other._rhoU;
+        _rhoV -= other._rhoV;
+        _rhoW -= other._rhoW;
+        _rhoE -= other._rhoE;
+        return *this;
+    }
+
+    FlowSolution& operator*=(FloatType scalar) {
+        _rho  *= scalar;
+        _rhoU *= scalar;
+        _rhoV *= scalar;
+        _rhoW *= scalar;
+        _rhoE *= scalar;
+        return *this;
+    }
+
+    // Multiplication: FlowSolution * scalar
+    FlowSolution operator*(FloatType scalar) const {
+        FlowSolution result = *this;
+        result *= scalar;   // GOOD: calls the in-place multiplication, no recursion
+        return result;
     }
 };
 

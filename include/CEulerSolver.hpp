@@ -26,10 +26,10 @@ public:
     void updateMassFlows(const FlowSolution &solution);
 
     // compute the residuals of all fluxes
-    FlowSolution computeFluxResiduals(const FlowSolution solution, unsigned long int itCounter) const;
+    FlowSolution computeFluxResiduals(const FlowSolution& solution, size_t itCounter) const;
 
     // compute the residuals for the advection fluxes
-    void computeAdvectionResiduals(FluxDirection direction, const FlowSolution solution, unsigned long int itCounter, FlowSolution &residuals) const;
+    void computeAdvectionResiduals(FluxDirection direction, const FlowSolution& solution, size_t itCounter, FlowSolution &residuals) const;
 
     // update the solution new with the onl and residuals
     void updateSolution(FlowSolution &solOld, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt);

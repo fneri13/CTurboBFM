@@ -46,12 +46,12 @@ void CEulerSolver::solve(){
     std::vector<FloatType> timeIntegrationCoeffs = _config.getTimeIntegrationCoeffs();
     FlowSolution fluxResiduals(_nPointsI, _nPointsJ, _nPointsK);
 
-    for (unsigned long int it=0; it<nIterMax; it++){        
+    for (size_t it=0; it<nIterMax; it++){        
         FlowSolution solutionOld = _conservativeVars; // place holder for the solution
         computeTimestepArray(solutionOld, timestep);
         
         // inner iterations
-        for (auto &integrationCoeff: timeIntegrationCoeffs){
+        for (const auto &integrationCoeff: timeIntegrationCoeffs){
             fluxResiduals = computeFluxResiduals(solutionOld, it);
             // solutionOld = solutionOld - fluxResiduals * timestep * integrationCoeff;
             updateSolution(solutionOld, fluxResiduals, integrationCoeff, timestep);
@@ -70,15 +70,17 @@ void CEulerSolver::printInfoResiduals(FlowSolution &residuals, unsigned long int
 
 void CEulerSolver::printLogResiduals(const StateVector &logRes, unsigned long int it) const {
     int col_width = 14;
+    std::cout << std::fixed << std::setprecision(6); // Set fixed format with 6 decimals
     std::cout << "|" << std::setw(col_width) << std::setfill(' ') << std::left << it+1 << "|"
-                << std::setw(col_width) << std::left << 0.0 << "|"
-                << std::setw(col_width) << std::right << logRes[0] << "|"
-                << std::setw(col_width) << std::right << logRes[1] << "|"
-                << std::setw(col_width) << std::right << logRes[2] << "|"
-                << std::setw(col_width) << std::right << logRes[3] << "|"
-                << std::setw(col_width) << std::right << logRes[4] << "|"
-                << std::endl;
+              << std::setw(col_width) << std::left << 0.0 << "|"
+              << std::setw(col_width) << std::right << logRes[0] << "|"
+              << std::setw(col_width) << std::right << logRes[1] << "|"
+              << std::setw(col_width) << std::right << logRes[2] << "|"
+              << std::setw(col_width) << std::right << logRes[3] << "|"
+              << std::setw(col_width) << std::right << logRes[4] << "|"
+              << std::endl;
 }
+
 
 
 StateVector CEulerSolver::computeLogResidualNorm(const FlowSolution &residuals) const {
@@ -125,9 +127,9 @@ Matrix3D<FloatType> CEulerSolver::computeTimestepArray(const FlowSolution &solut
     std::array<FloatType, 3> dtEdge;
     FloatType dtMin;
 
-    for (int i=0; i<_nPointsI; i++) {
-        for (int j=0; j<_nPointsJ; j++){
-            for (int k=0; k<_nPointsK; k++){
+    for (size_t i=0; i<_nPointsI; i++) {
+        for (size_t j=0; j<_nPointsJ; j++){
+            for (size_t k=0; k<_nPointsK; k++){
                 _mesh.getElementEdges(i, j, k, iEdge, jEdge, kEdge);
                 iDir = iEdge / iEdge.magnitude();
                 jDir = jEdge / jEdge.magnitude();
@@ -168,7 +170,7 @@ void CEulerSolver::updateMassFlows(const FlowSolution&solution){
     
 }
 
-FlowSolution CEulerSolver::computeFluxResiduals(const FlowSolution solution, unsigned long int it) const {
+FlowSolution CEulerSolver::computeFluxResiduals(const FlowSolution& solution, size_t it) const {
     FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK);
     computeAdvectionResiduals(FluxDirection::I, solution, it, residuals);
     computeAdvectionResiduals(FluxDirection::J, solution, it, residuals);
@@ -178,7 +180,7 @@ FlowSolution CEulerSolver::computeFluxResiduals(const FlowSolution solution, uns
     return residuals;
 }
 
-void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const FlowSolution solution, unsigned long int itCounter, FlowSolution &residuals) const {
+void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const FlowSolution& solution, size_t itCounter, FlowSolution &residuals) const {
     const auto stepMask = getStepMask(direction);
     const Matrix3D<Vector3D>& surfaces = _mesh.getSurfaces(direction);
     const Matrix3D<Vector3D>& midPoints = _mesh.getMidPoints(direction);
@@ -200,15 +202,15 @@ void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const Flow
     StateVector Uleft{}, Uright{}, Uleftleft {}, Urightright {}, flux {};
     Vector3D surface {}, midPoint {};
 
-    auto ni = surfaces.sizeI(); 
-    auto nj = surfaces.sizeJ(); 
-    auto nk = surfaces.sizeK();
+    size_t ni = surfaces.sizeI(); 
+    size_t nj = surfaces.sizeJ(); 
+    size_t nk = surfaces.sizeK();
 
-    for (auto iFace = 0UL; iFace < ni; ++iFace) {
-        for (auto jFace = 0UL; jFace < nj; ++jFace) {
-            for (auto kFace = 0UL; kFace < nk; ++kFace) {
-                auto dirFace = 0UL;
-                auto stopFace = 0UL;
+    for (size_t iFace = 0; iFace < ni; ++iFace) {
+        for (size_t jFace = 0; jFace < nj; ++jFace) {
+            for (size_t kFace = 0; kFace < nk; ++kFace) {
+                size_t dirFace = 0;
+                size_t stopFace = 0;
                 switch (direction)
                 {
                 case (FluxDirection::I):
@@ -275,7 +277,7 @@ void CEulerSolver::updateSolution(FlowSolution &solOld, const FlowSolution &resi
     for (size_t i = 0; i < _nPointsI; i++) {
         for (size_t j = 0; j < _nPointsJ; j++) {
             for (size_t k = 0; k < _nPointsK; k++) {
-                solOld.set(i, j, k, solOld.at(i, j, k) - residuals.at(i, j, k) * integrationCoeff * dt(i, j, k));
+                solOld.subtract(i, j, k, residuals.at(i, j, k) * integrationCoeff * dt(i, j, k) / _mesh.getVolume(i,j,k));
             }
         }
     }

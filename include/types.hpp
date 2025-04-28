@@ -1,5 +1,9 @@
 #pragma once
 #include <iostream>
+#include <vector>
+#include <algorithm> // for minmax_element
+#include <numeric>   // for accumulate, inner_product
+#include <cmath>
 
 using FloatType = double;
 
@@ -305,6 +309,8 @@ public:
         return *this;
     }
 
+    std::vector<T> getData() const {return _data;}
+
 private:
     size_t _ni, _nj, _nk;
     std::vector<T> _data;
@@ -591,3 +597,35 @@ enum class FluxDirection {
     K=2,
 };
 
+
+struct Statistics {
+    FloatType mean = 0;
+    FloatType min = 0;
+    FloatType max = 0;
+    FloatType stdDev = 0;
+    size_t size = 0;
+
+    Statistics() = default; // allow default construction
+
+    // Method that computes statistics
+    Statistics(const Matrix3D<FloatType>& matrix) {
+        if (matrix.sizeI() * matrix.sizeJ() * matrix.sizeK() == 0) {
+            mean = min = max = stdDev = 0;
+            size = 0;
+            return;
+        }
+
+        std::vector<FloatType> data = matrix.getData();
+        auto [minIt, maxIt] = std::minmax_element(data.begin(), data.end());
+        min = *minIt;
+        max = *maxIt;
+
+        FloatType sum = std::accumulate(data.begin(), data.end(), static_cast<FloatType>(0));
+        mean = sum / static_cast<FloatType>(data.size());
+
+        FloatType sq_sum = std::inner_product(data.begin(), data.end(), data.begin(), static_cast<FloatType>(0));
+        stdDev = std::sqrt(sq_sum / static_cast<FloatType>(data.size()) - mean * mean);
+
+        size = data.size();
+    }
+};

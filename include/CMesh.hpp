@@ -84,6 +84,8 @@ class CMesh {
 
         std::map<BoundaryIndices, Matrix2D<Vector3D>> _boundarySurfaces;
 
+        Statistics _aspectRatioStats;
+
         // read the coordinates from the mesh CSV file
         void readPoints();
 
@@ -110,5 +112,8 @@ class CMesh {
         
         // print some info on screen
         void printMeshInfo();
+
+        // aspect ratio
+        Matrix3D<FloatType> computeAspectRatio();
 
 };

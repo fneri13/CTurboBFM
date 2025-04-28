@@ -21,7 +21,7 @@ CMesh::CMesh(Config& config) : _config(config) {
     }
     computeMeshInterfaces();
     computeMeshVolumes();
-    // computeMeshQuality();
+    computeMeshQuality();
     computeBoundaryAreas();
     // printMeshInfo();
 }
@@ -85,6 +85,7 @@ void CMesh::allocateMemory() {
     _centersK.resize(_nDualPointsI-1, _nDualPointsJ-1, _nDualPointsK);
 
     _volumes.resize(_nPointsI, _nPointsJ, _nPointsK);
+
 }
 
 
@@ -199,7 +200,36 @@ void CMesh::computeMeshVolumes() {
 }
 
 void CMesh::computeMeshQuality() {
-    std::cout << "Copy from TurboBFM\n";
+    auto aspectRatios = computeAspectRatio();
+    _aspectRatioStats = Statistics(aspectRatios);
+}
+
+
+Matrix3D<FloatType> CMesh::computeAspectRatio() {
+    Matrix3D<FloatType> aspectRatio(_nPointsI, _nPointsJ, _nPointsK);
+    for (size_t i=0; i<_nPointsI; i++){
+        for (size_t j=0; j<_nPointsJ; j++){
+            for (size_t k=0; k<_nPointsK; k++){
+                Vector3D point0 = _dualNodes(i,j,k);
+                Vector3D pointI = _dualNodes(i+1,j,k);
+                Vector3D pointJ = _dualNodes(i,j+1,k);
+                Vector3D pointK = _dualNodes(i,j,k+1);
+                FloatType iEdge = (pointI - point0).magnitude();
+                FloatType jEdge = (pointJ - point0).magnitude();
+                FloatType kEdge = (pointK - point0).magnitude();
+                if (_nDimensions == 2) {
+                    FloatType maxEdge = std::max(iEdge, jEdge);
+                    FloatType minEdge = std::min(iEdge, jEdge);
+                    aspectRatio(i, j, k) = maxEdge / minEdge;
+                } else {
+                    FloatType maxEdge = std::max({iEdge, jEdge, kEdge});
+                    FloatType minEdge = std::min({iEdge, jEdge, kEdge});
+                    aspectRatio(i, j, k) = maxEdge / minEdge;
+                }
+            }
+        }
+    }
+    return aspectRatio;
 }
 
 
@@ -317,6 +347,7 @@ const Matrix2D<Vector3D> CMesh::getBoundarySurface(BoundaryIndices index) const 
             }
         }
     }
+    
     return boundary;
 }
 

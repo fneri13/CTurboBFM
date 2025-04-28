@@ -29,9 +29,7 @@ public:
     FloatType computeTotalEnthalpy_rho_u_et(FloatType rho, const Vector3D& u, FloatType et) const;
 
     FloatType computeStaticPressure_pt_M(FloatType pt, FloatType M) const;
-    
-    FloatType computeStaticTemperature_rho_u_et(FloatType rho, const Vector3D& u, FloatType et) const;
-    
+        
     FloatType computeStaticTemperature_Tt_M(FloatType Tt, FloatType M) const;
     
     FloatType computeEntropy_rho_u_et(FloatType rho, const Vector3D& u, FloatType et) const;

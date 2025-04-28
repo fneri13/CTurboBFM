@@ -14,3 +14,5 @@ StateVector getEulerPrimitiveFromConservative(StateVector conservative);
 StateVector getEulerConservativeFromPrimitive(StateVector primitive);
 
 StateVector computeEulerFluxFromPrimitive(StateVector primitive, Vector3D surface, CFluid fluid);
+
+StateVector computeEulerFluxFromConservative(StateVector conservative, Vector3D surface, CFluid fluid);

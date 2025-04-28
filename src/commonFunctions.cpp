@@ -44,10 +44,10 @@ StateVector getEulerPrimitiveFromConservative(StateVector conservative){
 StateVector getEulerConservativeFromPrimitive(StateVector primitive){
     StateVector conservative;
     conservative[0] = primitive[0];
-    conservative[1] = primitive[1] * conservative[0];
-    conservative[2] = primitive[2] * conservative[0];
-    conservative[3] = primitive[3] * conservative[0];
-    conservative[4] = primitive[4] * conservative[0];
+    conservative[1] = primitive[1] * primitive[0];
+    conservative[2] = primitive[2] * primitive[0];
+    conservative[3] = primitive[3] * primitive[0];
+    conservative[4] = primitive[4] * primitive[0];
     return conservative;
 }
 
@@ -67,4 +67,11 @@ StateVector computeEulerFluxFromPrimitive(StateVector primitive, Vector3D surfac
     flux[4] = primitive[0] * normalVelocity * totEnthalpy;
     return flux;
 
+}
+
+
+StateVector computeEulerFluxFromConservative(StateVector conservative, Vector3D surface, CFluid fluid){
+    StateVector primitive = getEulerPrimitiveFromConservative(conservative);
+    StateVector flux = computeEulerFluxFromPrimitive(primitive, surface, fluid);
+    return flux;
 }

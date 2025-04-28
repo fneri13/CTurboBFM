@@ -20,7 +20,7 @@ class CJSTScheme : public CAdvectionScheme {
         FloatType computeSFactor(const StateVector prim1, const StateVector prim2, const StateVector prim3) const;
 
     private:
-        FloatType _kappa2 {0.2}, _kappa4 {0.5}, _c4 {2.0};
+        FloatType _kappa2 {0.5}, _kappa4 {0.02}, _c4 {2.0};
         
             
 };

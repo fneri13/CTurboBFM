@@ -8,9 +8,10 @@ CBoundaryConditionEulerWall::CBoundaryConditionEulerWall(const Config &config, c
 
 
     StateVector CBoundaryConditionEulerWall::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint) {
-        auto primitive = getEulerPrimitiveFromConservative(internalConservative);
-        auto pressure = _fluid.computePressure_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
-        StateVector flux{};
+        StateVector primitive = getEulerPrimitiveFromConservative(internalConservative);
+        Vector3D velocity({primitive[1], primitive[2], primitive[3]});
+        FloatType pressure = _fluid.computePressure_rho_u_et(primitive[0], velocity, primitive[4]);
+        StateVector flux {{0,0,0,0,0}};
         auto Sdir = surface / surface.magnitude();
         flux[0] = 0.0;
         flux[1] = pressure * Sdir.x();

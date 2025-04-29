@@ -8,22 +8,22 @@ CBoundaryConditionInlet::CBoundaryConditionInlet(const Config &config, const CMe
 
 
 StateVector CBoundaryConditionInlet::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint) {
+    // properties of internal point
     StateVector primitive = getEulerPrimitiveFromConservative(internalConservative);
-    FloatType soundSpeedInt = _fluid.computeSoundSpeed_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
-    FloatType totEnthalpyInt = _fluid.computeTotalEnthalpy_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
-    Vector3D velocityInt = {primitive[1], primitive[2], primitive[3]};
-
+    Vector3D velocityInt({primitive[1], primitive[2], primitive[3]});
+    FloatType soundSpeedInt = _fluid.computeSoundSpeed_rho_u_et(primitive[0], velocityInt, primitive[4]);
+    FloatType totEnthalpyInt = _fluid.computeTotalEnthalpy_rho_u_et(primitive[0], velocityInt, primitive[4]);
     FloatType Jm = - velocityInt.magnitude() + 2*soundSpeedInt / (_fluid.getGamma() - 1);
 
     // Solve the quadratic equation for the speed of sound
-    FloatType alpha = 1.0 / (_fluid.getGamma() - 1) + 2.0 / std::pow((_fluid.getGamma() - 1), 2);
-    FloatType beta = -2.0 * Jm / (_fluid.getGamma() - 1);
+    FloatType alpha = 1.0 / (_fluid.getGamma() - 1.0) + 2.0 / std::pow((_fluid.getGamma() - 1.0), 2);
+    FloatType beta = -2.0 * Jm / (_fluid.getGamma() - 1.0);
     FloatType zeta = 0.5 * Jm * Jm - totEnthalpyInt;
-
     FloatType soundSpeedBound = std::max((-beta + std::sqrt(beta*beta - 4.0*alpha*zeta))/2.0/alpha,
                                          (-beta - std::sqrt(beta*beta - 4.0*alpha*zeta))/2.0/alpha);
 
-    FloatType velocityBoundMag = 2.0*soundSpeedBound / (_fluid.getGamma() - 1) - Jm;
+    // reconstruct the boundary state                                     
+    FloatType velocityBoundMag = 2.0*soundSpeedBound / (_fluid.getGamma() - 1.0) - Jm;
     Vector3D flowDirection = {_boundaryValues[2], _boundaryValues[3], _boundaryValues[4]};
     flowDirection /= flowDirection.magnitude();
     FloatType normalMachBound = velocityBoundMag / soundSpeedBound;
@@ -34,6 +34,7 @@ StateVector CBoundaryConditionInlet::computeBoundaryFlux(StateVector internalCon
     Vector3D velocityBound = flowDirection * velocityBoundMag;
     FloatType totEnergyBound = energyBoubd + 0.5 * velocityBound.dot(velocityBound);
 
+    // compute boundary flux
     StateVector primitiveBoundary({densityBound, velocityBound.x(), velocityBound.y(), velocityBound.z(), totEnergyBound});
     auto flux = computeEulerFluxFromPrimitive(primitiveBoundary, surface, _fluid);
     return flux;

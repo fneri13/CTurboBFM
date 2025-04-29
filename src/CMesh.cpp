@@ -9,7 +9,6 @@
 #include "../include/commonFunctions.hpp"
 
 CMesh::CMesh(Config& config) : _config(config) {
-    _filename = config.gridFilePath();
     readPoints();
     allocateMemory();
     auto topology = config.getTopology();
@@ -23,13 +22,14 @@ CMesh::CMesh(Config& config) : _config(config) {
     computeMeshVolumes();
     computeMeshQuality();
     computeBoundaryAreas();
-    // printMeshInfo();
+    printMeshInfo();
 }
 
 void CMesh::readPoints() {
-    std::ifstream file(_filename);
+    std::string filename = _config.gridFilePath();
+    std::ifstream file(filename);
     if (!file) {
-        std::cerr << "Error opening coordinates CSV file!\n";
+        std::cerr << "Error opening coordinates CSV file '" << filename << "'!\n";
         std::exit(EXIT_FAILURE);  // EXIT_FAILURE = standard failure code
     }
 
@@ -102,7 +102,13 @@ void CMesh::printMeshInfo() {
     std::cout << "Points along Axis K     : " << _nPointsK << "\n";
     std::cout << std::endl;
 
-    std::cout << "The grid file '" << _filename << "' contains a total of " << _nPointsTotal << " points.\n";
+    std::cout << "The grid file '" << _config.gridFilePath() << "' contains a total of " << _nPointsTotal << " points.\n";
+    std::cout << "Aspect ratio ";
+    _aspectRatioStats.printInfo();
+    std::cout << "Skewness ";
+    _skewnessStats.printInfo();
+    std::cout << "Orthogonality ";
+    _orthogonalityStats.printInfo();
     std::cout << "=========================================\n";
 }
 
@@ -202,6 +208,71 @@ void CMesh::computeMeshVolumes() {
 void CMesh::computeMeshQuality() {
     auto aspectRatios = computeAspectRatio();
     _aspectRatioStats = Statistics(aspectRatios);
+
+    std::vector<FloatType> skewness, orthogonality;
+    computeSkewnessAndOrthogonality(skewness, orthogonality);
+    _skewnessStats = Statistics(skewness);
+    _orthogonalityStats = Statistics(orthogonality);
+    
+}
+
+void CMesh::computeSkewnessAndOrthogonality(std::vector<FloatType> &skewness, std::vector<FloatType> &orthogonality){
+    // internal faces along i --> do it in a single function???
+    for (size_t i=1; i<_nPointsI-1; i++){
+        for (size_t j=0; j<_nPointsJ; j++){
+            for (size_t k=0; k<_nPointsK; k++){
+                Vector3D point0 = _vertices(i-1,j,k);
+                Vector3D point1 = _vertices(i,j,k);
+                Vector3D midPoint = (point0 + point1) / 2.0;
+                Vector3D surfaceCenter = _centersI(i,j,k);
+                FloatType l1 = (midPoint - surfaceCenter).magnitude();
+                FloatType l2 = (point1 - point0).magnitude();
+                skewness.push_back(l1 / l2);
+                Vector3D surface = _surfacesI(i,j,k);
+                Vector3D pointToPoint = point1 - point0;
+                FloatType angle = computeAngleBetweenVectors(surface, pointToPoint);
+                orthogonality.push_back(angle);
+            }
+        }
+    }
+
+    // internal faces along j
+    for (size_t i=0; i<_nPointsI; i++){
+        for (size_t j=1; j<_nPointsJ-1; j++){
+            for (size_t k=0; k<_nPointsK; k++){
+                Vector3D point0 = _vertices(i,j-1,k);
+                Vector3D point1 = _vertices(i,j,k);
+                Vector3D midPoint = (point0 + point1) / 2.0;
+                Vector3D surfaceCenter = _centersJ(i,j,k);
+                FloatType l1 = (midPoint - surfaceCenter).magnitude();
+                FloatType l2 = (point1 - point0).magnitude();
+                skewness.push_back(l1 / l2);
+                Vector3D surface = _surfacesJ(i,j,k);
+                Vector3D pointToPoint = point1 - point0;
+                FloatType angle = computeAngleBetweenVectors(surface, pointToPoint);
+                orthogonality.push_back(angle);
+            }
+        }
+    }
+
+    // internal faces along k
+    for (size_t i=0; i<_nPointsI; i++){
+        for (size_t j=0; j<_nPointsJ; j++){
+            for (size_t k=1; k<_nPointsK-1; k++){
+                Vector3D point0 = _vertices(i,j-1,k);
+                Vector3D point1 = _vertices(i,j,k);
+                Vector3D midPoint = (point0 + point1) / 2.0;
+                Vector3D surfaceCenter = _centersK(i,j,k);
+                FloatType l1 = (midPoint - surfaceCenter).magnitude();
+                FloatType l2 = (point1 - point0).magnitude();
+                skewness.push_back(l1 / l2);
+                Vector3D surface = _surfacesK(i,j,k);
+                Vector3D pointToPoint = point1 - point0;
+                FloatType angle = computeAngleBetweenVectors(surface, pointToPoint);
+                orthogonality.push_back(angle);
+            }
+        }
+    }
 }
 
 
@@ -243,10 +314,12 @@ void CMesh::computeBoundaryAreas() {
         BoundaryIndices::K_END
     };
 
-    // get the slices of boundary areas
-    for (const auto& index : BoundaryIndicesArray) {
-        _boundarySurfaces[index] = getBoundarySurface(index);
-    }
+    _boundarySurfaces[BoundaryIndices::I_START] = _surfacesI.getBoundarySlice(BoundaryIndices::I_START);
+    _boundarySurfaces[BoundaryIndices::I_END] = _surfacesI.getBoundarySlice(BoundaryIndices::I_END);
+    _boundarySurfaces[BoundaryIndices::J_START] = _surfacesJ.getBoundarySlice(BoundaryIndices::J_START);
+    _boundarySurfaces[BoundaryIndices::J_END] = _surfacesJ.getBoundarySlice(BoundaryIndices::J_END);
+    _boundarySurfaces[BoundaryIndices::K_START] = _surfacesK.getBoundarySlice(BoundaryIndices::K_START);
+    _boundarySurfaces[BoundaryIndices::K_END] = _surfacesK.getBoundarySlice(BoundaryIndices::K_END);
 
     // compute the areas for each boundary
     for (const auto& index : BoundaryIndicesArray) {
@@ -275,81 +348,6 @@ const Matrix3D<Vector3D>& CMesh::getMidPoints(FluxDirection direction) const {
     }
 }
 
-
-const Matrix2D<Vector3D> CMesh::getBoundarySurface(BoundaryIndices index) const {
-    Matrix2D<Vector3D> boundary;
-
-    // i slices
-    if (index==BoundaryIndices::I_START || index==BoundaryIndices::I_END){
-        auto boundaryNormals = getSurfacesI();
-        int ni = boundaryNormals.sizeI();
-        int nj = boundaryNormals.sizeJ();
-        int nk = boundaryNormals.sizeK();
-        boundary.resize(nj, nk);
-
-        if (index==BoundaryIndices::I_START){
-            for (int j=0; j<nj; j++){
-                for (int k=0; k<nk; k++){
-                    boundary(j,k) = boundaryNormals(0, j, k);
-                }
-            }
-        } else {
-            for (int j=0; j<nj; j++){
-                for (int k=0; k<nk; k++){
-                    boundary(j,k) = boundaryNormals(ni-1, j, k);
-                }
-            }
-        }
-    }
-
-    // j slices
-    else if (index==BoundaryIndices::J_START || index==BoundaryIndices::J_END){
-        auto boundaryNormals = getSurfacesJ();
-        int ni = boundaryNormals.sizeI();
-        int nj = boundaryNormals.sizeJ();
-        int nk = boundaryNormals.sizeK();
-        boundary.resize(ni, nk);
-
-        if (index==BoundaryIndices::J_START){
-            for (int i=0; i<ni; i++){
-                for (int k=0; k<nk; k++){
-                    boundary(i,k) = boundaryNormals(i, 0, k);
-                }
-            }
-        } else {
-            for (int i=0; i<ni; i++){
-                for (int k=0; k<nk; k++){
-                    boundary(i,k) = boundaryNormals(i, nj-1, k);
-                }
-            }
-        }
-    }
-
-    // k slices
-    else{
-        auto boundaryNormals = getSurfacesK();
-        int ni = boundaryNormals.sizeI();
-        int nj = boundaryNormals.sizeJ();
-        int nk = boundaryNormals.sizeK();
-        boundary.resize(ni, nj);
-
-        if (index==BoundaryIndices::K_START){
-            for (int i=0; i<ni; i++){
-                for (int j=0; j<nj; j++){
-                    boundary(i,j) = boundaryNormals(i, j, 0);
-                }
-            }
-        } else {
-            for (int i=0; i<ni; i++){
-                for (int j=0; j<nj; j++){
-                    boundary(i,j) = boundaryNormals(i, j, nk-1);
-                }
-            }
-        }
-    }
-    
-    return boundary;
-}
 
 void CMesh::computeDualGrid2D() {
     std::cout << "Computing dual grid coordinates for 2D mesh\n";

@@ -112,6 +112,7 @@ public:
 
     ConvectionScheme getConvectionScheme() const;
 
+    // get the coefficients for the Runge-Kutta time integration, taken from Simon thesis (page 64)
     std::vector<FloatType> getTimeIntegrationCoeffs() const ;
 
 };

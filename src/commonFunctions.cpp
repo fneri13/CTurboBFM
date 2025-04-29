@@ -15,6 +15,19 @@ FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces, const Matri
     return sum;
 }
 
+FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces, const Matrix2D<FloatType> &vecX, const Matrix2D<FloatType> &vecY, const Matrix2D<FloatType> &vecZ){
+    auto ni = surfaces.sizeI();
+    auto nj = surfaces.sizeJ();
+    FloatType sum = 0.0;
+
+    for (int i=0; i<ni; i++){
+        for (int j=0; j<nj; j++){
+            sum += surfaces(i,j).x() * vecX(i,j) + surfaces(i,j).y() * vecY(i,j) + surfaces(i,j).z() * vecZ(i,j);
+        }
+    }
+    return sum;
+}
+
 
 FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces){
     auto ni = surfaces.sizeI();
@@ -74,4 +87,9 @@ StateVector computeEulerFluxFromConservative(StateVector conservative, Vector3D 
     StateVector primitive = getEulerPrimitiveFromConservative(conservative);
     StateVector flux = computeEulerFluxFromPrimitive(primitive, surface, fluid);
     return flux;
+}
+
+
+FloatType computeAngleBetweenVectors(const Vector3D& v1, const Vector3D& v2){
+    return acos(v1.dot(v2) / (v1.magnitude() * v2.magnitude()));
 }

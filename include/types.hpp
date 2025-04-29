@@ -311,6 +311,74 @@ public:
 
     std::vector<T> getData() const {return _data;}
 
+    // get a slice of one of the boundary
+    Matrix2D<T> getBoundarySlice(BoundaryIndices index) const {
+        Matrix2D<T> slice;
+        size_t ni = sizeI();
+        size_t nj = sizeJ();
+        size_t nk = sizeK();
+        
+        // i slices
+        if (index==BoundaryIndices::I_START || index==BoundaryIndices::I_END){
+            
+            slice.resize(nj, nk);
+
+            if (index==BoundaryIndices::I_START){
+                for (int j=0; j<nj; j++){
+                    for (int k=0; k<nk; k++){
+                        slice(j,k) = (*this)(0, j, k);
+                    }
+                }
+            } else {
+                for (int j=0; j<nj; j++){
+                    for (int k=0; k<nk; k++){
+                        slice(j,k) = (*this)(ni-1, j, k);
+                    }
+                }
+            }
+        }
+
+       // j slices
+        if (index==BoundaryIndices::J_START || index==BoundaryIndices::J_END){
+            slice.resize(ni, nk);
+
+            if (index==BoundaryIndices::J_START){
+                for (int i=0; i<ni; i++){
+                    for (int k=0; k<nk; k++){
+                        slice(i,k) = (*this)(i, 0, k);
+                    }
+                }
+            } else {
+                for (int i=0; i<ni; i++){
+                    for (int k=0; k<nk; k++){
+                        slice(i,k) = (*this)(i, nj-1, k);
+                    }
+                }
+            }
+        }
+
+        // k slices
+        if (index==BoundaryIndices::K_START || index==BoundaryIndices::K_END){
+            slice.resize(ni, nj);
+
+            if (index==BoundaryIndices::K_START){
+                for (int i=0; i<ni; i++){
+                    for (int j=0; j<nj; j++){
+                        slice(i,j) = (*this)(i, j, 0);
+                    }
+                }
+            } else {
+                for (int i=0; i<ni; i++){
+                    for (int j=0; j<nj; j++){
+                        slice(i,j) = (*this)(i, j, nk-1);
+                    }
+                }
+            }
+        }
+
+        return slice;
+    }
+
 private:
     size_t _ni, _nj, _nk;
     std::vector<T> _data;
@@ -501,28 +569,6 @@ struct FlowSolution {
         _rhoE(i,j,k) = vals[4];
     }
 
-    void set(size_t i, size_t j, size_t k, size_t eq, FloatType val) {
-        switch (eq) {
-            case 0:
-                _rho(i, j, k) = val;
-                break;
-            case 1:
-                _rhoU(i, j, k) = val;
-                break;
-            case 2:
-                _rhoV(i, j, k) = val;
-                break;
-            case 3:
-                _rhoW(i, j, k) = val;
-                break;
-            case 4:
-                _rhoE(i, j, k) = val;
-                break;
-            default:
-                throw std::out_of_range("Invalid equation index: " + std::to_string(eq));
-        }
-    }
-
     void resize(size_t i, size_t j, size_t k){
         _rho.resize(i,j,k);
         _rhoU.resize(i,j,k);
@@ -605,17 +651,33 @@ struct Statistics {
     FloatType stdDev = 0;
     size_t size = 0;
 
-    Statistics() = default; // allow default construction
+    Statistics() = default;
 
-    // Method that computes statistics
+    Statistics(const std::vector<FloatType>& data) {
+        computeFromData(data);
+    }
+
     Statistics(const Matrix3D<FloatType>& matrix) {
         if (matrix.sizeI() * matrix.sizeJ() * matrix.sizeK() == 0) {
             mean = min = max = stdDev = 0;
             size = 0;
             return;
         }
+        computeFromData(matrix.getData());
+    }
 
-        std::vector<FloatType> data = matrix.getData();
+    void printInfo(){
+        std::cout << "Stats: {\n";
+        std::cout << "min: " << min << std::endl;
+        std::cout << "max: " << max << std::endl;
+        std::cout << "mean: " << mean << std::endl;
+        std::cout << "std: " << stdDev << std::endl;
+        std::cout << "size: " << size << std::endl;
+        std::cout << "}\n\n";
+    }
+
+private:
+    void computeFromData(const std::vector<FloatType>& data) {
         auto [minIt, maxIt] = std::minmax_element(data.begin(), data.end());
         min = *minIt;
         max = *maxIt;

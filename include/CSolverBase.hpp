@@ -44,7 +44,7 @@ class CSolverBase {
 
         std::unique_ptr<CAdvectionScheme> _advectionScheme;
         
-        std::map<BoundaryIndices, std::vector<FloatType>> _massFlows;
+        std::map<BoundaryIndices, FloatType> _massFlows;
         
         std::map<BoundaryIndices, BoundaryType> _boundaryTypes;
 

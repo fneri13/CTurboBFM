@@ -40,8 +40,6 @@ class CMesh {
 
         const FloatType getVolume(size_t i, size_t j, size_t k) const {return _volumes(i,j,k);}
 
-        const Matrix2D<Vector3D> getBoundarySurface(BoundaryIndices boundIndex) const;
-
         const size_t getNumberDimensions() const {return _nDimensions;}
 
         const size_t getNumberPointsI() const {return _nPointsI;}
@@ -53,6 +51,8 @@ class CMesh {
         void getElementEdges(size_t i, size_t j, size_t k, Vector3D &iEdge, Vector3D &jEdge, Vector3D &kEdge) const;
 
         FloatType getBoundaryTotalArea(BoundaryIndices boundIndex) const {return _boundaryAreas.at(boundIndex);}
+
+        const Matrix2D<Vector3D> getMeshBoundary(BoundaryIndices boundIndex) const {return _boundarySurfaces.at(boundIndex); }
 
         // compute the surface vector and center of surface given 4 points
         void computeSurfaceVectorAndCG(const Vector3D &p1, const Vector3D &p2, const Vector3D &p3, const Vector3D &p4, Vector3D &normal, Vector3D &center);
@@ -70,8 +70,6 @@ class CMesh {
 
         Matrix3D<FloatType> _volumes; // array of cell volumes
 
-        std::string _filename; // name of the CSV file containing the mesg
-
         Matrix3D<Vector3D> _vertices; // array of vertices coordinates
 
         Matrix3D<Vector3D> _dualNodes; // array of dual nodes coordinates
@@ -84,7 +82,7 @@ class CMesh {
 
         std::map<BoundaryIndices, Matrix2D<Vector3D>> _boundarySurfaces;
 
-        Statistics _aspectRatioStats;
+        Statistics _aspectRatioStats, _skewnessStats, _orthogonalityStats;
 
         // read the coordinates from the mesh CSV file
         void readPoints();
@@ -115,5 +113,7 @@ class CMesh {
 
         // aspect ratio
         Matrix3D<FloatType> computeAspectRatio();
+
+        void computeSkewnessAndOrthogonality(std::vector<FloatType> &skewness, std::vector<FloatType> &orthogonality);
 
 };

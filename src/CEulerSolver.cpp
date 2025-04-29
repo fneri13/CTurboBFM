@@ -9,14 +9,12 @@
 CEulerSolver::CEulerSolver(Config& config, CMesh& mesh)
     : CSolverBase(config, mesh)  // Call base class constructor
 {
-    std::cout << "CEulerSolver initialized." << std::endl;
-
-    _conservativeVars.resize(_nPointsI, _nPointsJ, _nPointsK);
-
     initializeSolutionArrays();
 }
 
 void CEulerSolver::initializeSolutionArrays(){
+    
+
     FloatType initMach = _config.getInitMachNumber();
     FloatType initTemperature = _config.getInitTemperature();
     FloatType initPressure = _config.getInitPressure();
@@ -26,6 +24,7 @@ void CEulerSolver::initializeSolutionArrays(){
     Vector3D velocity {0.0, 0.0, 0.0};
     _fluid->computeInitFields(initMach, initTemperature, initPressure, initDirection, density, velocity, totEnergy);
     
+    _conservativeVars.resize(_nPointsI, _nPointsJ, _nPointsK);
     for (int i=0; i<_nPointsI; i++) {
         for (int j=0; j<_nPointsJ; j++){
             for (int k=0; k<_nPointsK; k++){
@@ -48,24 +47,40 @@ void CEulerSolver::solve(){
 
     for (size_t it=0; it<nIterMax; it++){        
         FlowSolution solutionOld = _conservativeVars; // place holder for the solution
+        updateMassFlows(solutionOld);
         computeTimestepArray(solutionOld, timestep);
+        FlowSolution solutionNew = solutionOld;
+        FlowSolution tmpSol = solutionOld;
+
         
         // inner iterations
         for (const auto &integrationCoeff: timeIntegrationCoeffs){
-            fluxResiduals = computeFluxResiduals(solutionOld, it);
-            // solutionOld = solutionOld - fluxResiduals * timestep * integrationCoeff;
-            updateSolution(solutionOld, fluxResiduals, integrationCoeff, timestep);
+            fluxResiduals = computeFluxResiduals(tmpSol, it);
+            updateSolution(solutionOld, tmpSol, fluxResiduals, integrationCoeff, timestep);
         }
 
-        _conservativeVars = solutionOld;
+        _conservativeVars = tmpSol;
         printInfoResiduals(fluxResiduals, it);
+        printInfoMassFlows(it);
     }
 }
 
-void CEulerSolver::printInfoResiduals(FlowSolution &residuals, unsigned long int it) const {
+void CEulerSolver::printInfoResiduals(FlowSolution &residuals, size_t it) const {
     if (it == 0) {printHeader();}
     auto logRes = computeLogResidualNorm(residuals);
     printLogResiduals(logRes, it);
+}
+
+void CEulerSolver::printInfoMassFlows(size_t it) const {
+    if (it%5 == 0){
+        std::cout << "\nMASS FLOWS CHECK [kg/s]:\n";
+        std::cout << "I_START: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::I_START) << std::endl;
+        std::cout << "I_END: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::I_END) << std::endl;
+        std::cout << "J_START: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::J_START) << std::endl;
+        std::cout << "J_END: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::J_END) << std::endl;
+        std::cout << "K_START: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::K_START) << std::endl;
+        std::cout << "K_END: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::K_END) << std::endl << std::endl;
+    }
 }
 
 void CEulerSolver::printLogResiduals(const StateVector &logRes, unsigned long int it) const {
@@ -162,11 +177,14 @@ void CEulerSolver::updateMassFlows(const FlowSolution&solution){
                                               BoundaryIndices::K_START,
                                               BoundaryIndices::K_END};
     
-    // for (auto &id: bcIndices){
-    //     auto surfaces = _mesh.getBoundarySurface(id);
-    //     // we need slices of the arrays
-    //     std::cout << "Must take slices of the arrays";
-    // }
+    for (auto& bcIndex: bcIndices){
+        Matrix2D<Vector3D> surface = _mesh.getMeshBoundary(bcIndex);
+        Matrix2D<FloatType> rhoUX = (_conservativeVars._rhoU).getBoundarySlice(bcIndex);
+        Matrix2D<FloatType> rhoUV = (_conservativeVars._rhoV).getBoundarySlice(bcIndex);
+        Matrix2D<FloatType> rhoUW = (_conservativeVars._rhoW).getBoundarySlice(bcIndex);
+        _massFlows[bcIndex] = computeSurfaceIntegral(surface, rhoUX, rhoUV, rhoUW);
+    }
+    
     
 }
 
@@ -199,7 +217,7 @@ void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const Flow
         boundaryEnd = BoundaryIndices::K_END;
     }
     
-    StateVector Uleft{}, Uright{}, Uleftleft {}, Urightright {}, flux {};
+    StateVector Uinternal{}, Uleft{}, Uright{}, Uleftleft {}, Urightright {}, flux {};
     Vector3D surface {}, midPoint {};
 
     size_t ni = surfaces.sizeI(); 
@@ -231,16 +249,16 @@ void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const Flow
                 
                 // fluxes calculation here, also boundary conditions.
                 if (dirFace == 0) {
-                    Uright = solution.at(iFace, jFace, kFace);
+                    Uinternal = solution.at(iFace, jFace, kFace);
                     surface = -surfaces(iFace, jFace, kFace);
                     midPoint = midPoints(iFace, jFace, kFace);
-                    flux = _boundaryConditions.at(boundaryStart)->computeBoundaryFlux(Uright, surface, midPoint);
+                    flux = _boundaryConditions.at(boundaryStart)->computeBoundaryFlux(Uinternal, surface, midPoint);
                     residuals.add(iFace, jFace, kFace, flux * surface.magnitude());
                 } else if (dirFace == stopFace) {
-                    Uright = solution.at(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2]);
+                    Uinternal = solution.at(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2]);
                     surface = surfaces(iFace, jFace, kFace);
                     midPoint = midPoints(iFace, jFace, kFace);
-                    flux = _boundaryConditions.at(boundaryEnd)->computeBoundaryFlux(Uright, surface, midPoint);
+                    flux = _boundaryConditions.at(boundaryEnd)->computeBoundaryFlux(Uinternal, surface, midPoint);
                     residuals.add(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2], flux * surface.magnitude());
                 } else {
                     // internal flux calculation
@@ -273,11 +291,11 @@ void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const Flow
     
 }
 
-void CEulerSolver::updateSolution(FlowSolution &solOld, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt){
+void CEulerSolver::updateSolution(const FlowSolution &solOld, FlowSolution &solNew, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt){
     for (size_t i = 0; i < _nPointsI; i++) {
         for (size_t j = 0; j < _nPointsJ; j++) {
             for (size_t k = 0; k < _nPointsK; k++) {
-                solOld.subtract(i, j, k, residuals.at(i, j, k) * integrationCoeff * dt(i, j, k) / _mesh.getVolume(i,j,k));
+                solNew.set(i, j, k, solOld.at(i, j, k) - residuals.at(i, j, k) * integrationCoeff * dt(i, j, k) / _mesh.getVolume(i,j,k));
             }
         }
     }

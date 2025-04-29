@@ -72,7 +72,7 @@ void CEulerSolver::printInfoResiduals(FlowSolution &residuals, size_t it) const 
 }
 
 void CEulerSolver::printInfoMassFlows(size_t it) const {
-    if (it%5 == 0){
+    if (it%100 == 0){
         std::cout << "\nMASS FLOWS CHECK [kg/s]:\n";
         std::cout << "I_START: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::I_START) << std::endl;
         std::cout << "I_END: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::I_END) << std::endl;

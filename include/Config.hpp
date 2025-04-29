@@ -7,6 +7,9 @@
 class Config {
 
 private:
+
+    size_t massFlowUpdateFrequency = {100};
+
     std::map<std::string, std::string> _data;
     
     bool load(const std::string& filename);
@@ -114,5 +117,7 @@ public:
 
     // get the coefficients for the Runge-Kutta time integration, taken from Simon thesis (page 64)
     std::vector<FloatType> getTimeIntegrationCoeffs() const ;
+
+    size_t getMassFlowUpdateFrequency() const {return massFlowUpdateFrequency;}
 
 };

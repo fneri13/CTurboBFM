@@ -41,24 +41,25 @@ void CEulerSolver::initializeSolutionArrays(){
 
 void CEulerSolver::solve(){
     size_t nIterMax = _config.getMaxIterations();
-    Matrix3D<FloatType> timestep(_nPointsI, _nPointsJ, _nPointsK);
-    std::vector<FloatType> timeIntegrationCoeffs = _config.getTimeIntegrationCoeffs();
-    FlowSolution fluxResiduals(_nPointsI, _nPointsJ, _nPointsK);
+    Matrix3D<FloatType> timestep(_nPointsI, _nPointsJ, _nPointsK);                          // place holder for time step array
+    std::vector<FloatType> timeIntegrationCoeffs = _config.getTimeIntegrationCoeffs();      // time integration coefficients (runge kutta)
+    FlowSolution fluxResiduals(_nPointsI, _nPointsJ, _nPointsK);                            // place holder for flux residuals
+    size_t updateMassFlowsFreq = _config.getMassFlowUpdateFrequency();                      // frequency to update the mass flows at the boundaries
 
+    // time integration
     for (size_t it=0; it<nIterMax; it++){        
-        FlowSolution solutionOld = _conservativeVars; // place holder for the solution
-        updateMassFlows(solutionOld);
-        computeTimestepArray(solutionOld, timestep);
-        FlowSolution solutionNew = solutionOld;
-        FlowSolution tmpSol = solutionOld;
-
+        FlowSolution solutionOld = _conservativeVars;                                       // place holder for the solution at the previous timestep
+        if (it%updateMassFlowsFreq == 0) updateMassFlows(solutionOld);                      // compute the mass flows
+        computeTimestepArray(solutionOld, timestep);                                        // compute the physical time step
+        FlowSolution tmpSol = solutionOld;                                                  // place holder for the solution at the runge-kutta step
         
-        // inner iterations
+        // runge-kutta steps
         for (const auto &integrationCoeff: timeIntegrationCoeffs){
             fluxResiduals = computeFluxResiduals(tmpSol, it);
             updateSolution(solutionOld, tmpSol, fluxResiduals, integrationCoeff, timestep);
         }
-
+        
+        // update the solution and print information
         _conservativeVars = tmpSol;
         printInfoResiduals(fluxResiduals, it);
         printInfoMassFlows(it);

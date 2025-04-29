@@ -1,6 +1,11 @@
 CXX = g++
 SRC_DIR = ../../src
 INCLUDES = ~/libraries/include/
+VTK_INCLUDE = /opt/homebrew/include/vtk-9.4  # Adjust this path if necessary
+VTK_LIB_DIR = /opt/homebrew/lib  # Adjust this path if necessary
+
+# VTK Libraries to link (modify this if you need more libraries)
+VTK_LIBS = -lvtkCommonCore-9.4 -lvtkIOXML-9.4 -lvtkCommonDataModel-9.4 -lvtkCommonExecutionModel-9.4 -lvtkIOCore-9.4 -lvtkCommonSystem-9.4 -lvtkCommonMath-9.4
 
 # Source files
 SOURCES = \
@@ -17,7 +22,7 @@ SOURCES = \
 	$(SRC_DIR)/CBoundaryConditionOutlet.cpp \
 
 # Common compiler flags
-INCLUDE_FLAGS = -I $(INCLUDES)
+INCLUDE_FLAGS = -I $(INCLUDES) -I $(VTK_INCLUDE)
 
 # Build types
 DEBUG_DIR = build/debug
@@ -60,12 +65,12 @@ $(RELEASE_DIR)/%.o: $(SRC_DIR)/%.cpp | $(RELEASE_DIR)
 $(RELEASE_DIR)/main.o: main.cpp | $(RELEASE_DIR)
 	$(CXX) $(RELEASE_FLAGS) -c $< -o $@
 
-# Link final binaries
+# Link final binaries with VTK libraries
 $(DEBUG_TARGET): $(DEBUG_OBJS)
-	$(CXX) $(DEBUG_FLAGS) $(DEBUG_OBJS) -o $@
+	$(CXX) $(DEBUG_FLAGS) $(DEBUG_OBJS) $(VTK_LIB_DIR)/libvtkCommonCore-9.4.a $(VTK_LIB_DIR)/libvtkIOXML-9.4.a $(VTK_LIB_DIR)/libvtkCommonDataModel-9.4.a $(VTK_LIB_DIR)/libvtkCommonExecutionModel-9.4.a $(VTK_LIB_DIR)/libvtkIOCore-9.4.a $(VTK_LIB_DIR)/libvtkCommonSystem-9.4.a $(VTK_LIB_DIR)/libvtkCommonMath-9.4.a -o $@
 
 $(RELEASE_TARGET): $(RELEASE_OBJS)
-	$(CXX) $(RELEASE_FLAGS) $(RELEASE_OBJS) -o $@
+	$(CXX) $(RELEASE_FLAGS) $(RELEASE_OBJS) $(VTK_LIB_DIR)/libvtkCommonCore-9.4.a $(VTK_LIB_DIR)/libvtkIOXML-9.4.a $(VTK_LIB_DIR)/libvtkCommonDataModel-9.4.a $(VTK_LIB_DIR)/libvtkCommonExecutionModel-9.4.a $(VTK_LIB_DIR)/libvtkIOCore-9.4.a $(VTK_LIB_DIR)/libvtkCommonSystem-9.4.a $(VTK_LIB_DIR)/libvtkCommonMath-9.4.a -o $@
 
 clean:
 	rm -rf build

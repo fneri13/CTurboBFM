@@ -43,3 +43,7 @@
 *.plist
 *.yml
 *.dSYM
+*.vts
+
+# build files
+*cmake*

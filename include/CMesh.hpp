@@ -33,6 +33,8 @@ class CMesh {
         const Matrix3D<Vector3D>& getMidPointsK() const {return _centersK;}
         
         const Matrix3D<Vector3D> getVertices() const {return _vertices;}
+
+        const Vector3D& getVertex(size_t i, size_t j, size_t k) const {return _vertices(i,j,k);}
         
         const Matrix3D<Vector3D> getDualNodes() const {return _dualNodes;}
         

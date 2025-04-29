@@ -1,6 +1,12 @@
 #pragma once
 #include "types.hpp"
 #include "CSolverBase.hpp"
+#include <vtkSmartPointer.h>
+#include <vtkStructuredGrid.h>
+#include <vtkPoints.h>
+#include <vtkDoubleArray.h>
+#include <vtkPointData.h>
+#include <vtkXMLStructuredGridWriter.h>
 
 /**
  * \brief     Solver for the Euler equations.
@@ -48,6 +54,8 @@ public:
 
     // print the residuals log10
     void printLogResiduals(const StateVector &logRes, unsigned long int it) const;
+
+    void saveSolution() const;
 
 private:
     

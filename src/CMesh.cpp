@@ -463,22 +463,22 @@ void CMesh::computeDualGrid3D() {
 
     //boundaries
     // i-faces
-    for (size_t j=1; j<_nPointsJ-1; j++) {
-        for (size_t k=1; k<_nPointsK-1; k++) {
+    for (size_t j=1; j<_nDualPointsJ-1; j++) {
+        for (size_t k=1; k<_nDualPointsK-1; k++) {
             _dualNodes(0,j,k) = (_vertices(0,j-1,k-1) + _vertices(0,j,k-1) + _vertices(0,j-1,k) + _vertices(0,j,k)) / 4.0;
             _dualNodes(_nDualPointsI-1,j,k) = (_vertices(_nPointsI-1,j-1,k-1) + _vertices(_nPointsI-1,j,k-1) + _vertices(_nPointsI-1,j-1,k) + _vertices(_nPointsI-1,j,k)) / 4.0;
         }
     }
     // j-faces
-    for (size_t i=1; i<_nPointsI-1; i++) {
-        for (size_t k=1; k<_nPointsK-1; k++) {
+    for (size_t i=1; i<_nDualPointsI-1; i++) {
+        for (size_t k=1; k<_nDualPointsK-1; k++) {
             _dualNodes(i,0,k) = (_vertices(i-1,0,k-1) + _vertices(i,0,k-1) + _vertices(i-1,0,k) + _vertices(i,0,k)) / 4.0;
             _dualNodes(i,_nDualPointsJ-1,k) = (_vertices(i-1,_nPointsJ-1,k-1) + _vertices(i,_nPointsJ-1,k-1) + _vertices(i-1,_nPointsJ-1,k) + _vertices(i,_nPointsJ-1,k)) / 4.0;
         }
     }
     // k-faces
-    for (size_t i=1; i<_nPointsI-1; i++) {
-        for (size_t j=1; j<_nPointsJ-1; j++) {
+    for (size_t i=1; i<_nDualPointsI-1; i++) {
+        for (size_t j=1; j<_nDualPointsJ-1; j++) {
             _dualNodes(i,j,0) = (_vertices(i-1,j-1,0) + _vertices(i,j-1,0) + _vertices(i-1,j,0) + _vertices(i,j,0)) / 4.0;
             _dualNodes(i,j,_nDualPointsK-1) = (_vertices(i-1,j-1,_nPointsK-1) + _vertices(i,j-1,_nPointsK-1) + _vertices(i-1,j,_nPointsK-1) + _vertices(i,j,_nPointsK-1)) / 4.0;
         }

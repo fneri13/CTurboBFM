@@ -52,7 +52,7 @@ def writeVTK(data, filename):
 
 
 
-fileName = "results_124_48_10.csv"
+fileName = "results_64_32.csv"
 outputFilename = fileName.split(".")[0]
 data = read_structured_csv(fileName)
 writeVTK(data, outputFilename)

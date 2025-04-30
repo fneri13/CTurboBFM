@@ -2,6 +2,7 @@
 
 #include "types.hpp"
 #include "Config.hpp"
+#include <assert.h>
 
 /** 
   *  \brief     Class handling mesh capabilities.

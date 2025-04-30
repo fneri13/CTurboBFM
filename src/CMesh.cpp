@@ -16,7 +16,7 @@ CMesh::CMesh(Config& config) : _config(config) {
         computeDualGrid2D();
     } 
     else {
-        // computeDualGrid3D();
+        computeDualGrid3D();
     }
     computeMeshInterfaces();
     computeMeshVolumes();
@@ -259,7 +259,7 @@ void CMesh::computeSkewnessAndOrthogonality(std::vector<FloatType> &skewness, st
     for (size_t i=0; i<_nPointsI; i++){
         for (size_t j=0; j<_nPointsJ; j++){
             for (size_t k=1; k<_nPointsK-1; k++){
-                Vector3D point0 = _vertices(i,j-1,k);
+                Vector3D point0 = _vertices(i,j,k-1);
                 Vector3D point1 = _vertices(i,j,k);
                 Vector3D midPoint = (point0 + point1) / 2.0;
                 Vector3D surfaceCenter = _centersK(i,j,k);
@@ -350,6 +350,8 @@ const Matrix3D<Vector3D>& CMesh::getMidPoints(FluxDirection direction) const {
 
 
 void CMesh::computeDualGrid2D() {
+    assert (_nDimensions == 2 && "Can only compute a 2D dual grid for a 2D mesh.");
+
     std::cout << "Computing dual grid coordinates for 2D mesh\n";
 
     Matrix2D<Vector3D> nodes(_nDualPointsI, _nDualPointsJ);
@@ -357,9 +359,6 @@ void CMesh::computeDualGrid2D() {
     // find internal dual nodes
     for (int i = 1; i < _nDualPointsI-1; i++) {
         for (int j = 1; j < _nDualPointsJ-1; j++) {
-            if (i==1 && j==1){
-                std::cout << "this should be the problematic one\n";
-            }
             nodes(i,j) = (_vertices(i-1,j-1,0) + _vertices(i,j-1,0) + _vertices(i,j,0) + _vertices(i-1,j,0)) / 4.0;
         }
     }
@@ -411,6 +410,81 @@ void CMesh::computeDualGrid2D() {
         }
             
     }
+}
+
+
+void CMesh::computeDualGrid3D() {
+    assert (_nDimensions == 3 && "Can only compute a 3D dual grid for a 3D mesh.");
+
+    // internal dual nodes
+    for (size_t i = 1; i < _nDualPointsI-1; i++) {
+        for (size_t j = 1; j < _nDualPointsJ-1; j++) {
+            for (size_t k = 1; k < _nDualPointsK-1; k++){
+                _dualNodes(i,j,k) = (_vertices(i-1,j-1,k-1) + _vertices(i,j-1,k-1) + _vertices(i-1,j,k-1) + _vertices(i-1,j-1,k) + \
+                                     _vertices(i  ,j,  k-1) + _vertices(i,j-1,k)   + _vertices(i-1,j,k)   + _vertices(i  ,j  ,k) ) / 8.0;
+            }
+        }
+    }
+    
+    // corner dual nodes
+    _dualNodes(0,0,0) = _vertices(0,0,0);
+    _dualNodes(_nDualPointsI-1, 0, 0) = _vertices(_nPointsI-1, 0, 0);
+    _dualNodes(0, _nDualPointsJ-1, 0) = _vertices(0, _nPointsJ-1, 0);
+    _dualNodes(0, 0, _nDualPointsK-1) = _vertices(0, 0, _nPointsK-1);
+    _dualNodes(_nDualPointsI-1, _nDualPointsJ-1, 0) = _vertices(_nPointsI-1, _nPointsJ-1, 0);
+    _dualNodes(_nDualPointsI-1, 0, _nDualPointsK-1) = _vertices(_nPointsI-1, 0, _nPointsK-1);
+    _dualNodes(0, _nDualPointsJ-1, _nDualPointsK-1) = _vertices(0, _nPointsJ-1, _nPointsK-1);
+    _dualNodes(_nDualPointsI-1, _nDualPointsJ-1, _nDualPointsK-1) = _vertices(_nPointsI-1, _nPointsJ-1, _nPointsK-1);
+
+
+    // edges
+    // i-oriented
+    for (size_t i=1; i<_nDualPointsI-1; i++) {
+        _dualNodes(i,0,0) = (_vertices(i-1,0,0) + _vertices(i,0,0)) / 2.0;
+        _dualNodes(i,_nDualPointsJ-1,0) = (_vertices(i-1,_nPointsJ-1,0) + _vertices(i,_nPointsJ-1,0)) / 2.0;
+        _dualNodes(i,0,_nDualPointsK-1) = (_vertices(i-1,0,_nPointsK-1) + _vertices(i,0,_nPointsK-1)) / 2.0;
+        _dualNodes(i,_nDualPointsJ-1,_nDualPointsK-1) = (_vertices(i-1,_nPointsJ-1,_nPointsK-1) + _vertices(i,_nPointsJ-1,_nPointsK-1)) / 2.0;
+    }
+    // j-oriented
+    for (size_t j=1; j<_nDualPointsJ-1; j++) {
+        _dualNodes(0,j,0) = (_vertices(0,j-1,0) + _vertices(0,j,0)) / 2.0;
+        _dualNodes(_nDualPointsI-1,j,0) = (_vertices(_nPointsI-1,j-1,0) + _vertices(_nPointsI-1,j,0)) / 2.0;
+        _dualNodes(0,j,_nDualPointsK-1) = (_vertices(0,j-1,_nPointsK-1) + _vertices(0,j,_nPointsK-1)) / 2.0;
+        _dualNodes(_nDualPointsI-1,j,_nDualPointsK-1) = (_vertices(_nPointsI-1,j-1,_nPointsK-1) + _vertices(_nPointsI-1,j,_nPointsK-1)) / 2.0;
+    }
+    // k-oriented
+    for (size_t k=1; k<_nDualPointsK-1; k++) {
+        _dualNodes(0,0,k) = (_vertices(0,0,k-1) + _vertices(0,0,k)) / 2.0;
+        _dualNodes(_nDualPointsI-1,0,k) = (_vertices(_nPointsI-1,0,k-1) + _vertices(_nPointsI-1,0,k)) / 2.0;
+        _dualNodes(0,_nDualPointsJ-1,k) = (_vertices(0,_nPointsJ-1,k-1) + _vertices(0,_nPointsJ-1,k)) / 2.0;
+        _dualNodes(_nDualPointsI-1,_nDualPointsJ-1,k) = (_vertices(_nPointsI-1,_nPointsJ-1,k-1) + _vertices(_nPointsI-1,_nPointsJ-1,k)) / 2.0;
+    }
+    
+
+    //boundaries
+    // i-faces
+    for (size_t j=1; j<_nPointsJ-1; j++) {
+        for (size_t k=1; k<_nPointsK-1; k++) {
+            _dualNodes(0,j,k) = (_vertices(0,j-1,k-1) + _vertices(0,j,k-1) + _vertices(0,j-1,k) + _vertices(0,j,k)) / 4.0;
+            _dualNodes(_nDualPointsI-1,j,k) = (_vertices(_nPointsI-1,j-1,k-1) + _vertices(_nPointsI-1,j,k-1) + _vertices(_nPointsI-1,j-1,k) + _vertices(_nPointsI-1,j,k)) / 4.0;
+        }
+    }
+    // j-faces
+    for (size_t i=1; i<_nPointsI-1; i++) {
+        for (size_t k=1; k<_nPointsK-1; k++) {
+            _dualNodes(i,0,k) = (_vertices(i-1,0,k-1) + _vertices(i,0,k-1) + _vertices(i-1,0,k) + _vertices(i,0,k)) / 4.0;
+            _dualNodes(i,_nDualPointsJ-1,k) = (_vertices(i-1,_nPointsJ-1,k-1) + _vertices(i,_nPointsJ-1,k-1) + _vertices(i-1,_nPointsJ-1,k) + _vertices(i,_nPointsJ-1,k)) / 4.0;
+        }
+    }
+    // k-faces
+    for (size_t i=1; i<_nPointsI-1; i++) {
+        for (size_t j=1; j<_nPointsJ-1; j++) {
+            _dualNodes(i,j,0) = (_vertices(i-1,j-1,0) + _vertices(i,j-1,0) + _vertices(i-1,j,0) + _vertices(i,j,0)) / 4.0;
+            _dualNodes(i,j,_nDualPointsK-1) = (_vertices(i-1,j-1,_nPointsK-1) + _vertices(i,j-1,_nPointsK-1) + _vertices(i-1,j,_nPointsK-1) + _vertices(i,j,_nPointsK-1)) / 4.0;
+        }
+    }
+
+    
 }
 
 void CMesh::getElementEdges(size_t i, size_t j, size_t k, Vector3D &iEdge, Vector3D &jEdge, Vector3D &kEdge) const {

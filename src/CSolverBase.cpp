@@ -1,4 +1,4 @@
-#include "../include/CSolverBase.hpp"
+#include "CSolverBase.hpp"
 #include <iostream>
 
 CSolverBase::CSolverBase(Config& config, CMesh& mesh)

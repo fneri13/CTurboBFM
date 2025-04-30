@@ -1,5 +1,5 @@
-#include "../include/CJSTScheme.hpp"
-#include "../include/commonFunctions.hpp"
+#include "CJSTScheme.hpp"
+#include "commonFunctions.hpp"
 
 StateVector CJSTScheme::computeFlux(
     const StateVector& Ull,

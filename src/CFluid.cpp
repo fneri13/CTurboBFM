@@ -1,4 +1,4 @@
-#include "../include/CFluid.hpp"
+#include "CFluid.hpp"
 #include <cmath>
 
 CFluid::CFluid(FloatType gamma, FloatType R)

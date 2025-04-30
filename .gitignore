@@ -30,12 +30,12 @@
 *.exe
 *.out
 *.app
+.a
+CTurboBFM
 
 # weird files
 *DS_Store
 
-# temp executables
-.a
 
 # Various
 *.json
@@ -47,3 +47,5 @@
 
 # build files
 *cmake*
+*.ninja
+

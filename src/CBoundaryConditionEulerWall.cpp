@@ -1,5 +1,5 @@
-#include "../include/CBoundaryConditionEulerWall.hpp"
-#include "../include/commonFunctions.hpp"
+#include "CBoundaryConditionEulerWall.hpp"
+#include "commonFunctions.hpp"
 
 CBoundaryConditionEulerWall::CBoundaryConditionEulerWall(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex)
     : CBoundaryConditionBase(config, mesh, fluid, boundIndex) {

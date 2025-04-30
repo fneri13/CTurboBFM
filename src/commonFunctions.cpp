@@ -1,4 +1,4 @@
-#include "../include/commonFunctions.hpp"
+#include "commonFunctions.hpp"
 #include <iostream>
 
 

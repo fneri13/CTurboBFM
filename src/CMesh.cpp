@@ -4,9 +4,9 @@
 #include <vector>
 #include <string>
 #include <math.h>
-#include "../include/CMesh.hpp"
-#include "../include/Config.hpp"
-#include "../include/commonFunctions.hpp"
+#include "CMesh.hpp"
+#include "Config.hpp"
+#include "commonFunctions.hpp"
 
 CMesh::CMesh(Config& config) : _config(config) {
     readPoints();

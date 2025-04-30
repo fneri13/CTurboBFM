@@ -1,5 +1,5 @@
-#include "../include/CBoundaryConditionOutlet.hpp"
-#include "../include/commonFunctions.hpp"
+#include "CBoundaryConditionOutlet.hpp"
+#include "commonFunctions.hpp"
 
 CBoundaryConditionOutlet::CBoundaryConditionOutlet(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues)
     : CBoundaryConditionBase(config, mesh, fluid, boundIndex) {

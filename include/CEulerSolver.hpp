@@ -37,7 +37,7 @@ public:
     void updateSolution(const FlowSolution &solOld, FlowSolution &solNew, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt);
 
     // print information about the residuals
-    void printInfoResiduals(FlowSolution &residuals, size_t it) const;
+    void printInfoResiduals(FlowSolution &residuals, size_t it);
 
     // print information about the residuals
     void printInfoMassFlows(size_t it) const;
@@ -51,9 +51,14 @@ public:
     // print the residuals log10
     void printLogResiduals(const StateVector &logRes, unsigned long int it) const;
 
+    // write residuals to csv file logResiduals.csv
+    void writeLogResidualsToCSV() const;
+
 private:
     
     FlowSolution _conservativeVars; // conservative variables solution
     std::unique_ptr<COutputBase> _output;
+    std::vector<StateVector> _logResiduals;
+
 
 };

@@ -67,14 +67,17 @@ void CEulerSolver::solve(){
         printInfoResiduals(fluxResiduals, it);
         printInfoMassFlows(it);
         if (it%updateMassFlowsFreq == 0) _output->writeSolution(); 
+        if (it%updateMassFlowsFreq == 0) writeLogResidualsToCSV(); 
     }
 }
 
-void CEulerSolver::printInfoResiduals(FlowSolution &residuals, size_t it) const {
+void CEulerSolver::printInfoResiduals(FlowSolution &residuals, size_t it) {
     if (it == 0) {printHeader();}
     auto logRes = computeLogResidualNorm(residuals);
     printLogResiduals(logRes, it);
+    _logResiduals.push_back(logRes);
 }
+
 
 void CEulerSolver::printInfoMassFlows(size_t it) const {
     if (it%100 == 0){
@@ -306,3 +309,31 @@ void CEulerSolver::updateSolution(const FlowSolution &solOld, FlowSolution &solN
     }
 }
 
+
+void CEulerSolver::writeLogResidualsToCSV() const {
+
+    std::string filename = "logResiduals.csv";
+    std::ofstream file(filename); // open in truncate (default) mode
+
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open log residuals file: " << filename << std::endl;
+        return;
+    }
+
+    // Write header
+    file << "Rho,RhoU,RhoV,RhoW,RhoE\n";
+
+    size_t size = _logResiduals.size();
+    std::array<FloatType, 5> logRes;
+    for (size_t i = 0; i < size; i++) {
+        logRes[0] = _logResiduals[i][0];
+        logRes[1] = _logResiduals[i][1];
+        logRes[2] = _logResiduals[i][2];
+        logRes[3] = _logResiduals[i][3];
+        logRes[4] = _logResiduals[i][4];
+        // Write data row
+        file << logRes[0] << "," << logRes[1] << "," << logRes[2] << "," << logRes[3] << "," << logRes[4] << "\n";
+    }
+
+    file.close();
+}

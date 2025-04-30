@@ -12,6 +12,7 @@ CEulerSolver::CEulerSolver(Config& config, CMesh& mesh)
     : CSolverBase(config, mesh)  // Call base class constructor
 {
     initializeSolutionArrays();
+    _output = std::make_unique<COutputCSV>(_config, _mesh, _conservativeVars);
 }
 
 void CEulerSolver::initializeSolutionArrays(){
@@ -65,7 +66,7 @@ void CEulerSolver::solve(){
         _conservativeVars = tmpSol;
         printInfoResiduals(fluxResiduals, it);
         printInfoMassFlows(it);
-        if (it%updateMassFlowsFreq == 0) saveSolution(); 
+        if (it%updateMassFlowsFreq == 0) _output->writeSolution(); 
     }
 }
 
@@ -305,8 +306,3 @@ void CEulerSolver::updateSolution(const FlowSolution &solOld, FlowSolution &solN
     }
 }
 
-
-void CEulerSolver::saveSolution() const {
-    
-
-}

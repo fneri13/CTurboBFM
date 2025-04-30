@@ -1,6 +1,8 @@
 #pragma once
 #include "types.hpp"
 #include "CSolverBase.hpp"
+#include "COutputBase.hpp"
+#include "COutputCSV.hpp"
 
 /**
  * \brief     Solver for the Euler equations.
@@ -49,10 +51,9 @@ public:
     // print the residuals log10
     void printLogResiduals(const StateVector &logRes, unsigned long int it) const;
 
-    void saveSolution() const;
-
 private:
     
     FlowSolution _conservativeVars; // conservative variables solution
+    std::unique_ptr<COutputBase> _output;
 
 };

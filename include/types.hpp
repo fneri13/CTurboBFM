@@ -128,6 +128,10 @@ enum class BoundaryIndices {
     K_END = 5
 };
 
+enum class OutputFormats {
+    CSV = 0,
+    VTK = 1
+};
 
 enum class KindSolver {
     EULER = 0,

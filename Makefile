@@ -3,6 +3,7 @@ SRC_DIR := src
 INC_DIR := include
 OBJ_DIR := build
 BIN_DIR := bin
+INSTALL_DIR := /usr/local/bin  # Modify this as needed (e.g., use ~/bin or another directory)
 
 # Compiler and flags
 CXX := g++
@@ -47,4 +48,10 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
 
-.PHONY: all clean debug release
+# Install the binary to the specified directory
+install: $(TARGET)
+	@mkdir -p $(INSTALL_DIR)
+	cp $(TARGET) $(INSTALL_DIR)
+	@echo "Installed $(TARGET) to $(INSTALL_DIR)"
+
+.PHONY: all clean debug release install

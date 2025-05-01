@@ -108,11 +108,13 @@ void CEulerSolver::printLogResiduals(const StateVector &logRes, unsigned long in
 
 StateVector CEulerSolver::computeLogResidualNorm(const FlowSolution &residuals) const {
     StateVector logResidualNorm{};
-    for (int i=0; i<5; i++){
+    constexpr double minDouble = std::numeric_limits<FloatType>::min();
+
+    for (int i = 0; i < 5; i++) {
         auto residualNorm = residuals.norm(i);
-        if (residualNorm >= 1E-12) {
-            logResidualNorm[i] = std::log10(residuals.norm(i) / (_nPointsI*_nPointsJ*_nPointsK));
-        } else{
+        if (residualNorm >= minDouble) {
+            logResidualNorm[i] = std::log10(residualNorm / (_nPointsI * _nPointsJ * _nPointsK));
+        } else {
             logResidualNorm[i] = 0.0;
         }
     }

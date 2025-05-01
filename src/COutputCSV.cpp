@@ -27,4 +27,8 @@ void COutputCSV::writeSolution(){
     }
 
     file.close();
+
+    std::cout << std::endl;
+    std::cout << "Solution written to file: " << filename << std::endl;
+    std::cout << std::endl;
 }

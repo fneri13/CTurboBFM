@@ -48,9 +48,10 @@ void CEulerSolver::solve(){
     std::vector<FloatType> timeIntegrationCoeffs = _config.getTimeIntegrationCoeffs();      // time integration coefficients (runge kutta)
     FlowSolution fluxResiduals(_nPointsI, _nPointsJ, _nPointsK);                            // place holder for flux residuals
     size_t updateMassFlowsFreq = _config.getMassFlowUpdateFrequency();                      // frequency to update the mass flows at the boundaries
+    size_t solutionOutputFreq = _config.getSolutionOutputFrequency();                        // frequency to output the solution
 
     // time integration
-    for (size_t it=0; it<nIterMax; it++){        
+    for (size_t it=1; it<nIterMax; it++){        
         FlowSolution solutionOld = _conservativeVars;                                       // place holder for the solution at the previous timestep
         if (it%updateMassFlowsFreq == 0) updateMassFlows(solutionOld);                      // compute the mass flows
         computeTimestepArray(solutionOld, timestep);                                        // compute the physical time step
@@ -65,14 +66,14 @@ void CEulerSolver::solve(){
         // update the solution and print information
         _conservativeVars = tmpSol;
         printInfoResiduals(fluxResiduals, it);
-        printInfoMassFlows(it);
-        if (it%updateMassFlowsFreq == 0) _output->writeSolution(); 
-        if (it%updateMassFlowsFreq == 0) writeLogResidualsToCSV(); 
+        if (it%updateMassFlowsFreq == 0) printInfoMassFlows(it);
+        if (it%solutionOutputFreq == 0) _output->writeSolution(); 
+        if (it%solutionOutputFreq == 0) writeLogResidualsToCSV(); 
     }
 }
 
 void CEulerSolver::printInfoResiduals(FlowSolution &residuals, size_t it) {
-    if (it == 0) {printHeader();}
+    if (it == 1) {printHeader();}
     auto logRes = computeLogResidualNorm(residuals);
     printLogResiduals(logRes, it);
     _logResiduals.push_back(logRes);
@@ -80,21 +81,19 @@ void CEulerSolver::printInfoResiduals(FlowSolution &residuals, size_t it) {
 
 
 void CEulerSolver::printInfoMassFlows(size_t it) const {
-    if (it%100 == 0){
-        std::cout << "\nMASS FLOWS CHECK [kg/s]:\n";
-        std::cout << "I_START: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::I_START) << std::endl;
-        std::cout << "I_END: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::I_END) << std::endl;
-        std::cout << "J_START: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::J_START) << std::endl;
-        std::cout << "J_END: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::J_END) << std::endl;
-        std::cout << "K_START: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::K_START) << std::endl;
-        std::cout << "K_END: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::K_END) << std::endl << std::endl;
-    }
+    std::cout << "\nMASS FLOWS CHECK [kg/s]:\n";
+    std::cout << "I_START: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::I_START) << std::endl;
+    std::cout << "I_END: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::I_END) << std::endl;
+    std::cout << "J_START: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::J_START) << std::endl;
+    std::cout << "J_END: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::J_END) << std::endl;
+    std::cout << "K_START: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::K_START) << std::endl;
+    std::cout << "K_END: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::K_END) << std::endl << std::endl;
 }
 
 void CEulerSolver::printLogResiduals(const StateVector &logRes, unsigned long int it) const {
     int col_width = 14;
     std::cout << std::fixed << std::setprecision(6); // Set fixed format with 6 decimals
-    std::cout << "|" << std::setw(col_width) << std::setfill(' ') << std::left << it+1 << "|"
+    std::cout << "|" << std::setw(col_width) << std::setfill(' ') << std::left << it << "|"
               << std::setw(col_width) << std::left << 0.0 << "|"
               << std::setw(col_width) << std::right << logRes[0] << "|"
               << std::setw(col_width) << std::right << logRes[1] << "|"
@@ -175,6 +174,19 @@ Matrix3D<FloatType> CEulerSolver::computeTimestepArray(const FlowSolution &solut
             }
         }
     }
+
+    // if time step method is global, the transient is coherent, and dt must be the same for every cell
+    if (_config.getTimeStepMethod() == TimeStepMethod::GLOBAL){
+        dtMin = timestep.min();
+        for (size_t i=0; i<_nPointsI; i++) {
+            for (size_t j=0; j<_nPointsJ; j++){
+                for (size_t k=0; k<_nPointsK; k++){
+                    timestep(i,j,k) = dtMin;
+                }
+            }
+        }
+    }
+
     return timestep;
 }
 

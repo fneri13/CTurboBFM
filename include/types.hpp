@@ -385,6 +385,20 @@ public:
         return slice;
     }
 
+    T min() const {
+        if (_data.empty()) {
+            throw std::runtime_error("Matrix3D::min called on empty matrix");
+        }
+        return *std::min_element(_data.begin(), _data.end());
+    }
+    
+    T max() const {
+        if (_data.empty()) {
+            throw std::runtime_error("Matrix3D::max called on empty matrix");
+        }
+        return *std::max_element(_data.begin(), _data.end());
+    }
+
 private:
     size_t _ni, _nj, _nk;
     std::vector<T> _data;

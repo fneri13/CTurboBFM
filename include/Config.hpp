@@ -120,4 +120,8 @@ public:
 
     size_t getMassFlowUpdateFrequency() const {return massFlowUpdateFrequency;}
 
+    size_t getSolutionOutputFrequency() const {return getSaveUnsteadyInterval();}
+
+    void printAllConfigValues() const;
+
 };

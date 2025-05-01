@@ -91,6 +91,7 @@ void CMesh::allocateMemory() {
 
 
 void CMesh::printMeshInfo() {
+    std::cout << std::endl;
     std::cout << "=========================================\n";
     std::cout << "        INFORMATION OF GRID FILE        \n";
     std::cout << "=========================================\n";
@@ -415,6 +416,7 @@ void CMesh::computeDualGrid2D() {
 
 void CMesh::computeDualGrid3D() {
     assert (_nDimensions == 3 && "Can only compute a 3D dual grid for a 3D mesh.");
+    std::cout << "Computing dual grid coordinates for 3D mesh\n";
 
     // internal dual nodes
     for (size_t i = 1; i < _nDualPointsI-1; i++) {

@@ -2,9 +2,7 @@
 #include "commonFunctions.hpp"
 
 CBoundaryConditionEulerWall::CBoundaryConditionEulerWall(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex)
-    : CBoundaryConditionBase(config, mesh, fluid, boundIndex) {
-        std::cout << "Euler wall boundary condition initialized\n";
-    }
+    : CBoundaryConditionBase(config, mesh, fluid, boundIndex) {}
 
 
     StateVector CBoundaryConditionEulerWall::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint) {

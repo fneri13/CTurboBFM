@@ -9,6 +9,7 @@ Config::Config(const std::string& filename) {
     if (!load(filename)) {
         throw std::runtime_error("Failed to load configuration file: " + filename);
     }
+    printAllConfigValues();
 }
 
 bool Config::load(const std::string& filename) {
@@ -281,3 +282,18 @@ std::vector<FloatType> Config::getTimeIntegrationCoeffs() const {
     }
 }
 
+void Config::printAllConfigValues() const {
+    std::cout << std::endl;
+    std::cout << "=========================================\n";
+    std::cout << "       INFORMATION OF CONFIG FILE        \n";
+    std::cout << "=========================================\n";
+    std::cout << std::endl;
+
+    for (const auto& pair : _data) {
+        std::cout << pair.first << " = " << pair.second << std::endl;
+    }
+    
+    std::cout << "=========================================\n";
+
+    
+}

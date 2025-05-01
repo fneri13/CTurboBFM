@@ -148,11 +148,13 @@ enum class Topology{
 
 enum class BoundaryType {
     INLET = 0,
-    OUTLET = 1,
-    OUTLET_RADIAL_EQUILIBRIUM = 2,
-    WALL = 3,
-    EMPTY = 4,
-    WEDGE = 5
+    INLET_SUPERSONIC = 1,
+    OUTLET_SUPERSONIC = 2,
+    OUTLET = 3,
+    OUTLET_RADIAL_EQUILIBRIUM = 4,
+    WALL = 5,
+    EMPTY = 6,
+    WEDGE = 7
 };
 
 

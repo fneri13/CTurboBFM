@@ -45,10 +45,10 @@ void CSolverBase::readBoundaryConditions(){
 
     // read the boundaries values
     for (auto& bound : bounds) {
-        if (_boundaryTypes[bound] == BoundaryType::INLET){
+        if (_boundaryTypes[bound] == BoundaryType::INLET || _boundaryTypes[bound] == BoundaryType::INLET_SUPERSONIC) {
             _boundaryValues[bound] = _config.getInletBCValues();
         }
-        else if (_boundaryTypes[bound] == BoundaryType::OUTLET){
+        else if (_boundaryTypes[bound] == BoundaryType::OUTLET || _boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC){
             _boundaryValues[bound] = _config.getOutletBCValues();
         }
         else {
@@ -64,8 +64,14 @@ void CSolverBase::readBoundaryConditions(){
         else if (_boundaryTypes[bound] == BoundaryType::INLET){
             _boundaryConditions[bound] = std::make_unique<CBoundaryConditionInlet>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
         }
+        else if (_boundaryTypes[bound] == BoundaryType::INLET_SUPERSONIC){
+            _boundaryConditions[bound] = std::make_unique<CBoundaryConditionInletSupersonic>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
+        }
         else if (_boundaryTypes[bound] == BoundaryType::OUTLET){
             _boundaryConditions[bound] = std::make_unique<CBoundaryConditionOutlet>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
+        }
+        else if (_boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC){
+            _boundaryConditions[bound] = std::make_unique<CBoundaryConditionOutletSupersonic>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
         }
     }
 }

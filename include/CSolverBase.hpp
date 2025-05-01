@@ -10,6 +10,8 @@
 #include "CBoundaryConditionEulerWall.hpp"
 #include "CBoundaryConditionInlet.hpp"
 #include "CBoundaryConditionOutlet.hpp"
+#include "CBoundaryConditionInletSupersonic.hpp"
+#include "CBoundaryConditionOutletSupersonic.hpp"
 
 /** 
   *  \brief     Class handling base solver capabilities.

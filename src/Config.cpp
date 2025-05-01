@@ -193,8 +193,14 @@ BoundaryType Config::getBoundaryType(BoundaryIndices bcIndex) const{
     if (boundaryString == "inlet") {
         boundaryType = BoundaryType::INLET;
     } 
+    else if (boundaryString == "inlet_supersonic") {
+        boundaryType = BoundaryType::INLET_SUPERSONIC;
+    }
     else if (boundaryString == "outlet") {
         boundaryType = BoundaryType::OUTLET;
+    } 
+    else if (boundaryString == "outlet_supersonic") {
+        boundaryType = BoundaryType::OUTLET_SUPERSONIC;
     } 
     else if (boundaryString == "outlet_re") {
         boundaryType = BoundaryType::OUTLET_RADIAL_EQUILIBRIUM;

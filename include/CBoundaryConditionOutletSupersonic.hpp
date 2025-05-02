@@ -14,7 +14,7 @@ class CBoundaryConditionOutletSupersonic : public CBoundaryConditionBase {
             
         virtual ~CBoundaryConditionOutletSupersonic() {}
 
-        virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint) override;
+        virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices) override;
         
     protected:
         std::vector<FloatType> _boundaryValues;

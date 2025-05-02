@@ -14,7 +14,7 @@ class CBoundaryConditionWedge : public CBoundaryConditionBase {
             
         virtual ~CBoundaryConditionWedge() {}
 
-        virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint) override;
+        virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices) override;
         
     private:
         

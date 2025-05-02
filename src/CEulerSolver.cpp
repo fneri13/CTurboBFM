@@ -40,6 +40,14 @@ void CEulerSolver::initializeSolutionArrays(){
         }
     }
 
+    _radialProfilePressure.resize(_nPointsJ);
+    _radialProfileCoords.resize(_nPointsJ);
+
+    size_t nj = _mesh.getNumberPointsJ();
+    for (size_t j = 0; j < nj; j++) {
+        _radialProfileCoords[j] = std::sqrt(_mesh.getVertex(0,j,0).y()*_mesh.getVertex(0,j,0).y() + _mesh.getVertex(0,j,0).z()*_mesh.getVertex(0,j,0).z());
+    }
+
 }
 
 void CEulerSolver::solve(){
@@ -59,6 +67,7 @@ void CEulerSolver::solve(){
         
         // runge-kutta steps
         for (const auto &integrationCoeff: timeIntegrationCoeffs){
+            updateRadialProfiles(tmpSol);
             fluxResiduals = computeFluxResiduals(tmpSol, it);
             updateSolution(solutionOld, tmpSol, fluxResiduals, integrationCoeff, timestep);
         }
@@ -274,13 +283,13 @@ void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const Flow
                     Uinternal = solution.at(iFace, jFace, kFace);
                     surface = -surfaces(iFace, jFace, kFace);
                     midPoint = midPoints(iFace, jFace, kFace);
-                    flux = _boundaryConditions.at(boundaryStart)->computeBoundaryFlux(Uinternal, surface, midPoint);
+                    flux = _boundaryConditions.at(boundaryStart)->computeBoundaryFlux(Uinternal, surface, midPoint, {iFace, jFace, kFace});
                     residuals.add(iFace, jFace, kFace, flux * surface.magnitude());
                 } else if (dirFace == stopFace) {
                     Uinternal = solution.at(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2]);
                     surface = surfaces(iFace, jFace, kFace);
                     midPoint = midPoints(iFace, jFace, kFace);
-                    flux = _boundaryConditions.at(boundaryEnd)->computeBoundaryFlux(Uinternal, surface, midPoint);
+                    flux = _boundaryConditions.at(boundaryEnd)->computeBoundaryFlux(Uinternal, surface, midPoint, {iFace, jFace, kFace});
                     residuals.add(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2], flux * surface.magnitude());
                 } else {
                     // internal flux calculation
@@ -350,4 +359,32 @@ void CEulerSolver::writeLogResidualsToCSV() const {
     }
 
     file.close();
+}
+
+void CEulerSolver::updateRadialProfiles(FlowSolution &solution){
+    
+
+    size_t nj = _mesh.getNumberPointsJ();
+    StateVector conservative, primitive;
+    Vector3D velocityCart, velocityCyl;
+    std::vector<FloatType> densityProfile(nj);
+    std::vector<FloatType> velTangProfile(nj);
+    FloatType theta;
+
+    
+    for (size_t j = 0; j < nj; j++) {
+        conservative = solution.at(0, j, 0);
+        primitive = getEulerPrimitiveFromConservative(conservative);    
+        velocityCart(0) = primitive[1];
+        velocityCart(1) = primitive[2];
+        velocityCart(2) = primitive[3];
+
+        densityProfile[j] = primitive[0];
+        theta = std::atan2(_mesh.getVertex(0,j,0).z(), _mesh.getVertex(0,j,0).y());
+        velocityCyl = computeCylindricalVectorFromCartesian(velocityCart, theta);
+        velTangProfile[j] = velocityCyl.z();
+    }
+
+    integrateRadialEquilibrium(densityProfile, velTangProfile, _radialProfileCoords, _hubStaticPressure, _radialProfilePressure);
+
 }

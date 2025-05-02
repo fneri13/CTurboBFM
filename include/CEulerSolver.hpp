@@ -54,11 +54,13 @@ public:
     // write residuals to csv file logResiduals.csv
     void writeLogResidualsToCSV() const;
 
+    // update the radial profiles according to the solution passed
+    void updateRadialProfiles(FlowSolution &solution);
+
 private:
     
     FlowSolution _conservativeVars; // conservative variables solution
     std::unique_ptr<COutputBase> _output;
     std::vector<StateVector> _logResiduals;
-
 
 };

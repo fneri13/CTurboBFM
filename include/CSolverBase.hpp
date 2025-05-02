@@ -13,6 +13,7 @@
 #include "CBoundaryConditionInletSupersonic.hpp"
 #include "CBoundaryConditionOutletSupersonic.hpp"
 #include "CBoundaryConditionWedge.hpp"
+#include "CBoundaryConditionRadialEquilibrium.hpp"
 
 /** 
   *  \brief     Class handling base solver capabilities.
@@ -33,6 +34,8 @@ class CSolverBase {
         virtual void solve() = 0;
 
         const std::array<int, 3> getStepMask(FluxDirection direction) const;
+
+        FloatType getHubStaticPressure() const { return _hubStaticPressure; }
 
     protected:
         const Config& _config;
@@ -56,6 +59,12 @@ class CSolverBase {
         std::map<BoundaryIndices, std::unique_ptr<CBoundaryConditionBase>> _boundaryConditions;
 
         Topology _topology;
+
+        FloatType _hubStaticPressure;
+
+        std::vector<FloatType> _radialProfilePressure;
+        
+        std::vector<FloatType> _radialProfileCoords;
 
         
 

@@ -18,7 +18,7 @@ class CBoundaryConditionBase {
             
         virtual ~CBoundaryConditionBase() {}
 
-        virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint) = 0;
+        virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices) = 0;
         
     protected:
         const Config& _config;

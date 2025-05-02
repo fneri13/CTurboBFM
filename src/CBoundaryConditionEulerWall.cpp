@@ -5,7 +5,7 @@ CBoundaryConditionEulerWall::CBoundaryConditionEulerWall(const Config &config, c
     : CBoundaryConditionBase(config, mesh, fluid, boundIndex) {}
 
 
-    StateVector CBoundaryConditionEulerWall::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint) {
+    StateVector CBoundaryConditionEulerWall::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices) {
         StateVector primitive = getEulerPrimitiveFromConservative(internalConservative);
         Vector3D velocity({primitive[1], primitive[2], primitive[3]});
         FloatType pressure = _fluid.computePressure_rho_u_et(primitive[0], velocity, primitive[4]);

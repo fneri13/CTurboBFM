@@ -51,6 +51,10 @@ void CSolverBase::readBoundaryConditions(){
         else if (_boundaryTypes[bound] == BoundaryType::OUTLET || _boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC){
             _boundaryValues[bound] = _config.getOutletBCValues();
         }
+        else if (_boundaryTypes[bound] == BoundaryType::RADIAL_EQUILIBRIUM){
+            _boundaryValues[bound] = _config.getOutletBCValues();
+            _hubStaticPressure = _boundaryValues[bound][0];
+        }
         else {
             _boundaryValues[bound] = std::vector<FloatType> {};
         }
@@ -69,6 +73,9 @@ void CSolverBase::readBoundaryConditions(){
         }
         else if (_boundaryTypes[bound] == BoundaryType::OUTLET){
             _boundaryConditions[bound] = std::make_unique<CBoundaryConditionOutlet>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
+        }
+        else if (_boundaryTypes[bound] == BoundaryType::RADIAL_EQUILIBRIUM){
+            _boundaryConditions[bound] = std::make_unique<CBoundaryConditionRadialEquilibrium>(_config, _mesh, *_fluid, bound, _radialProfilePressure);
         }
         else if (_boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC){
             _boundaryConditions[bound] = std::make_unique<CBoundaryConditionOutletSupersonic>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);

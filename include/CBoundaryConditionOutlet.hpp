@@ -10,11 +10,11 @@
 class CBoundaryConditionOutlet : public CBoundaryConditionBase {
     
     public:
-        CBoundaryConditionOutlet(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues);
+        CBoundaryConditionOutlet(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> bcValues);
             
         virtual ~CBoundaryConditionOutlet() {}
 
-        virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint) override;
+        virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices) override;
         
     protected:
         std::vector<FloatType> _boundaryValues;

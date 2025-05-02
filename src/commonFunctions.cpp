@@ -102,3 +102,52 @@ Vector3D rotateVectorAlongXAxis(const Vector3D& v, FloatType theta){
     newVector.z() = v.y() * sin(theta) + v.z() * cos(theta);
     return newVector;
 }
+
+Vector3D computeCylindricalVectorFromCartesian(Vector3D vec, FloatType theta){
+    Vector3D newVector;
+    newVector.x() = vec.x();
+    newVector.y() = vec.y() * cos(theta) + vec.z() * sin(theta);
+    newVector.z() = - vec.y() * sin(theta) + vec.z() * cos(theta);
+    return newVector;
+}
+
+Vector3D computeCartesianVectorFromCylindrical(Vector3D vec, FloatType theta){
+    Vector3D newVector;
+    newVector.x() = vec.x();
+    newVector.y() = vec.y() * cos(theta) - vec.z() * sin(theta);
+    newVector.z() = vec.y() * sin(theta) + vec.z() * cos(theta);
+    return newVector;
+}
+
+
+void integrateRadialEquilibrium(const std::vector<FloatType>& density,
+    const std::vector<FloatType>& velocityTang,
+    const std::vector<FloatType>& radius,
+    const FloatType& hubPressure,
+    std::vector<FloatType>& pressure)
+{
+
+    const size_t N = radius.size();
+    pressure[0] = hubPressure;
+
+    for (size_t i = 1; i < N; ++i) {
+        FloatType r1 = radius[i - 1];
+        FloatType r2 = radius[i];
+
+        FloatType dr = r2 - r1;
+
+        FloatType rho1 = density[i - 1];
+        FloatType rho2 = density[i];
+
+        FloatType ut1 = velocityTang[i - 1];
+        FloatType ut2 = velocityTang[i];
+
+        // Evaluate dp/dr = rho * u_theta^2 / r at both points
+        FloatType dpdr1 = rho1 * ut1 * ut1 / r1;
+        FloatType dpdr2 = rho2 * ut2 * ut2 / r2;
+
+        // Trapezoidal integration step
+        pressure[i] = pressure[i - 1] + 0.5 * (dpdr1 + dpdr2) * dr;
+    }
+
+}

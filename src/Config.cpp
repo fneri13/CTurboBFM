@@ -203,8 +203,8 @@ BoundaryType Config::getBoundaryType(BoundaryIndices bcIndex) const{
     else if (boundaryString == "outlet_supersonic") {
         boundaryType = BoundaryType::OUTLET_SUPERSONIC;
     } 
-    else if (boundaryString == "outlet_re") {
-        boundaryType = BoundaryType::OUTLET_RADIAL_EQUILIBRIUM;
+    else if (boundaryString == "radial_equilibrium") {
+        boundaryType = BoundaryType::RADIAL_EQUILIBRIUM;
     } 
     else if (boundaryString == "wall") {
         boundaryType = BoundaryType::WALL;

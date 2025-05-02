@@ -23,3 +23,14 @@ StateVector computeEulerFluxFromConservative(StateVector conservative, Vector3D 
 FloatType computeAngleBetweenVectors(const Vector3D& v1, const Vector3D& v2);
 
 Vector3D rotateVectorAlongXAxis(const Vector3D& v, FloatType theta);
+
+// convert a cartesian vector (x,y,z components) to a cylindrical vector (axial, radial, tangential components)
+Vector3D computeCylindricalVectorFromCartesian(Vector3D vec, FloatType theta);
+
+// convert a cylindrical vector (axial, radial, tangential components) to a cartesian vector (x,y,z components)
+Vector3D computeCartesianVectorFromCylindrical(Vector3D vec, FloatType theta);
+
+// integrate the radial equilibrium equation using trapezoidal rule
+void integrateRadialEquilibrium(const std::vector<FloatType>& density, const std::vector<FloatType>& velocityTang, 
+                                const std::vector<FloatType>& radius, const FloatType& hubPressure, 
+                                std::vector<FloatType>& pressure);

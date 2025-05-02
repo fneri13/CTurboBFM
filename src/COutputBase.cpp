@@ -13,6 +13,7 @@ void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>&
     size_t nk = _mesh.getNumberPointsK();
     scalarsMap["Pressure"] = Matrix3D<FloatType>(ni, nj, nk);
     scalarsMap["Temperature"] = Matrix3D<FloatType>(ni, nj, nk);
+    scalarsMap["Mach"] = Matrix3D<FloatType>(ni, nj, nk);
 
     FloatType rho, ux, uy, uz, et;
     for (size_t i = 0; i < ni; ++i) {
@@ -26,6 +27,7 @@ void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>&
 
                 scalarsMap["Pressure"](i, j, k) = _fluid.computePressure_rho_u_et(rho, {ux, uy, uz}, et);
                 scalarsMap["Temperature"](i, j, k) = _fluid.computeTemperature_rho_u_et(rho, {ux, uy, uz}, et);
+                scalarsMap["Mach"](i, j, k) = _fluid.computeMachNumber_rho_u_et(rho, {ux, uy, uz}, et);
             }
         }
     }

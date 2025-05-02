@@ -12,6 +12,7 @@
 #include "CBoundaryConditionOutlet.hpp"
 #include "CBoundaryConditionInletSupersonic.hpp"
 #include "CBoundaryConditionOutletSupersonic.hpp"
+#include "CBoundaryConditionWedge.hpp"
 
 /** 
   *  \brief     Class handling base solver capabilities.

@@ -73,6 +73,9 @@ void CSolverBase::readBoundaryConditions(){
         else if (_boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC){
             _boundaryConditions[bound] = std::make_unique<CBoundaryConditionOutletSupersonic>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
         }
+        else if (_boundaryTypes[bound] == BoundaryType::WEDGE){
+            _boundaryConditions[bound] = std::make_unique<CBoundaryConditionWedge>(_config, _mesh, *_fluid, bound);
+        }
     }
 }
 

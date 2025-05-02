@@ -60,6 +60,8 @@ class CMesh {
         // compute the surface vector and center of surface given 4 points
         void computeSurfaceVectorAndCG(const Vector3D &p1, const Vector3D &p2, const Vector3D &p3, const Vector3D &p4, Vector3D &normal, Vector3D &center);
 
+        FloatType getWedgeAngle() const {return _wedgeAngle;}
+
     private:
         const Config& _config;
 

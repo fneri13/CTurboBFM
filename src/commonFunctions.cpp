@@ -93,3 +93,12 @@ StateVector computeEulerFluxFromConservative(StateVector conservative, Vector3D 
 FloatType computeAngleBetweenVectors(const Vector3D& v1, const Vector3D& v2){
     return acos(v1.dot(v2) / (v1.magnitude() * v2.magnitude()));
 }
+
+
+Vector3D rotateVectorAlongXAxis(const Vector3D& v, FloatType theta){
+    Vector3D newVector;
+    newVector.x() = v.x();
+    newVector.y() = v.y() * cos(theta) - v.z() * sin(theta);
+    newVector.z() = v.y() * sin(theta) + v.z() * cos(theta);
+    return newVector;
+}

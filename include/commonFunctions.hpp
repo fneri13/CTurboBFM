@@ -21,3 +21,5 @@ StateVector computeEulerFluxFromPrimitive(StateVector primitive, Vector3D surfac
 StateVector computeEulerFluxFromConservative(StateVector conservative, Vector3D surface, CFluid fluid);
 
 FloatType computeAngleBetweenVectors(const Vector3D& v1, const Vector3D& v2);
+
+Vector3D rotateVectorAlongXAxis(const Vector3D& v, FloatType theta);

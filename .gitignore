@@ -44,6 +44,7 @@ CTurboBFM
 *.yml
 *.dSYM
 *.vts
+*.pdf
 
 # build files
 *cmake*

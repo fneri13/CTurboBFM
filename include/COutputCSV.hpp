@@ -11,7 +11,7 @@
 class COutputCSV : public COutputBase {
     
     public:
-        COutputCSV(const Config &config, const CMesh &mesh, const FlowSolution &solution) : COutputBase(config, mesh, solution) {};
+        COutputCSV(const Config &config, const CMesh &mesh, const FlowSolution &solution, const CFluid &fluid) : COutputBase(config, mesh, solution, fluid) {};
         
         virtual ~COutputCSV() = default;
 

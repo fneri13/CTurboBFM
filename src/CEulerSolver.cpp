@@ -12,7 +12,7 @@ CEulerSolver::CEulerSolver(Config& config, CMesh& mesh)
     : CSolverBase(config, mesh)  // Call base class constructor
 {
     initializeSolutionArrays();
-    _output = std::make_unique<COutputCSV>(_config, _mesh, _conservativeVars);
+    _output = std::make_unique<COutputCSV>(_config, _mesh, _conservativeVars, *_fluid);
 }
 
 void CEulerSolver::initializeSolutionArrays(){

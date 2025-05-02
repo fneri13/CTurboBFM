@@ -297,6 +297,23 @@ public:
         return *this;
     }
 
+    // In-place division
+    Matrix3D<T> operator/(const Matrix3D<FloatType>& other) const {
+        if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
+            throw std::invalid_argument("Matrix3D::operator+= dimension mismatch");
+        }
+        Matrix3D<FloatType> result(_ni, _nj, _nk);
+        for (size_t i = 0; i < _ni; ++i) {
+            for (size_t j = 0; j < _nj; ++j) {
+                for (size_t k = 0; k < _nk; ++k) {
+                    if (other(i, j, k) == 0) throw std::runtime_error("Division by zero");
+                    result(i, j, k) = (*this)(i, j, k) / other(i, j, k);
+                }
+            }
+        }
+        return result;
+    }
+
     Matrix3D& operator*=(T scalar) {
         for (size_t idx = 0; idx < _data.size(); ++idx) {
             _data[idx] *= scalar;
@@ -560,6 +577,49 @@ struct FlowSolution {
             throw std::out_of_range("Index out of range for norm calculation");
         }
     }
+
+    Matrix3D<FloatType> getSolution(size_t iVar) const {
+        switch (iVar)
+        {
+        case 0:
+            return _rho;
+        case 1:
+            return _rhoU;
+        case 2:
+            return _rhoV;
+        case 3:
+            return _rhoW;
+        case 4:
+            return _rhoE;        
+        default:
+            throw std::out_of_range("Index out of range");
+        }
+    }
+
+    Matrix3D<FloatType> getDensity() const {
+        return _rho;
+    }
+
+    Matrix3D<FloatType> getVelocityX() const {
+        auto results = _rhoU / _rho;
+        return results;
+    }
+
+    Matrix3D<FloatType> getVelocityY() const {
+        auto results = _rhoV / _rho;
+        return results;
+    }
+
+    Matrix3D<FloatType> getVelocityZ() const {
+        auto results = _rhoW / _rho;
+        return results;
+    }
+
+    Matrix3D<FloatType> getTotalEnergy() const {
+        auto results = _rhoE / _rho;
+        return results;
+    }
+
 
     void add(size_t i, size_t j, size_t k, const StateVector& delta) {
         _rho(i,j,k)   += delta[0];

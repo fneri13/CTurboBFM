@@ -8,109 +8,118 @@
 using FloatType = double;
 
 
-// This class represents a 3D vector with basic operations. FloatType is always the individual data type
+/**
+ * @brief Class for 3D vectors of FloatType type elements. The 3 components are named as x,y,z.
+ */
 class Vector3D {
-private:
-    std::array<FloatType, 3> _data;
 
-public:
-    Vector3D() : _data{0.0, 0.0, 0.0} {} // default constructor
-    Vector3D(FloatType x, FloatType y, FloatType z) : _data{x, y, z} {} //overloaded
+    private:
+        std::array<FloatType, 3> _data; // data member
 
-    // Accessors
-    FloatType& operator()(size_t index) {
-        if (index >= 3) throw std::out_of_range("Index out of bounds");
-        return _data[index];
-    }
+    public:
+        
+        /** @brief Default constructor, initializeds to {0,0,0} */
+        Vector3D() : _data{0.0, 0.0, 0.0} {} // default constructor
+        
+        /** @brief Overloaded constructor, initializeds to {x,y,z} 
+         * \param x, y, z coordinates 
+        */
+        Vector3D(FloatType x, FloatType y, FloatType z) : _data{x, y, z} {} //overloaded
 
-    const FloatType& operator()(size_t index) const {
-        if (index >= 3) throw std::out_of_range("Index out of bounds");
-        return _data[index];
-    }
+        // Accessors
+        FloatType& operator()(size_t index) {
+            if (index >= 3) throw std::out_of_range("Index out of bounds");
+            return _data[index];
+        }
 
-    FloatType& x() { return _data[0]; }
-    FloatType& y() { return _data[1]; }
-    FloatType& z() { return _data[2]; }
+        const FloatType& operator()(size_t index) const {
+            if (index >= 3) throw std::out_of_range("Index out of bounds");
+            return _data[index];
+        }
 
-    const FloatType& x() const { return _data[0]; }
-    const FloatType& y() const { return _data[1]; }
-    const FloatType& z() const { return _data[2]; }
+        FloatType& x() { return _data[0]; }
+        FloatType& y() { return _data[1]; }
+        FloatType& z() { return _data[2]; }
 
-    // Operator Overloads
-    Vector3D operator+(const Vector3D& other) const {
-        return Vector3D(x() + other.x(), y() + other.y(), z() + other.z());
-    }
+        const FloatType& x() const { return _data[0]; }
+        const FloatType& y() const { return _data[1]; }
+        const FloatType& z() const { return _data[2]; }
 
-    Vector3D operator-(const Vector3D& other) const {
-        return Vector3D(x() - other.x(), y() - other.y(), z() - other.z());
-    }
+        // Operator Overloads
+        Vector3D operator+(const Vector3D& other) const {
+            return Vector3D(x() + other.x(), y() + other.y(), z() + other.z());
+        }
 
-    Vector3D operator*(FloatType scalar) const {
-        return Vector3D(x() * scalar, y() * scalar, z() * scalar);
-    }
+        Vector3D operator-(const Vector3D& other) const {
+            return Vector3D(x() - other.x(), y() - other.y(), z() - other.z());
+        }
 
-    Vector3D operator/(FloatType scalar) const {
-        return Vector3D(x() / scalar, y() / scalar, z() / scalar);
-    }
+        Vector3D operator*(FloatType scalar) const {
+            return Vector3D(x() * scalar, y() * scalar, z() * scalar);
+        }
 
-    Vector3D& operator+=(const Vector3D& other) {
-        x() += other.x(); y() += other.y(); z() += other.z();
-        return *this;
-    }
+        Vector3D operator/(FloatType scalar) const {
+            return Vector3D(x() / scalar, y() / scalar, z() / scalar);
+        }
 
-    Vector3D& operator-=(const Vector3D& other) {
-        x() -= other.x(); y() -= other.y(); z() -= other.z();
-        return *this;
-    }
+        Vector3D& operator+=(const Vector3D& other) {
+            x() += other.x(); y() += other.y(); z() += other.z();
+            return *this;
+        }
 
-    Vector3D operator-() const {
-        return Vector3D(- x(), - y(), - z());
-    }
+        Vector3D& operator-=(const Vector3D& other) {
+            x() -= other.x(); y() -= other.y(); z() -= other.z();
+            return *this;
+        }
 
-    Vector3D& operator*=(FloatType scalar) {
-        x() *= scalar; y() *= scalar; z() *= scalar;
-        return *this;
-    }
+        Vector3D operator-() const {
+            return Vector3D(- x(), - y(), - z());
+        }
 
-    Vector3D& operator/=(FloatType scalar) {
-        x() /= scalar; y() /= scalar; z() /= scalar;
-        return *this;
-    }
+        Vector3D& operator*=(FloatType scalar) {
+            x() *= scalar; y() *= scalar; z() *= scalar;
+            return *this;
+        }
 
-    bool operator==(const Vector3D& other) const {
-        return x() == other.x() && y() == other.y() && z() == other.z();
-    }
+        Vector3D& operator/=(FloatType scalar) {
+            x() /= scalar; y() /= scalar; z() /= scalar;
+            return *this;
+        }
 
-    // Magnitude and normalization
-    FloatType magnitude() const {
-        return std::sqrt(x() * x() + y() * y() + z() * z());
-    }
+        bool operator==(const Vector3D& other) const {
+            return x() == other.x() && y() == other.y() && z() == other.z();
+        }
 
-    Vector3D normalized() const {
-        FloatType mag = magnitude();
-        return (mag == 0) ? Vector3D(0, 0, 0) : *this / mag;
-    }
+        // Magnitude and normalization
+        FloatType magnitude() const {
+            return std::sqrt(x() * x() + y() * y() + z() * z());
+        }
 
-    Vector3D cross(const Vector3D& other) const {
-        return Vector3D(
-            y() * other.z() - z() * other.y(),
-            z() * other.x() - x() * other.z(),
-            x() * other.y() - y() * other.x()
-        );
-    }
+        Vector3D normalized() const {
+            FloatType mag = magnitude();
+            return (mag == 0) ? Vector3D(0, 0, 0) : *this / mag;
+        }
 
-    FloatType dot(const Vector3D& other) const {
-        FloatType result = x() * other.x() + y() * other.y() + z() * other.z();
-        return result;
-    }
+        Vector3D cross(const Vector3D& other) const {
+            return Vector3D(
+                y() * other.z() - z() * other.y(),
+                z() * other.x() - x() * other.z(),
+                x() * other.y() - y() * other.x()
+            );
+        }
 
-    // print the content
-    friend std::ostream& operator<<(std::ostream& os, const Vector3D& v) {
-    return os << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
-    }
+        FloatType dot(const Vector3D& other) const {
+            FloatType result = x() * other.x() + y() * other.y() + z() * other.z();
+            return result;
+        }
+
+        // print the content
+        friend std::ostream& operator<<(std::ostream& os, const Vector3D& v) {
+        return os << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
+        }
 };
 
-
+/** @brief Enum class for BFM models*/
 enum class BFM_Model {
     NONE = 0,
     HALL = 1,
@@ -119,6 +128,7 @@ enum class BFM_Model {
 };
 
 
+/** @brief Enum class for boundary indices*/
 enum class BoundaryIndices {
     I_START = 0,
     I_END = 1,
@@ -128,17 +138,22 @@ enum class BoundaryIndices {
     K_END = 5
 };
 
+
+/** @brief Enum class for output formats*/
 enum class OutputFormats {
     CSV = 0,
     VTK = 1
 };
 
+
+/** @brief Enum class for kind of solver*/
 enum class KindSolver {
     EULER = 0,
     RANS = 1
 };
 
 
+/** @brief Enum class for topologies*/
 enum class Topology{
     TWO_DIMENSIONAL = 0,
     THREE_DIMENSIONAL = 1,
@@ -146,6 +161,7 @@ enum class Topology{
 };
 
 
+/** @brief Enum class for boundary types*/
 enum class BoundaryType {
     INLET = 0,
     INLET_SUPERSONIC = 1,
@@ -158,277 +174,280 @@ enum class BoundaryType {
 };
 
 
+/** @brief Enum class for time integration*/
 enum class TimeIntegration {
     RUNGE_KUTTA_4 = 0,
     RUNGE_KUTTA_3 = 1
 };
 
 
+/** @brief Enum class for time step method*/
 enum class TimeStepMethod {
     LOCAL = 0,
     GLOBAL = 1
 };
 
 
+/** @brief Enum class for convection schemes*/
 enum class ConvectionScheme {
     JST = 0
 };
 
 
-// 2D matrix that can include floats or vectors inside
+/** @brief Matrix2D class for 2D matrices generic elements*/
 template<typename T>
 class Matrix2D {
-public:
-    // Default constructor
-    Matrix2D() : _ni(0), _nj(0) {}
+    public:
+        // Default constructor
+        Matrix2D() : _ni(0), _nj(0) {}
 
-    // Constructor with dimensions
-    Matrix2D(size_t ni, size_t nj) : _ni(ni), _nj(nj), _data(ni * nj) {}
+        // Constructor with dimensions
+        Matrix2D(size_t ni, size_t nj) : _ni(ni), _nj(nj), _data(ni * nj) {}
 
-    // Resize the matrix to new dimensions
-    void resize(size_t ni, size_t nj) {
-        _ni = ni;
-        _nj = nj;
-        _data.resize(ni * nj);
-    }
-
-    // Overloaded () operator for access with bounds checking
-    T& operator()(size_t i, size_t j) {
-        check_bounds(i, j);
-        return _data[i * _nj + j];
-    }
-
-    const T& operator()(size_t i, size_t j) const {
-        check_bounds(i, j);
-        return _data[i * _nj + j];
-    }
-
-    size_t sizeI() const { return _ni; }
-    size_t sizeJ() const { return _nj; }
-
-private:
-    size_t _ni, _nj;
-    std::vector<T> _data;
-
-    void check_bounds(size_t i, size_t j) const {
-        if (i >= _ni || j >= _nj) {
-            throw std::out_of_range("Matrix2D::operator() index out of range");
+        // Resize the matrix to new dimensions
+        void resize(size_t ni, size_t nj) {
+            _ni = ni;
+            _nj = nj;
+            _data.resize(ni * nj);
         }
-    }
+
+        // Overloaded () operator for access with bounds checking
+        T& operator()(size_t i, size_t j) {
+            check_bounds(i, j);
+            return _data[i * _nj + j];
+        }
+
+        const T& operator()(size_t i, size_t j) const {
+            check_bounds(i, j);
+            return _data[i * _nj + j];
+        }
+
+        size_t sizeI() const { return _ni; }
+        size_t sizeJ() const { return _nj; }
+
+    private:
+        size_t _ni, _nj;
+        std::vector<T> _data;
+
+        void check_bounds(size_t i, size_t j) const {
+            if (i >= _ni || j >= _nj) {
+                throw std::out_of_range("Matrix2D::operator() index out of range");
+            }
+        }
 };
 
 
-// 3D matrix that can include floats or vectors inside
+
+/** @brief Class for 3D matrices of generic elements*/
 template <typename T>
 class Matrix3D {
-public:
-    // Default constructor
-    Matrix3D() : _ni(0), _nj(0), _nk(0) {}
+    public:
+        // Default constructor
+        Matrix3D() : _ni(0), _nj(0), _nk(0) {}
 
-    // Constructor with dimensions and optional initial data
-    Matrix3D(size_t ni, size_t nj, size_t nk, const std::vector<T>& initial_data = {})
-        : _ni(ni), _nj(nj), _nk(nk) {
-        if (!initial_data.empty()) {
-            if (initial_data.size() != ni * nj * nk) {
-                throw std::invalid_argument("Initial data size does not match matrix dimensions");
+        // Constructor with dimensions and optional initial data
+        Matrix3D(size_t ni, size_t nj, size_t nk, const std::vector<T>& initial_data = {})
+            : _ni(ni), _nj(nj), _nk(nk) {
+            if (!initial_data.empty()) {
+                if (initial_data.size() != ni * nj * nk) {
+                    throw std::invalid_argument("Initial data size does not match matrix dimensions");
+                }
+                _data = initial_data;
+            } else {
+                _data.resize(ni * nj * nk);
             }
-            _data = initial_data;
-        } else {
+        }
+
+        // Resize the matrix
+        void resize(size_t ni, size_t nj, size_t nk) {
+            _ni = ni;
+            _nj = nj;
+            _nk = nk;
             _data.resize(ni * nj * nk);
         }
-    }
 
-    // Resize the matrix
-    void resize(size_t ni, size_t nj, size_t nk) {
-        _ni = ni;
-        _nj = nj;
-        _nk = nk;
-        _data.resize(ni * nj * nk);
-    }
+        // Access and modify using operator() with bounds checking
+        T& operator()(size_t i, size_t j, size_t k) {
+            check_bounds(i, j, k);
+            return _data[i * _nj * _nk + j * _nk + k];
+        }
 
-    // Access and modify using operator() with bounds checking
-    T& operator()(size_t i, size_t j, size_t k) {
-        check_bounds(i, j, k);
-        return _data[i * _nj * _nk + j * _nk + k];
-    }
+        const T& operator()(size_t i, size_t j, size_t k) const {
+            check_bounds(i, j, k);
+            return _data[i * _nj * _nk + j * _nk + k];
+        }
 
-    const T& operator()(size_t i, size_t j, size_t k) const {
-        check_bounds(i, j, k);
-        return _data[i * _nj * _nk + j * _nk + k];
-    }
+        // Size getters
+        size_t sizeI() const { return _ni; }
+        size_t sizeJ() const { return _nj; }
+        size_t sizeK() const { return _nk; }
 
-    // Size getters
-    size_t sizeI() const { return _ni; }
-    size_t sizeJ() const { return _nj; }
-    size_t sizeK() const { return _nk; }
-
-    // Compute L2 norm of all components of the matrix
-    T norm() const {
-        T sum = 0;
-        for (size_t i = 0; i < _ni; ++i) {
-            for (size_t j = 0; j < _nj; ++j) {
-                for (size_t k = 0; k < _nk; ++k) {
-                    sum += std::pow(operator()(i, j, k), 2);  // Square each element
+        // Compute L2 norm of all components of the matrix
+        T norm() const {
+            T sum = 0;
+            for (size_t i = 0; i < _ni; ++i) {
+                for (size_t j = 0; j < _nj; ++j) {
+                    for (size_t k = 0; k < _nk; ++k) {
+                        sum += std::pow(operator()(i, j, k), 2);  // Square each element
+                    }
                 }
             }
+            return std::sqrt(sum);  // Return the square root of the sum
         }
-        return std::sqrt(sum);  // Return the square root of the sum
-    }
 
-    // In-place addition
-    Matrix3D& operator+=(const Matrix3D& other) {
-        if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
-            throw std::invalid_argument("Matrix3D::operator+= dimension mismatch");
+        // In-place addition
+        Matrix3D& operator+=(const Matrix3D& other) {
+            if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
+                throw std::invalid_argument("Matrix3D::operator+= dimension mismatch");
+            }
+            for (size_t idx = 0; idx < _data.size(); ++idx) {
+                _data[idx] += other._data[idx];
+            }
+            return *this;
         }
-        for (size_t idx = 0; idx < _data.size(); ++idx) {
-            _data[idx] += other._data[idx];
-        }
-        return *this;
-    }
 
-    // In-place multiplication
-    Matrix3D& operator*=(const Matrix3D& other) {
-        if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
-            throw std::invalid_argument("Matrix3D::operator+= dimension mismatch");
+        // In-place multiplication
+        Matrix3D& operator*=(const Matrix3D& other) {
+            if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
+                throw std::invalid_argument("Matrix3D::operator+= dimension mismatch");
+            }
+            for (size_t idx = 0; idx < _data.size(); ++idx) {
+                _data[idx] *= other._data[idx];
+            }
+            return *this;
         }
-        for (size_t idx = 0; idx < _data.size(); ++idx) {
-            _data[idx] *= other._data[idx];
-        }
-        return *this;
-    }
 
-    // In-place division
-    Matrix3D<T> operator/(const Matrix3D<FloatType>& other) const {
-        if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
-            throw std::invalid_argument("Matrix3D::operator+= dimension mismatch");
-        }
-        Matrix3D<FloatType> result(_ni, _nj, _nk);
-        for (size_t i = 0; i < _ni; ++i) {
-            for (size_t j = 0; j < _nj; ++j) {
-                for (size_t k = 0; k < _nk; ++k) {
-                    if (other(i, j, k) == 0) throw std::runtime_error("Division by zero");
-                    result(i, j, k) = (*this)(i, j, k) / other(i, j, k);
+        // In-place division
+        Matrix3D<T> operator/(const Matrix3D<FloatType>& other) const {
+            if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
+                throw std::invalid_argument("Matrix3D::operator+= dimension mismatch");
+            }
+            Matrix3D<FloatType> result(_ni, _nj, _nk);
+            for (size_t i = 0; i < _ni; ++i) {
+                for (size_t j = 0; j < _nj; ++j) {
+                    for (size_t k = 0; k < _nk; ++k) {
+                        if (other(i, j, k) == 0) throw std::runtime_error("Division by zero");
+                        result(i, j, k) = (*this)(i, j, k) / other(i, j, k);
+                    }
                 }
             }
+            return result;
         }
-        return result;
-    }
 
-    Matrix3D& operator*=(T scalar) {
-        for (size_t idx = 0; idx < _data.size(); ++idx) {
-            _data[idx] *= scalar;
+        Matrix3D& operator*=(T scalar) {
+            for (size_t idx = 0; idx < _data.size(); ++idx) {
+                _data[idx] *= scalar;
+            }
+            return *this;
         }
-        return *this;
-    }
 
-    // In-place subtraction
-    Matrix3D& operator-=(const Matrix3D& other) {
-        if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
-            throw std::invalid_argument("Matrix3D::operator-= dimension mismatch");
+        // In-place subtraction
+        Matrix3D& operator-=(const Matrix3D& other) {
+            if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
+                throw std::invalid_argument("Matrix3D::operator-= dimension mismatch");
+            }
+            for (size_t idx = 0; idx < _data.size(); ++idx) {
+                _data[idx] -= other._data[idx];
+            }
+            return *this;
         }
-        for (size_t idx = 0; idx < _data.size(); ++idx) {
-            _data[idx] -= other._data[idx];
-        }
-        return *this;
-    }
 
-    std::vector<T> getData() const {return _data;}
+        std::vector<T> getData() const {return _data;}
 
-    // get a slice of one of the boundary
-    Matrix2D<T> getBoundarySlice(BoundaryIndices index) const {
-        Matrix2D<T> slice;
-        size_t ni = sizeI();
-        size_t nj = sizeJ();
-        size_t nk = sizeK();
-        
-        // i slices
-        if (index==BoundaryIndices::I_START || index==BoundaryIndices::I_END){
+        // get a slice of one of the boundary
+        Matrix2D<T> getBoundarySlice(BoundaryIndices index) const {
+            Matrix2D<T> slice;
+            size_t ni = sizeI();
+            size_t nj = sizeJ();
+            size_t nk = sizeK();
             
-            slice.resize(nj, nk);
+            // i slices
+            if (index==BoundaryIndices::I_START || index==BoundaryIndices::I_END){
+                
+                slice.resize(nj, nk);
 
-            if (index==BoundaryIndices::I_START){
-                for (int j=0; j<nj; j++){
-                    for (int k=0; k<nk; k++){
-                        slice(j,k) = (*this)(0, j, k);
-                    }
-                }
-            } else {
-                for (int j=0; j<nj; j++){
-                    for (int k=0; k<nk; k++){
-                        slice(j,k) = (*this)(ni-1, j, k);
-                    }
-                }
-            }
-        }
-
-       // j slices
-        if (index==BoundaryIndices::J_START || index==BoundaryIndices::J_END){
-            slice.resize(ni, nk);
-
-            if (index==BoundaryIndices::J_START){
-                for (int i=0; i<ni; i++){
-                    for (int k=0; k<nk; k++){
-                        slice(i,k) = (*this)(i, 0, k);
-                    }
-                }
-            } else {
-                for (int i=0; i<ni; i++){
-                    for (int k=0; k<nk; k++){
-                        slice(i,k) = (*this)(i, nj-1, k);
-                    }
-                }
-            }
-        }
-
-        // k slices
-        if (index==BoundaryIndices::K_START || index==BoundaryIndices::K_END){
-            slice.resize(ni, nj);
-
-            if (index==BoundaryIndices::K_START){
-                for (int i=0; i<ni; i++){
+                if (index==BoundaryIndices::I_START){
                     for (int j=0; j<nj; j++){
-                        slice(i,j) = (*this)(i, j, 0);
+                        for (int k=0; k<nk; k++){
+                            slice(j,k) = (*this)(0, j, k);
+                        }
                     }
-                }
-            } else {
-                for (int i=0; i<ni; i++){
+                } else {
                     for (int j=0; j<nj; j++){
-                        slice(i,j) = (*this)(i, j, nk-1);
+                        for (int k=0; k<nk; k++){
+                            slice(j,k) = (*this)(ni-1, j, k);
+                        }
                     }
                 }
             }
+
+        // j slices
+            if (index==BoundaryIndices::J_START || index==BoundaryIndices::J_END){
+                slice.resize(ni, nk);
+
+                if (index==BoundaryIndices::J_START){
+                    for (int i=0; i<ni; i++){
+                        for (int k=0; k<nk; k++){
+                            slice(i,k) = (*this)(i, 0, k);
+                        }
+                    }
+                } else {
+                    for (int i=0; i<ni; i++){
+                        for (int k=0; k<nk; k++){
+                            slice(i,k) = (*this)(i, nj-1, k);
+                        }
+                    }
+                }
+            }
+
+            // k slices
+            if (index==BoundaryIndices::K_START || index==BoundaryIndices::K_END){
+                slice.resize(ni, nj);
+
+                if (index==BoundaryIndices::K_START){
+                    for (int i=0; i<ni; i++){
+                        for (int j=0; j<nj; j++){
+                            slice(i,j) = (*this)(i, j, 0);
+                        }
+                    }
+                } else {
+                    for (int i=0; i<ni; i++){
+                        for (int j=0; j<nj; j++){
+                            slice(i,j) = (*this)(i, j, nk-1);
+                        }
+                    }
+                }
+            }
+
+            return slice;
         }
 
-        return slice;
-    }
-
-    T min() const {
-        if (_data.empty()) {
-            throw std::runtime_error("Matrix3D::min called on empty matrix");
+        T min() const {
+            if (_data.empty()) {
+                throw std::runtime_error("Matrix3D::min called on empty matrix");
+            }
+            return *std::min_element(_data.begin(), _data.end());
         }
-        return *std::min_element(_data.begin(), _data.end());
-    }
-    
-    T max() const {
-        if (_data.empty()) {
-            throw std::runtime_error("Matrix3D::max called on empty matrix");
+        
+        T max() const {
+            if (_data.empty()) {
+                throw std::runtime_error("Matrix3D::max called on empty matrix");
+            }
+            return *std::max_element(_data.begin(), _data.end());
         }
-        return *std::max_element(_data.begin(), _data.end());
-    }
 
-private:
-    size_t _ni, _nj, _nk;
-    std::vector<T> _data;
+    private:
+        size_t _ni, _nj, _nk;
+        std::vector<T> _data;
 
-    void check_bounds(size_t i, size_t j, size_t k) const {
-        if (i >= _ni || j >= _nj || k >= _nk) {
-            throw std::out_of_range("Matrix3D::operator() index out of range");
+        void check_bounds(size_t i, size_t j, size_t k) const {
+            if (i >= _ni || j >= _nj || k >= _nk) {
+                throw std::out_of_range("Matrix3D::operator() index out of range");
+            }
         }
-    }
 };
 
-
-// Wrapper of std::array<FloatType, 5> that is used for primitive, conservative variables. Overloaded methods
+/** \brief State vector class, holding 5 float values, with overloaded operators */
 class StateVector {
     private:
         static constexpr std::size_t Size = 5; // for the moment always 5, later it could grow
@@ -545,7 +564,7 @@ class StateVector {
     };
 
 
-
+/** \brief FlowSolution class, holding 5 matrix3D, with overloaded operators */
 struct FlowSolution {
     Matrix3D<FloatType> _rho;
     Matrix3D<FloatType> _rhoU;
@@ -717,6 +736,8 @@ struct FlowSolution {
     }
 };
 
+
+/** Enum class for flux directions. */
 enum class FluxDirection {
     I=0,
     J=1,
@@ -724,6 +745,7 @@ enum class FluxDirection {
 };
 
 
+/** Struct for computing and storing statistics. */
 struct Statistics {
     FloatType mean = 0;
     FloatType min = 0;

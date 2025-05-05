@@ -1,7 +1,7 @@
-#include "CJSTScheme.hpp"
+#include "CAdvectionSchemeJST.hpp"
 #include "commonFunctions.hpp"
 
-StateVector CJSTScheme::computeFlux(
+StateVector CAdvectionSchemeJST::computeFlux(
     const StateVector& Ull,
     const StateVector& Ul,
     const StateVector& Ur,
@@ -37,14 +37,14 @@ StateVector CJSTScheme::computeFlux(
     return flux;
 }
 
-FloatType CJSTScheme::computeRFactor(const StateVector primitive) const {
+FloatType CAdvectionSchemeJST::computeRFactor(const StateVector primitive) const {
     Vector3D velocity = {primitive[1], primitive[2], primitive[3]}; 
     FloatType velMag = velocity.magnitude();
     FloatType soundSpeed = _fluid.computeSoundSpeed_rho_u_et(primitive[0], velocity, primitive[4]);
     return (velMag+soundSpeed);
 }
 
-FloatType CJSTScheme::computeSFactor(const StateVector prim1, const StateVector prim2, const StateVector prim3) const {
+FloatType CAdvectionSchemeJST::computeSFactor(const StateVector prim1, const StateVector prim2, const StateVector prim3) const {
     FloatType p1 = _fluid.computePressure_primitive(prim1);
     FloatType p2 = _fluid.computePressure_primitive(prim2);
     FloatType p3 = _fluid.computePressure_primitive(prim3);

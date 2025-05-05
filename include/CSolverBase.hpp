@@ -4,8 +4,8 @@
 #include "Config.hpp"
 #include "CMesh.hpp"
 #include "CFluid.hpp"
-#include "CAdvectionScheme.hpp"
-#include "CJSTScheme.hpp"
+#include "CAdvectionSchemeBase.hpp"
+#include "CAdvectionSchemeJST.hpp"
 #include "CBoundaryConditionBase.hpp"
 #include "CBoundaryConditionEulerWall.hpp"
 #include "CBoundaryConditionInlet.hpp"
@@ -48,7 +48,7 @@ class CSolverBase {
         
         std::unique_ptr<CFluid> _fluid;
 
-        std::unique_ptr<CAdvectionScheme> _advectionScheme;
+        std::unique_ptr<CAdvectionSchemeBase> _advectionScheme;
         
         std::map<BoundaryIndices, FloatType> _massFlows;
         

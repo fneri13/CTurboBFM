@@ -19,7 +19,7 @@ CSolverBase::CSolverBase(Config& config, CMesh& mesh)
     switch (advScheme)
     {
     case ConvectionScheme::JST:
-        _advectionScheme = std::make_unique<CJSTScheme>(*_fluid);
+        _advectionScheme = std::make_unique<CAdvectionSchemeJST>(*_fluid);
         break;
 
     default:

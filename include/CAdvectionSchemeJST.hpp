@@ -1,12 +1,12 @@
 #pragma once
 
-#include "CAdvectionScheme.hpp"
+#include "CAdvectionSchemeBase.hpp"
 
 // JST scheme advection flux formulation by Jameson
-class CJSTScheme : public CAdvectionScheme {
+class CAdvectionSchemeJST : public CAdvectionSchemeBase {
     public:
 
-        CJSTScheme(const CFluid& fluid) : CAdvectionScheme(fluid) {}
+        CAdvectionSchemeJST(const CFluid& fluid) : CAdvectionSchemeBase(fluid) {}
 
         StateVector computeFlux(
             const StateVector& Ull,

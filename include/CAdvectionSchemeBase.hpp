@@ -3,12 +3,12 @@
 #include "types.hpp"
 #include "CFluid.hpp"
 
-class CAdvectionScheme {
+class CAdvectionSchemeBase {
 public:
 
-    CAdvectionScheme(const CFluid &fluid) : _fluid(fluid) {};
+    CAdvectionSchemeBase(const CFluid &fluid) : _fluid(fluid) {};
 
-    virtual ~CAdvectionScheme() = default;  
+    virtual ~CAdvectionSchemeBase() = default;  
 
     virtual StateVector computeFlux(const StateVector &Ull, 
         const StateVector &Ul, 

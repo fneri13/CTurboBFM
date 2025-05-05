@@ -3,6 +3,7 @@
 #include "types.hpp"
 #include "Config.hpp"
 #include <assert.h>
+#include "CInput.hpp"
 
 /** 
   *  \brief     Class handling mesh capabilities.

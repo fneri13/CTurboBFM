@@ -4,6 +4,7 @@
 #include <algorithm> // for minmax_element
 #include <numeric>   // for accumulate, inner_product
 #include <cmath>
+#include <map>
 
 using FloatType = double;
 
@@ -742,6 +743,73 @@ enum class FluxDirection {
     I=0,
     J=1,
     K=2,
+};
+
+
+/** Enum class for field names directions. */
+enum class FieldNames {
+    X_COORDS=0,
+    Y_COORDS=1,
+    Z_COORDS=2,
+    RHO=3,
+    RHO_U=4,
+    RHO_V=5,
+    RHO_W=6,
+    RHO_E=7,
+    BLOCKAGE=8
+};
+
+
+
+class FieldNameMapper {
+public:
+    static const std::map<std::string, FieldNames>& stringToEnum() {
+        static const std::map<std::string, FieldNames> map = {
+            {"x", FieldNames::X_COORDS},
+            {"y", FieldNames::Y_COORDS},
+            {"z", FieldNames::Z_COORDS},
+            {"rho", FieldNames::RHO},
+            {"rho_u", FieldNames::RHO_U},
+            {"rho_v", FieldNames::RHO_V},
+            {"rho_w", FieldNames::RHO_W},
+            {"rho_e", FieldNames::RHO_E},
+            {"blockage", FieldNames::BLOCKAGE}
+        };
+        return map;
+    }
+
+    static const std::map<FieldNames, std::string>& enumToString() {
+        static const std::map<FieldNames, std::string> map = {
+            {FieldNames::X_COORDS, "x"},
+            {FieldNames::Y_COORDS, "y"},
+            {FieldNames::Z_COORDS, "z"},
+            {FieldNames::RHO, "rho"},
+            {FieldNames::RHO_U, "rho_u"},
+            {FieldNames::RHO_V, "rho_v"},
+            {FieldNames::RHO_W, "rho_w"},
+            {FieldNames::RHO_E, "rho_e"},
+            {FieldNames::BLOCKAGE, "blockage"}
+        };
+        return map;
+    }
+
+    static FieldNames fromString(const std::string& str) {
+        const auto& map = stringToEnum();
+        auto it = map.find(str);
+        if (it == map.end()) {
+            throw std::runtime_error("Unknown field name: " + str);
+        }
+        return it->second;
+    }
+
+    static std::string toString(FieldNames field) {
+        const auto& map = enumToString();
+        auto it = map.find(field);
+        if (it == map.end()) {
+            throw std::runtime_error("Unknown FieldNames enum value");
+        }
+        return it->second;
+    }
 };
 
 

@@ -26,6 +26,11 @@ CMesh::CMesh(Config& config) : _config(config) {
 }
 
 void CMesh::readPoints() {
+    CInput input(_config.gridFilePath());
+
+
+
+
     std::string filename = _config.gridFilePath();
     std::ifstream file(filename);
     if (!file) {

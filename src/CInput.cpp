@@ -19,16 +19,15 @@ void CInput::readCSVFile() {
     }
 
     // Read header lines
-    size_t ni = 0, nj = 0, nk = 0;
     std::string line;
     std::vector<std::string> headers;
     while (std::getline(file, line)) {
         if (line.rfind("NI=", 0) == 0)
-            ni = std::stoi(line.substr(3));
+            _ni = std::stoi(line.substr(3));
         else if (line.rfind("NJ=", 0) == 0)
-            nj = std::stoi(line.substr(3));
+            _nj = std::stoi(line.substr(3));
         else if (line.rfind("NK=", 0) == 0)
-            nk = std::stoi(line.substr(3));
+            _nk = std::stoi(line.substr(3));
         else if (line.rfind("x,y,z", 0) == 0) {  
             std::istringstream headerStream(line);
             std::string column;
@@ -42,7 +41,7 @@ void CInput::readCSVFile() {
     // allocate the memory for the arrays
     for (auto &head: headers){
         FieldNames field = FieldNameMapper::fromString(head);
-        _fieldsMap[field] = Matrix3D<FloatType>(ni, nj, nk);
+        _fieldsMap[field] = Matrix3D<FloatType>(_ni, _nj, _nk);
     }
 
     // Read data
@@ -64,9 +63,9 @@ void CInput::readCSVFile() {
         }
 
         // Compute i, j, k indices
-        i = nPoint / (nj * nk);
-        j = (nPoint % (nj * nk)) / nk;
-        k = nPoint % nk;
+        i = nPoint / (_nj * _nk);
+        j = (nPoint % (_nj * _nk)) / _nk;
+        k = nPoint % _nk;
         nPoint++;
 
         // Assign each value to the correct field matrix
@@ -77,7 +76,14 @@ void CInput::readCSVFile() {
     }
 
     // check if the number of points read is equal to the total
-    assert(nPoint == ni * nj * nk && "Number of points in the input file is not equal to ni*nj*nk");
+    assert(nPoint == _ni * _nj * _nk && "Number of points in the input file is not equal to ni*nj*nk");
 
     file.close();
 }
+
+
+Vector3D CInput::getCoordinates(size_t i, size_t j, size_t k) const {
+    return Vector3D(_fieldsMap.at(FieldNames::X_COORDS)(i, j, k),
+                    _fieldsMap.at(FieldNames::Y_COORDS)(i, j, k),
+                    _fieldsMap.at(FieldNames::Z_COORDS)(i, j, k));
+};

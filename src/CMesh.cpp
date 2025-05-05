@@ -25,33 +25,13 @@ CMesh::CMesh(Config& config) : _config(config) {
     printMeshInfo();
 }
 
+
 void CMesh::readPoints() {
     CInput input(_config.gridFilePath());
 
-
-
-
-    std::string filename = _config.gridFilePath();
-    std::ifstream file(filename);
-    if (!file) {
-        std::cerr << "Error opening coordinates CSV file '" << filename << "'!\n";
-        std::exit(EXIT_FAILURE);  // EXIT_FAILURE = standard failure code
-    }
-
-    // Read header lines
-    std::string line;
-    while (std::getline(file, line)) {
-        if (line.rfind("NDIMENSIONS=", 0) == 0)
-            _nDimensions = std::stoi(line.substr(12));
-        else if (line.rfind("NI=", 0) == 0)
-            _nPointsI = std::stoi(line.substr(3));
-        else if (line.rfind("NJ=", 0) == 0)
-            _nPointsJ = std::stoi(line.substr(3));
-        else if (line.rfind("NK=", 0) == 0)
-            _nPointsK = std::stoi(line.substr(3));
-        else if (line == "x,y,z") // Column header line
-            break;
-    }
+    _nPointsI = input.getNumberPointsI();
+    _nPointsJ = input.getNumberPointsJ();
+    _nPointsK = input.getNumberPointsK();
     _nPointsTotal = _nPointsI * _nPointsJ * _nPointsK;
     _nDualPointsI = _nPointsI + 1;
     _nDualPointsJ = _nPointsJ + 1;
@@ -60,23 +40,15 @@ void CMesh::readPoints() {
 
     _vertices.resize(_nPointsI, _nPointsJ, _nPointsK);
 
-    // Read coordinate data
-    unsigned long int nPoint = 0;
-    unsigned long int i,j,k;
-    while (std::getline(file, line)) {
-        std::stringstream ss(line);
-        Vector3D point;
-        char comma;
-        if (ss >> point.x() >> comma >> point.y() >> comma >> point.z()){
-            i = nPoint / (_nPointsJ * _nPointsK);
-            j = (nPoint % (_nPointsJ * _nPointsK)) / _nPointsK;
-            k = nPoint % _nPointsK;
-            _vertices(i,j,k) = point;
-            nPoint ++;
+    for (size_t i = 0; i < _nPointsI; i++) {
+        for (size_t j = 0; j < _nPointsJ; j++) {
+            for (size_t k = 0; k < _nPointsK; k++) {
+                _vertices(i,j,k) = input.getCoordinates(i,j,k);
+            }
         }
     }
-    file.close();
 }
+
 
 void CMesh::allocateMemory() {
     _dualNodes.resize(_nDualPointsI, _nDualPointsJ, _nDualPointsK);

@@ -13,7 +13,6 @@ class CAdvectionSchemeBase {
 
         /**
          * @brief Constructs the advection scheme with a given fluid reference.
-         * 
          * @param fluid The fluid object.
          */
         CAdvectionSchemeBase(const CFluid &fluid) : _fluid(fluid) {};
@@ -22,15 +21,13 @@ class CAdvectionSchemeBase {
 
         /**
          * @brief Compute the advective flux across a cell face.
-         *
          * This function uses the provided state vectors and surface normal to 
          * compute the flux contribution at a cell face using a specific numerical scheme.
-         *
          * @param Ull Second cell to the left of the interface.
          * @param Ul  First cell to the left of the interface.
          * @param Ur  First cell to the right of the interface.
          * @param Urr Second cell to the right of the interface.
-         * @param surface The surface normal vector at the cell interface.
+         * @param surface The surface normal vector at the cell interface (oriented from left to right).
          * @return The computed flux as a StateVector.
          */
         virtual StateVector computeFlux(const StateVector &Ull, 

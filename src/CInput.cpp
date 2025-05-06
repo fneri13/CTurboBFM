@@ -87,3 +87,14 @@ Vector3D CInput::getCoordinates(size_t i, size_t j, size_t k) const {
                     _fieldsMap.at(FieldNames::Y_COORDS)(i, j, k),
                     _fieldsMap.at(FieldNames::Z_COORDS)(i, j, k));
 };
+
+
+FloatType CInput::getField(FieldNames fieldName, size_t i, size_t j, size_t k){
+    auto it = _fieldsMap.find(fieldName);
+    if (it != _fieldsMap.end()) {
+        return it->second(i, j, k);
+    } else {
+        // Handle missing key case appropriately
+        throw std::invalid_argument("FieldName not found in _fieldsMap.");
+    }
+};

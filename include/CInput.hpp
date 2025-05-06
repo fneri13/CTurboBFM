@@ -23,14 +23,22 @@ class CInput {
         }
 
         size_t getNumberPointsI() const {return _ni;};
+        
         size_t getNumberPointsJ() const {return _nj;};
+        
         size_t getNumberPointsK() const {return _nk;};
 
+        /** \brief get the coordinates of a point (i,j,k)*/
         Vector3D getCoordinates(size_t i, size_t j, size_t k) const;
+
+        /** \brief get the value of a field at a point (i,j,k)*/
+        FloatType getField(FieldNames fieldName, size_t i, size_t j, size_t k);
 
     private:
         std::string _filename;
+        
         std::map<FieldNames, Matrix3D<FloatType>> _fieldsMap;
+        
         size_t _ni, _nj, _nk;
         
 

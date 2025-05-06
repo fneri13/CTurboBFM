@@ -89,7 +89,7 @@ Vector3D CInput::getCoordinates(size_t i, size_t j, size_t k) const {
 };
 
 
-FloatType CInput::getField(FieldNames fieldName, size_t i, size_t j, size_t k){
+FloatType CInput::getField(FieldNames fieldName, size_t i, size_t j, size_t k) const {
     auto it = _fieldsMap.find(fieldName);
     if (it != _fieldsMap.end()) {
         return it->second(i, j, k);

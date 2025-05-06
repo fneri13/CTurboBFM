@@ -882,3 +882,13 @@ private:
         size = data.size();
     }
 };
+
+
+enum class Direction3D {
+    WEST=0,
+    EAST=1,
+    NORTH=2,
+    SOUTH=3,
+    BOTTOM=4,
+    TOP=5
+};

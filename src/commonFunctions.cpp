@@ -151,3 +151,121 @@ void integrateRadialEquilibrium(const std::vector<FloatType>& density,
     }
 
 }
+
+
+void computeGradientGreenGauss(const Matrix3D<Vector3D>& surfacesI, const Matrix3D<Vector3D>& surfacesJ, const Matrix3D<Vector3D>& surfacesK, 
+    const Matrix3D<Vector3D>& midPointsI, const Matrix3D<Vector3D>& midPointsJ, const Matrix3D<Vector3D>& midPointsK, 
+    const Matrix3D<Vector3D>& nodes, const Matrix3D<
+    FloatType>& volumes, Matrix3D<FloatType>& field, Matrix3D<Vector3D>& gradient){
+
+    size_t ni = volumes.sizeI();
+    size_t nj = volumes.sizeJ();
+    size_t nk = volumes.sizeK();
+
+    for (size_t i = 0; i < ni; i++){
+        for (size_t j = 0; j < nj; j++){
+            for (size_t k = 0; k < nk; k++){
+                Vector3D surfaceWest = - surfacesI(i,j,k);
+                Vector3D surfaceEast = surfacesI(i+1,j,k);
+                Vector3D surfaceNorth = surfacesJ(i,j+1,k);
+                Vector3D surfaceSouth = - surfacesJ(i,j,k);
+                Vector3D surfaceBottom = - surfacesK(i,j,k);
+                Vector3D surfaceTop = surfacesK(i,j,k+1);
+
+                Vector3D centerWest = midPointsI(i,j,k);
+                Vector3D centerEast = midPointsI(i+1,j,k);
+                Vector3D centerNorth = midPointsJ(i,j+1,k);
+                Vector3D centerSouth = midPointsJ(i,j,k);
+                Vector3D centerBottom = midPointsK(i,j,k);
+                Vector3D centerTop = midPointsK(i,j,k+1);
+
+                FloatType scalarWest = interpolateScalar(field, i, j, k, nodes, centerWest, Direction3D::WEST);
+                FloatType scalarEast = interpolateScalar(field, i, j, k, nodes, centerEast, Direction3D::EAST);
+                FloatType scalarNorth = interpolateScalar(field, i, j, k, nodes, centerNorth, Direction3D::NORTH);
+                FloatType scalarSouth = interpolateScalar(field, i, j, k, nodes, centerSouth, Direction3D::SOUTH);
+                FloatType scalarBottom = interpolateScalar(field, i, j, k, nodes, centerBottom, Direction3D::BOTTOM);
+                FloatType scalarTop = interpolateScalar(field, i, j, k, nodes, centerTop, Direction3D::TOP);
+
+                std::array<Vector3D, 6> surfaces = {surfaceWest, surfaceEast, surfaceNorth, surfaceSouth, surfaceBottom, surfaceTop};
+                std::array<FloatType, 6> scalars = {scalarWest, scalarEast, scalarNorth, scalarSouth, scalarBottom, scalarTop};
+
+                gradient(i,j,k) = computeGreenGaussFormula(surfaces, scalars, volumes(i,j,k));
+            }
+        }
+    }
+}
+
+
+FloatType interpolateScalar(const Matrix3D<FloatType>& field, size_t i, size_t j, size_t k, const Matrix3D<Vector3D>& nodes, const Vector3D& point, Direction3D direction){
+    Vector3D point0 = nodes(i,j,k);
+    FloatType field0 = field(i,j,k);
+    
+    FloatType field1 = 0.0;
+    Vector3D point1(0.0,0.0,0.0);
+    
+    FloatType fieldInterpolated = 0.0;
+
+    size_t ni = field.sizeI();
+    size_t nj = field.sizeJ();
+    size_t nk = field.sizeK();
+
+    if (direction==Direction3D::WEST && i==0){
+        return field0;
+    }
+    else if (direction==Direction3D::WEST){
+        point1 = nodes(i-1,j,k);
+        field1 = field(i-1,j,k);
+    }
+    else if (direction==Direction3D::EAST && i==ni-1){
+        return field0;
+    }
+    else if (direction==Direction3D::EAST){
+        point1 = nodes(i+1,j,k);
+        field1 = field(i+1,j,k);
+    }
+
+    else if (direction==Direction3D::NORTH && j==nj-1){
+        return field0;
+    }
+    else if (direction==Direction3D::NORTH){
+        point1 = nodes(i,j+1,k);
+        field1 = field(i,j+1,k);
+    }
+    else if (direction==Direction3D::SOUTH && j==0){
+        return field0;
+    }
+    else if (direction==Direction3D::SOUTH){
+        point1 = nodes(i,j-1,k);
+        field1 = field(i,j-1,k);
+    }
+
+    else if (direction==Direction3D::BOTTOM && k==0){
+        return field0;
+    }
+    else if (direction==Direction3D::BOTTOM){
+        point1 = nodes(i,j,k-1);
+        field1 = field(i,j,k-1);
+    }
+    else if (direction==Direction3D::TOP && k==nk-1){
+        return field0;
+    }
+    else if (direction==Direction3D::TOP){
+        point1 = nodes(i,j,k+1);
+        field1 = field(i,j,k+1);
+    }
+
+    FloatType distance1 = (point - point0).magnitude();
+    FloatType distance2 = (point - point1).magnitude();
+    fieldInterpolated = field0 + (field1 - field0) * distance1 / (distance1 + distance2);
+    return fieldInterpolated;
+}
+
+
+Vector3D computeGreenGaussFormula(const std::array<Vector3D,6>& surfaces, const std::array<FloatType,6>& scalars, const FloatType& volume){
+    Vector3D gradient(0.0,0.0,0.0);
+    int length = surfaces.size();
+    for (int i=0; i<length; i++){
+        gradient += surfaces[i] * scalars[i];
+    }
+    return gradient / volume;
+}

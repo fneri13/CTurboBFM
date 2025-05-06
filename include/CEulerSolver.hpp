@@ -3,6 +3,7 @@
 #include "CSolverBase.hpp"
 #include "COutputBase.hpp"
 #include "COutputCSV.hpp"
+#include "CSourceBFMBase.hpp"
 
 /**
  * \brief     Solver for the Euler equations.
@@ -57,10 +58,19 @@ public:
     // update the radial profiles according to the solution passed
     void updateRadialProfiles(FlowSolution &solution);
 
+    /**
+     * \brief Compute the residuals contribution from the source terms
+     * \param[in] solution The conservative variables solution
+     * \param[in] itCounter The iteration counter
+     * \param[out] residuals The reference to the residuals matrix
+     */
+    void computeSourceResiduals(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals) const;
+
 private:
     
     FlowSolution _conservativeVars; // conservative variables solution
     std::unique_ptr<COutputBase> _output;
+    std::unique_ptr<CSourceBFMBase> _bfmSource;
     std::vector<StateVector> _logResiduals;
 
 };

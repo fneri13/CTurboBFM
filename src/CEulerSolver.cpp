@@ -13,6 +13,7 @@ CEulerSolver::CEulerSolver(Config& config, CMesh& mesh)
 {
     initializeSolutionArrays();
     _output = std::make_unique<COutputCSV>(_config, _mesh, _conservativeVars, *_fluid);
+    _bfmSource = std::make_unique<CSourceBFMBase>(_config, _mesh, *_fluid, _conservativeVars);
 }
 
 void CEulerSolver::initializeSolutionArrays(){
@@ -220,14 +221,22 @@ void CEulerSolver::updateMassFlows(const FlowSolution&solution){
 }
 
 FlowSolution CEulerSolver::computeFluxResiduals(const FlowSolution& solution, size_t it) const {
-    FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK);
+    FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK); // residuals place-holder, passed by reference to below functions
+
+    // compute residuals contribution from advection
     computeAdvectionResiduals(FluxDirection::I, solution, it, residuals);
     computeAdvectionResiduals(FluxDirection::J, solution, it, residuals);
     if (_topology==Topology::THREE_DIMENSIONAL || _topology==Topology::AXISYMMETRIC){
         computeAdvectionResiduals(FluxDirection::K, solution, it, residuals);
     }
+
+    // compute residuals contribution from sources
+    computeSourceResiduals(solution, it, residuals);
+
     return residuals;
 }
+
+
 
 void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const FlowSolution& solution, size_t itCounter, FlowSolution &residuals) const {
     const auto stepMask = getStepMask(direction);
@@ -387,4 +396,28 @@ void CEulerSolver::updateRadialProfiles(FlowSolution &solution){
 
     integrateRadialEquilibrium(densityProfile, velTangProfile, _radialProfileCoords, _hubStaticPressure, _radialProfilePressure);
 
+}
+
+
+void CEulerSolver::computeSourceResiduals(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals) const{
+    if (!_config.isBFMActive()){
+        return ;
+    }
+
+
+    bool blockageActive = _config.isBlockageActive();
+    Vector3D blockageGradient(0,0,0); // place-holder for blockage gradient
+
+    for (size_t i = 0; i < _nPointsI; i++) {
+        for (size_t j = 0; j < _nPointsJ; j++) {
+            for (size_t k = 0; k < _nPointsK; k++) {
+                if (blockageActive){
+                    blockageGradient = _mesh.getInputFieldsGradient(FieldNames::BLOCKAGE, i, j, k); 
+                    if (blockageGradient.magnitude() > 1E-10){
+                        residuals.at(i,j,k) -= _bfmSource->computeSource(i, j, k);
+                    }
+                }
+            }
+        }
+    }
 }

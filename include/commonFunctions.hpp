@@ -34,3 +34,14 @@ Vector3D computeCartesianVectorFromCylindrical(Vector3D vec, FloatType theta);
 void integrateRadialEquilibrium(const std::vector<FloatType>& density, const std::vector<FloatType>& velocityTang, 
                                 const std::vector<FloatType>& radius, const FloatType& hubPressure, 
                                 std::vector<FloatType>& pressure);
+
+
+void computeGradientGreenGauss(const Matrix3D<Vector3D>& surfacesI, const Matrix3D<Vector3D>& surfacesJ, const Matrix3D<Vector3D>& surfacesK, 
+                                const Matrix3D<Vector3D>& midPointsI, const Matrix3D<Vector3D>& midPointsJ, const Matrix3D<Vector3D>& midPointsK, 
+                                const Matrix3D<Vector3D>& nodes, const Matrix3D<
+                                FloatType>& volumes, Matrix3D<FloatType>& field, Matrix3D<Vector3D>& gradient);
+
+
+FloatType interpolateScalar(const Matrix3D<FloatType>& field, size_t i, size_t j, size_t k, const Matrix3D<Vector3D>& nodes, const Vector3D& point, Direction3D direction);
+
+Vector3D computeGreenGaussFormula(const std::array<Vector3D,6>& surfaces, const std::array<FloatType,6>& scalars, const FloatType& volume);

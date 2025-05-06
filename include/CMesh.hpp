@@ -63,6 +63,14 @@ class CMesh {
 
         FloatType getWedgeAngle() const {return _wedgeAngle;}
 
+        FloatType getInputFields(FieldNames fieldName, size_t i, size_t j, size_t k) const {return _inputFile.getField(fieldName, i, j, k);}
+
+        Matrix3D<FloatType> getInputFields(FieldNames fieldName) const {return _inputFile.getField(fieldName);}
+
+        Vector3D getInputFieldsGradient(FieldNames fieldName, size_t i, size_t j, size_t k) const {return _gradientsMap.at(fieldName)(i, j, k);}
+
+        void computeInputGradients();
+
     private:
         const Config& _config;
 
@@ -71,6 +79,8 @@ class CMesh {
         unsigned long int _nDualPointsI, _nDualPointsJ, _nDualPointsK, _nDualPointsTotal;
         
         unsigned short int _nDimensions;
+
+        CInput _inputFile;
 
         Matrix3D<Vector3D> _surfacesI, _surfacesJ, _surfacesK;  // array of interfaces
 
@@ -89,6 +99,8 @@ class CMesh {
         std::map<BoundaryIndices, Matrix2D<Vector3D>> _boundarySurfaces;
 
         Statistics _aspectRatioStats, _skewnessStats, _orthogonalityStats;
+
+        std::map<FieldNames, Matrix3D<Vector3D>> _gradientsMap;
 
         // read the coordinates from the mesh CSV file
         void readPoints();

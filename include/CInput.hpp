@@ -18,8 +18,8 @@ class CInput {
 
         CInput(std::string filename);
 
-        Matrix3D<FloatType> getField(FieldNames fieldName) {
-            return _fieldsMap[fieldName];
+        Matrix3D<FloatType> getField(FieldNames fieldName) const {
+            return _fieldsMap.at(fieldName);
         }
 
         size_t getNumberPointsI() const {return _ni;};
@@ -32,7 +32,7 @@ class CInput {
         Vector3D getCoordinates(size_t i, size_t j, size_t k) const;
 
         /** \brief get the value of a field at a point (i,j,k)*/
-        FloatType getField(FieldNames fieldName, size_t i, size_t j, size_t k);
+        FloatType getField(FieldNames fieldName, size_t i, size_t j, size_t k) const ;
 
     private:
         std::string _filename;

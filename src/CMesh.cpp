@@ -18,24 +18,36 @@ CMesh::CMesh(Config& config) : _config(config) {
     else {
         computeDualGrid3D();
     }
+    
     computeMeshInterfaces();
+    
     computeMeshVolumes();
+    
     computeMeshQuality();
+    
     computeBoundaryAreas();
+    
+    computeInputGradients();
+    
     printMeshInfo();
 }
 
 
 void CMesh::readPoints() {
-    CInput input(_config.gridFilePath());
+    _inputFile = CInput(_config.gridFilePath());
 
-    _nPointsI = input.getNumberPointsI();
-    _nPointsJ = input.getNumberPointsJ();
-    _nPointsK = input.getNumberPointsK();
+    _nPointsI = _inputFile.getNumberPointsI();
+    _nPointsJ = _inputFile.getNumberPointsJ();
+    _nPointsK = _inputFile.getNumberPointsK();
+
+    _nPointsK>1 ? _nDimensions = 3 : _nDimensions = 2;
+
     _nPointsTotal = _nPointsI * _nPointsJ * _nPointsK;
+    
     _nDualPointsI = _nPointsI + 1;
     _nDualPointsJ = _nPointsJ + 1;
     _nDualPointsK = _nPointsK + 1;
+    
     _nDualPointsTotal = _nDualPointsI * _nDualPointsJ * _nDualPointsK;
 
     _vertices.resize(_nPointsI, _nPointsJ, _nPointsK);
@@ -43,7 +55,7 @@ void CMesh::readPoints() {
     for (size_t i = 0; i < _nPointsI; i++) {
         for (size_t j = 0; j < _nPointsJ; j++) {
             for (size_t k = 0; k < _nPointsK; k++) {
-                _vertices(i,j,k) = input.getCoordinates(i,j,k);
+                _vertices(i,j,k) = _inputFile.getCoordinates(i,j,k);
             }
         }
     }
@@ -475,4 +487,15 @@ void CMesh::getElementEdges(size_t i, size_t j, size_t k, Vector3D &iEdge, Vecto
     iEdge = ptI - pt0;
     jEdge = ptJ - pt0;
     kEdge = ptK - pt0;
+}
+
+
+void CMesh::computeInputGradients() {
+    if (_config.isBlockageActive()){
+        _gradientsMap[FieldNames::BLOCKAGE] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
+        auto blockage = getInputFields(FieldNames::BLOCKAGE);
+        computeGradientGreenGauss(_surfacesI, _surfacesJ, _surfacesK, 
+                                    _centersI, _centersJ, _centersK, 
+                                    _vertices, _volumes, blockage, _gradientsMap[FieldNames::BLOCKAGE]);
+    }
 }

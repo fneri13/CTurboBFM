@@ -756,7 +756,14 @@ enum class FieldNames {
     RHO_V=5,
     RHO_W=6,
     RHO_E=7,
-    BLOCKAGE=8
+    BLOCKAGE=8,
+    NORMAL_AXIAL=9,
+    NORMAL_RADIAL=10,
+    NORMAL_TANGENTIAL=11,
+    RPM=12,
+    STREAMWISE_LENGTH=13,
+    BLADE_PRESENT=14,
+    NUMBER_BLADES=15
 };
 
 
@@ -773,7 +780,14 @@ public:
             {"rho_v", FieldNames::RHO_V},
             {"rho_w", FieldNames::RHO_W},
             {"rho_e", FieldNames::RHO_E},
-            {"blockage", FieldNames::BLOCKAGE}
+            {"blockage", FieldNames::BLOCKAGE},
+            {"normalAxial", FieldNames::NORMAL_AXIAL},
+            {"normalRadial", FieldNames::NORMAL_RADIAL},
+            {"normalTangential", FieldNames::NORMAL_TANGENTIAL},
+            {"rpm", FieldNames::RPM},
+            {"streamwiseLength", FieldNames::STREAMWISE_LENGTH},
+            {"bladePresent", FieldNames::BLADE_PRESENT},
+            {"numberBlades", FieldNames::NUMBER_BLADES}
         };
         return map;
     }
@@ -788,7 +802,14 @@ public:
             {FieldNames::RHO_V, "rho_v"},
             {FieldNames::RHO_W, "rho_w"},
             {FieldNames::RHO_E, "rho_e"},
-            {FieldNames::BLOCKAGE, "blockage"}
+            {FieldNames::BLOCKAGE, "blockage"},
+            {FieldNames::NORMAL_AXIAL, "normalAxial"},
+            {FieldNames::NORMAL_RADIAL, "normalRadial"},
+            {FieldNames::NORMAL_TANGENTIAL, "normalTangential"},
+            {FieldNames::RPM, "rpm"},
+            {FieldNames::STREAMWISE_LENGTH, "streamwiseLength"},
+            {FieldNames::BLADE_PRESENT, "bladePresent"},
+            {FieldNames::NUMBER_BLADES, "numberBlades"}
         };
         return map;
     }

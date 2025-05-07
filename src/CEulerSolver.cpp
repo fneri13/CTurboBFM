@@ -11,10 +11,21 @@
 CEulerSolver::CEulerSolver(Config& config, CMesh& mesh)
     : CSolverBase(config, mesh)  // Call base class constructor
 {
+    
     initializeSolutionArrays();
+    
     _output = std::make_unique<COutputCSV>(_config, _mesh, _conservativeVars, *_fluid);
-    _bfmSource = std::make_unique<CSourceBFMBase>(_config, *_fluid, _mesh);
+
+    BFM_Model bfmModel = _config.getBFMModel();
+    if (bfmModel == BFM_Model::HALL) {
+        _bfmSource = std::make_unique<CSourceBFMHall>(_config, *_fluid, _mesh);
+    }
+    else {
+        _bfmSource = std::make_unique<CSourceBFMBase>(_config, *_fluid, _mesh);
+    }
+    
 }
+
 
 void CEulerSolver::initializeSolutionArrays(){
     

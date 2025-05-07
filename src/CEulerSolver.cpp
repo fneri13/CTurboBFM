@@ -416,7 +416,8 @@ void CEulerSolver::computeSourceResiduals(const FlowSolution& solution, size_t i
                     if (blockageGradient.magnitude() > 1E-10){
                         StateVector conservative = solution.at(i, j, k);
                         StateVector primitive = getEulerPrimitiveFromConservative(conservative);
-                        residuals.at(i,j,k) -= _bfmSource->computeSource(i, j, k, primitive);
+                        StateVector source = _bfmSource->computeSource(i, j, k, primitive);
+                        residuals.subtract(i, j, k, source);
                     }
                 }
             }

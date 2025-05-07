@@ -13,7 +13,7 @@ CEulerSolver::CEulerSolver(Config& config, CMesh& mesh)
 {
     initializeSolutionArrays();
     _output = std::make_unique<COutputCSV>(_config, _mesh, _conservativeVars, *_fluid);
-    _bfmSource = std::make_unique<CSourceBFMBase>(_config, _mesh, *_fluid, _conservativeVars);
+    _bfmSource = std::make_unique<CSourceBFMBase>(_config, *_fluid, _mesh);
 }
 
 void CEulerSolver::initializeSolutionArrays(){
@@ -414,7 +414,9 @@ void CEulerSolver::computeSourceResiduals(const FlowSolution& solution, size_t i
                 if (blockageActive){
                     blockageGradient = _mesh.getInputFieldsGradient(FieldNames::BLOCKAGE, i, j, k); 
                     if (blockageGradient.magnitude() > 1E-10){
-                        residuals.at(i,j,k) -= _bfmSource->computeSource(i, j, k);
+                        StateVector conservative = solution.at(i, j, k);
+                        StateVector primitive = getEulerPrimitiveFromConservative(conservative);
+                        residuals.at(i,j,k) -= _bfmSource->computeSource(i, j, k, primitive);
                     }
                 }
             }

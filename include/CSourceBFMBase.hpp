@@ -10,21 +10,21 @@
 class CSourceBFMBase {
 public:
 
-    CSourceBFMBase(const Config &config, const CMesh &mesh, const CFluid &fluid, const FlowSolution &solution) 
-        : _config(config), _mesh(mesh), _fluid(fluid), _solution(solution) {};
+    CSourceBFMBase(const Config &config, const CFluid &fluid, const CMesh &mesh) 
+        : _config(config), _fluid(fluid), _mesh(mesh) {};
 
     virtual ~CSourceBFMBase() = default;  
 
-    virtual StateVector computeSource(size_t i, size_t j, size_t k);
+    virtual StateVector computeSource(size_t i, size_t j, size_t k, const StateVector& primitive) const;
 
-    virtual StateVector computeBlockageSource(size_t i, size_t j, size_t k);
+    virtual StateVector computeBlockageSource(size_t i, size_t j, size_t k, const StateVector& primitive) const;
 
-    virtual StateVector computeBodyForceSource(size_t i, size_t j, size_t k);
+    virtual StateVector computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive) const;
 
 protected:
     const Config& _config;
-    const CMesh& _mesh;
     const CFluid& _fluid;
-    const FlowSolution& _solution;
+    const CMesh& _mesh;
+    
     
 };

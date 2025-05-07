@@ -15,6 +15,10 @@ void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>&
     scalarsMap["Temperature"] = Matrix3D<FloatType>(ni, nj, nk);
     scalarsMap["Mach"] = Matrix3D<FloatType>(ni, nj, nk);
 
+    if (_config.isBFMActive()){
+        scalarsMap["Blockage"] = _mesh.getInputFields(FieldNames::BLOCKAGE);
+    }
+
     FloatType rho, ux, uy, uz, et;
     for (size_t i = 0; i < ni; ++i) {
         for (size_t j = 0; j < nj; ++j) {

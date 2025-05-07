@@ -33,21 +33,36 @@ def read_structured_csv(filename):
 
 
 def writeVTK(data, filename):
-    u = data['Velocity X']
-    v = data['Velocity Y']
-    w = data['Velocity Z']
-
+    
     pointsData = {
         "Velocity": (
-            np.ascontiguousarray(u),
-            np.ascontiguousarray(v),
-            np.ascontiguousarray(w)
+            np.ascontiguousarray(data['Velocity X'], dtype=np.float64),
+            np.ascontiguousarray(data['Velocity Y'], dtype=np.float64),
+            np.ascontiguousarray(data['Velocity Z'], dtype=np.float64)
         )
     }
+
+    try:
+        pointsData["Grid Velocity"] = (
+            np.ascontiguousarray(data['Grid Velocity X'], dtype=np.float64),
+            np.ascontiguousarray(data['Grid Velocity Y'], dtype=np.float64),
+            np.ascontiguousarray(data['Grid Velocity Z'], dtype=np.float64)
+        )
+
+        pointsData["Relative Velocity"] = (
+            np.ascontiguousarray(data['Relative Velocity X'], dtype=np.float64),
+            np.ascontiguousarray(data['Relative Velocity Y'], dtype=np.float64),
+            np.ascontiguousarray(data['Relative Velocity Z'], dtype=np.float64)
+        )
+    except KeyError:
+        pass
+        
     
     for key in data.keys():
-        if key not in ['Velocity X', 'Velocity Y', 'Velocity Z', 'x', 'y', 'z']:
-            pointsData[key] = np.ascontiguousarray(data[key])
+        if key not in ['Velocity X', 'Velocity Y', 'Velocity Z', 'x', 'y', 'z',
+                       'Grid Velocity X', 'Grid Velocity Y', 'Grid Velocity Z',
+                       'Relative Velocity X', 'Relative Velocity Y', 'Relative Velocity Z']:
+            pointsData[key] = np.ascontiguousarray(data[key], dtype=np.float64)
 
     gridToVTK(
         filename,

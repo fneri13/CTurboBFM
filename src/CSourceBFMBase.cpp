@@ -1,7 +1,11 @@
 #include "CSourceBFMBase.hpp"
 
 StateVector CSourceBFMBase::computeSource(size_t i, size_t j, size_t k, const StateVector& primitive) {
-    StateVector blockageSource = computeBlockageSource(i, j, k, primitive);
+
+    StateVector blockageSource({0,0,0,0,0});
+    if (_config.isBlockageActive()){
+        blockageSource = computeBlockageSource(i, j, k, primitive);
+    }
 
     FloatType numberBlades = _mesh.getInputFields(FieldNames::NUMBER_BLADES, i, j, k);
     if (numberBlades == 0){ // this is the layer upstream of leading edge, no blade present, only blockage contribution

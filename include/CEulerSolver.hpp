@@ -29,6 +29,8 @@ public:
     
     void updateMassFlows(const FlowSolution &solution);
 
+    void updateTurboPerformance(const FlowSolution &solution);
+
     // compute the residuals of all fluxes
     FlowSolution computeFluxResiduals(const FlowSolution& solution, size_t itCounter) const;
 
@@ -43,6 +45,9 @@ public:
 
     // print information about the residuals
     void printInfoMassFlows(size_t it) const;
+
+    // print information about the residuals
+    void printInfoTurboPerformance(size_t it) const;
 
     // print header at first iteration
     void printHeader() const;
@@ -73,5 +78,6 @@ private:
     std::unique_ptr<COutputBase> _output;
     std::unique_ptr<CSourceBFMBase> _bfmSource;
     std::vector<StateVector> _logResiduals;
+    std::map<TurboPerformance, FloatType> _turboPerformance; // map of turbo performance>
 
 };

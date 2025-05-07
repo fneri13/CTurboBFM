@@ -491,7 +491,7 @@ void CMesh::getElementEdges(size_t i, size_t j, size_t k, Vector3D &iEdge, Vecto
 
 
 void CMesh::computeInputGradients() {
-    if (_config.isBlockageActive()){
+    if (_config.isBFMActive()){
         _gradientsMap[FieldNames::BLOCKAGE] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
         auto blockage = getInputFields(FieldNames::BLOCKAGE);
         computeGradientGreenGauss(_surfacesI, _surfacesJ, _surfacesK, 

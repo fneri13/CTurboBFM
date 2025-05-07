@@ -50,6 +50,8 @@ public:
 
     FloatType getGamma() const { return _gamma; }
 
+    FloatType computeTotalEfficiency_PRtt_TRt(FloatType pressureRatio, FloatType temperatureRatio) const;
+
 private:
     FloatType _gamma;
     FloatType _R;

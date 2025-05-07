@@ -188,6 +188,14 @@ enum class TimeStepMethod {
     GLOBAL = 1
 };
 
+/** @brief Enum class for turbo performance*/
+enum class TurboPerformance {
+    MASS_FLOW = 0,
+    TOTAL_PRESSURE_RATIO = 1,
+    TOTAL_EFFICIENCY = 2,
+    TOTAL_TEMPERATURE_RATIO = 3,
+};
+
 
 /** @brief Enum class for convection schemes*/
 enum class ConvectionScheme {

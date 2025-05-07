@@ -68,12 +68,16 @@ void CEulerSolver::solve(){
     std::vector<FloatType> timeIntegrationCoeffs = _config.getTimeIntegrationCoeffs();      // time integration coefficients (runge kutta)
     FlowSolution fluxResiduals(_nPointsI, _nPointsJ, _nPointsK);                            // place holder for flux residuals
     size_t updateMassFlowsFreq = _config.getMassFlowUpdateFrequency();                      // frequency to update the mass flows at the boundaries
-    size_t solutionOutputFreq = _config.getSolutionOutputFrequency();                        // frequency to output the solution
+    size_t solutionOutputFreq = _config.getSolutionOutputFrequency();                       // frequency to output the solution
+    bool turboOutput = _config.saveTurboOutput();                                           // flag to save the solution in turbo format
 
     // time integration
     for (size_t it=1; it<nIterMax; it++){        
         FlowSolution solutionOld = _conservativeVars;                                       // place holder for the solution at the previous timestep
-        if (it%updateMassFlowsFreq == 0) updateMassFlows(solutionOld);                      // compute the mass flows
+        if (it%updateMassFlowsFreq == 0) {
+            updateMassFlows(solutionOld);
+            if (turboOutput) updateTurboPerformance(solutionOld);
+        }                      
         computeTimestepArray(solutionOld, timestep);                                        // compute the physical time step
         FlowSolution tmpSol = solutionOld;                                                  // place holder for the solution at the runge-kutta step
         
@@ -87,9 +91,14 @@ void CEulerSolver::solve(){
         // update the solution and print information
         _conservativeVars = tmpSol;
         printInfoResiduals(fluxResiduals, it);
-        if (it%updateMassFlowsFreq == 0) printInfoMassFlows(it);
+        if (it%updateMassFlowsFreq == 0) {
+            printInfoMassFlows(it);
+            if (turboOutput) printInfoTurboPerformance(it);
+        }
         if (it%solutionOutputFreq == 0) _output->writeSolution(); 
-        if (it%solutionOutputFreq == 0) writeLogResidualsToCSV(); 
+        if (it%solutionOutputFreq == 0) {
+            writeLogResidualsToCSV();
+        } 
     }
 }
 
@@ -109,6 +118,14 @@ void CEulerSolver::printInfoMassFlows(size_t it) const {
     std::cout << "J_END: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::J_END) << std::endl;
     std::cout << "K_START: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::K_START) << std::endl;
     std::cout << "K_END: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::K_END) << std::endl << std::endl;
+}
+
+void CEulerSolver::printInfoTurboPerformance(size_t it) const {
+    std::cout << "\nTURBOMACHINERY PERFORMANCE:\n";
+    std::cout << "Mass Flow [kg/s]: " << std::setprecision(6) << _turboPerformance.at(TurboPerformance::MASS_FLOW) << std::endl;
+    std::cout << "Total Pressure Ratio [-]: " << std::setprecision(6) << _turboPerformance.at(TurboPerformance::TOTAL_PRESSURE_RATIO) << std::endl;
+    std::cout << "Total Temperature Ratio [-]: " << std::setprecision(6) << _turboPerformance.at(TurboPerformance::TOTAL_TEMPERATURE_RATIO) << std::endl;
+    std::cout << "Total Efficiency [-]: " << std::setprecision(6) << _turboPerformance.at(TurboPerformance::TOTAL_EFFICIENCY) << std::endl << std::endl;
 }
 
 void CEulerSolver::printLogResiduals(const StateVector &logRes, unsigned long int it) const {
@@ -228,6 +245,65 @@ void CEulerSolver::updateMassFlows(const FlowSolution&solution){
         _massFlows[bcIndex] = computeSurfaceIntegral(surface, rhoUX, rhoUV, rhoUW);
     }
     
+}
+
+
+void CEulerSolver::updateTurboPerformance(const FlowSolution&solution){
+    _turboPerformance[TurboPerformance::MASS_FLOW] = 0.5 * (_massFlows[BoundaryIndices::I_START] + _massFlows[BoundaryIndices::I_END]);
+    if (_config.getTopology() == Topology::AXISYMMETRIC){
+        _turboPerformance[TurboPerformance::MASS_FLOW] *= 2.0 * M_PI / _mesh.getWedgeAngle();
+    }
+    
+
+    std::array<BoundaryIndices, 2> bcIndices {BoundaryIndices::I_START, BoundaryIndices::I_END};
+    std::vector<FloatType> totalPressure;
+    std::vector<FloatType> totalTemperature;
+
+    for (auto& bcIndex: bcIndices){
+        Matrix2D<Vector3D> surface = _mesh.getMeshBoundary(bcIndex);
+
+        size_t nj = surface.sizeI();
+        size_t nk = surface.sizeJ();
+        Matrix2D<FloatType> rhoUX_pt(nj, nk);
+        Matrix2D<FloatType> rhoUY_pt(nj, nk);
+        Matrix2D<FloatType> rhoUZ_pt(nj, nk);
+        Matrix2D<FloatType> rhoUX_Tt(nj, nk);
+        Matrix2D<FloatType> rhoUY_Tt(nj, nk);
+        Matrix2D<FloatType> rhoUZ_Tt(nj, nk);
+
+        for (size_t j=0; j<nj; j++){
+            for (size_t k=0; k<nk; k++){
+                StateVector primitive;
+                if (bcIndex == BoundaryIndices::I_START){
+                    primitive = getEulerPrimitiveFromConservative(solution.at(0,j,k));
+                }
+                else{
+                    primitive = getEulerPrimitiveFromConservative(solution.at(_nPointsI-1,j,k));
+                }
+                FloatType rho = primitive[0];
+                FloatType ux = primitive[1];
+                FloatType uy = primitive[2];
+                FloatType uz = primitive[3];
+                FloatType et = primitive[4];
+                FloatType totalPressure = _fluid->computeTotalPressure_rho_u_et(rho, {ux,uy,uz}, et);
+                FloatType totalTemperature = _fluid->computeTotalTemperature_rho_u_et(rho, {ux,uy,uz}, et);
+
+                rhoUX_pt(j,k) = rho * ux * totalPressure;
+                rhoUY_pt(j,k) = rho * uy * totalPressure;
+                rhoUZ_pt(j,k) = rho * uz * totalPressure;
+                rhoUX_Tt(j,k) = rho * ux * totalTemperature;
+                rhoUY_Tt(j,k) = rho * uy * totalTemperature;
+                rhoUZ_Tt(j,k) = rho * uz * totalTemperature;
+            }
+        }
+
+        totalPressure.push_back(computeSurfaceIntegral(surface, rhoUX_pt, rhoUY_pt, rhoUZ_pt) / _massFlows[bcIndex]);
+        totalTemperature.push_back(computeSurfaceIntegral(surface, rhoUX_Tt, rhoUY_Tt, rhoUZ_Tt) / _massFlows[bcIndex]);
+    }
+
+    _turboPerformance[TurboPerformance::TOTAL_PRESSURE_RATIO] = totalPressure.at(1) / totalPressure.at(0);
+    _turboPerformance[TurboPerformance::TOTAL_TEMPERATURE_RATIO] = totalTemperature.at(1) / totalTemperature.at(0);
+    _turboPerformance[TurboPerformance::TOTAL_EFFICIENCY] = _fluid->computeTotalEfficiency_PRtt_TRt(_turboPerformance[TurboPerformance::TOTAL_PRESSURE_RATIO], _turboPerformance[TurboPerformance::TOTAL_TEMPERATURE_RATIO]);
     
 }
 
@@ -381,6 +457,7 @@ void CEulerSolver::writeLogResidualsToCSV() const {
     file.close();
 }
 
+
 void CEulerSolver::updateRadialProfiles(FlowSolution &solution){
     
 
@@ -415,21 +492,15 @@ void CEulerSolver::computeSourceResiduals(const FlowSolution& solution, size_t i
         return ;
     }
 
-
-    bool blockageActive = _config.isBlockageActive();
-    Vector3D blockageGradient(0,0,0); // place-holder for blockage gradient
-
     for (size_t i = 0; i < _nPointsI; i++) {
         for (size_t j = 0; j < _nPointsJ; j++) {
             for (size_t k = 0; k < _nPointsK; k++) {
-                if (blockageActive){
-                    blockageGradient = _mesh.getInputFieldsGradient(FieldNames::BLOCKAGE, i, j, k); 
-                    if (blockageGradient.magnitude() > 1E-10){
-                        StateVector conservative = solution.at(i, j, k);
-                        StateVector primitive = getEulerPrimitiveFromConservative(conservative);
-                        StateVector source = _bfmSource->computeSource(i, j, k, primitive);
-                        residuals.subtract(i, j, k, source);
-                    }
+                Vector3D blockageGradient = _mesh.getInputFieldsGradient(FieldNames::BLOCKAGE, i, j, k); 
+                if (blockageGradient.magnitude() > 1E-10){
+                    StateVector conservative = solution.at(i, j, k);
+                    StateVector primitive = getEulerPrimitiveFromConservative(conservative);
+                    StateVector source = _bfmSource->computeSource(i, j, k, primitive);
+                    residuals.subtract(i, j, k, source);
                 }
             }
         }

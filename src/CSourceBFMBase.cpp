@@ -56,9 +56,10 @@ void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateV
     _normalCamberTangential = _mesh.getInputFields(FieldNames::NORMAL_TANGENTIAL, i, j, k);
     _normalCamberCylindric = {_normalCamberAxial, _normalCamberRadial, _normalCamberTangential};
     _deviationAngle = computeDeviationAngle(_relativeVelocityCylindric, _normalCamberCylindric);
-    _inviscidForceDirection = computeInviscidForceDirection(_relativeVelocityCylindric, _normalCamberCylindric);
+    _inviscidForceDirectionCylindrical = computeInviscidForceDirection(_relativeVelocityCylindric, _normalCamberCylindric);
     _relativeVelocityCartesian = computeCartesianVectorFromCylindrical(_relativeVelocityCylindric, _theta);
-    _viscousForceDirection = - _relativeVelocityCartesian / _relativeVelocityCartesian.magnitude();
+    _viscousForceDirectionCylindrical = - _relativeVelocityCylindric.normalized();
+    _blockage = _mesh.getInputFields(FieldNames::BLOCKAGE, i, j, k);
 }
 
 

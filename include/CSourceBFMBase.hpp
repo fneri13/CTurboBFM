@@ -31,6 +31,7 @@ protected:
     Vector3D _point;
     FloatType _radius;
     FloatType _theta;
+    FloatType _blockage;
     Vector3D _velocityCartesian;
     Vector3D _relativeVelocityCartesian;
     Vector3D _velocityCylindrical;
@@ -44,8 +45,8 @@ protected:
     FloatType _normalCamberTangential;
     Vector3D _normalCamberCylindric;
     FloatType _deviationAngle;
-    Vector3D _inviscidForceDirection;
-    Vector3D _viscousForceDirection;
+    Vector3D _inviscidForceDirectionCylindrical;
+    Vector3D _viscousForceDirectionCylindrical;
 
     void computeFlowState(size_t i, size_t j, size_t k, const StateVector& primitive);
 

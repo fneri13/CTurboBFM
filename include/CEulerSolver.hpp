@@ -5,6 +5,7 @@
 #include "COutputCSV.hpp"
 #include "CSourceBFMBase.hpp"
 #include "CSourceBFMHall.hpp"
+#include "CSourceBFMThollet.hpp"
 
 /**
  * \brief     Solver for the Euler equations.

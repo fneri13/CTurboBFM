@@ -5,6 +5,7 @@
 #include <numeric>   // for accumulate, inner_product
 #include <cmath>
 #include <map>
+#include <cassert>
 
 using FloatType = double;
 
@@ -29,12 +30,12 @@ class Vector3D {
 
         // Accessors
         FloatType& operator()(size_t index) {
-            if (index >= 3) throw std::out_of_range("Index out of bounds");
+            assert (index < 3 && "Index out of bounds");
             return _data[index];
         }
 
         const FloatType& operator()(size_t index) const {
-            if (index >= 3) throw std::out_of_range("Index out of bounds");
+            assert (index < 3 && "Index out of bounds");
             return _data[index];
         }
 
@@ -239,9 +240,8 @@ class Matrix2D {
         std::vector<T> _data;
 
         void check_bounds(size_t i, size_t j) const {
-            if (i >= _ni || j >= _nj) {
-                throw std::out_of_range("Matrix2D::operator() index out of range");
-            }
+            assert(i < _ni && "i-index out of range");
+            assert(j < _nj && "j-index out of range");
         }
 };
 
@@ -306,9 +306,9 @@ class Matrix3D {
 
         // In-place addition
         Matrix3D& operator+=(const Matrix3D& other) {
-            if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
-                throw std::invalid_argument("Matrix3D::operator+= dimension mismatch");
-            }
+            assert(_ni == other._ni && "Matrix3D::operator+= dimension mismatch on ni");
+            assert(_nj == other._nj && "Matrix3D::operator+= dimension mismatch on nj");
+            assert(_nk == other._nk && "Matrix3D::operator+= dimension mismatch on nk");
             for (size_t idx = 0; idx < _data.size(); ++idx) {
                 _data[idx] += other._data[idx];
             }
@@ -317,9 +317,9 @@ class Matrix3D {
 
         // In-place multiplication
         Matrix3D& operator*=(const Matrix3D& other) {
-            if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
-                throw std::invalid_argument("Matrix3D::operator+= dimension mismatch");
-            }
+            assert(_ni == other._ni && "Matrix3D::operator+= dimension mismatch on ni");
+            assert(_nj == other._nj && "Matrix3D::operator+= dimension mismatch on nj");
+            assert(_nk == other._nk && "Matrix3D::operator+= dimension mismatch on nk");
             for (size_t idx = 0; idx < _data.size(); ++idx) {
                 _data[idx] *= other._data[idx];
             }
@@ -328,9 +328,9 @@ class Matrix3D {
 
         // In-place division
         Matrix3D<T> operator/(const Matrix3D<FloatType>& other) const {
-            if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
-                throw std::invalid_argument("Matrix3D::operator+= dimension mismatch");
-            }
+            assert(_ni == other._ni && "Matrix3D::operator+= dimension mismatch on ni");
+            assert(_nj == other._nj && "Matrix3D::operator+= dimension mismatch on nj");
+            assert(_nk == other._nk && "Matrix3D::operator+= dimension mismatch on nk");
             Matrix3D<FloatType> result(_ni, _nj, _nk);
             for (size_t i = 0; i < _ni; ++i) {
                 for (size_t j = 0; j < _nj; ++j) {
@@ -352,9 +352,9 @@ class Matrix3D {
 
         // In-place subtraction
         Matrix3D& operator-=(const Matrix3D& other) {
-            if (_ni != other._ni || _nj != other._nj || _nk != other._nk) {
-                throw std::invalid_argument("Matrix3D::operator-= dimension mismatch");
-            }
+            assert(_ni == other._ni && "Matrix3D::operator+= dimension mismatch on ni");
+            assert(_nj == other._nj && "Matrix3D::operator+= dimension mismatch on nj");
+            assert(_nk == other._nk && "Matrix3D::operator+= dimension mismatch on nk");
             for (size_t idx = 0; idx < _data.size(); ++idx) {
                 _data[idx] -= other._data[idx];
             }
@@ -450,9 +450,9 @@ class Matrix3D {
         std::vector<T> _data;
 
         void check_bounds(size_t i, size_t j, size_t k) const {
-            if (i >= _ni || j >= _nj || k >= _nk) {
-                throw std::out_of_range("Matrix3D::operator() index out of range");
-            }
+            assert(i < _ni && "i index out of range");
+            assert(j < _nj && "j index out of range");
+            assert(k < _nk && "k index out of range");
         }
 };
 

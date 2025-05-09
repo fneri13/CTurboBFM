@@ -467,9 +467,9 @@ void CEulerSolver::updateRadialProfiles(FlowSolution &solution){
     std::vector<FloatType> velTangProfile(nj);
     FloatType theta;
 
-    
+    size_t ni = _mesh.getNumberPointsI();
     for (size_t j = 0; j < nj; j++) {
-        conservative = solution.at(0, j, 0);
+        conservative = solution.at(ni-1, j, 0);
         primitive = getEulerPrimitiveFromConservative(conservative);    
         velocityCart(0) = primitive[1];
         velocityCart(1) = primitive[2];

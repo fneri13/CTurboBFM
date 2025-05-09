@@ -55,9 +55,14 @@ bool Config::has(const std::string& key) const {
     return _data.count(key) > 0;
 }
 
-string Config::parseString(const std::string& key) const {
+string Config::parseString(const std::string& key, bool defaultNoneValue) const {
     if (!has(key)) {
-        throw std::runtime_error("Not found value for key \"" + key + "\" in configuration.");
+        if (defaultNoneValue) {
+            return "None";
+        }
+        else {
+            throw std::runtime_error("Not found value for key \"" + key + "\" in configuration.");
+        }
     }
     return get(key);
 }
@@ -120,7 +125,7 @@ bool Config::isBlockageActive() const {
 }
 
 BFM_Model Config::getBFMModel() const {
-    string value = parseString("BFM_MODEL");
+    string value = parseString("BFM_MODEL", true);
     BFM_Model model = BFM_Model::NONE;
     if (value == "Hall-Thollet") {
         model = BFM_Model::HALL_THOLLET;

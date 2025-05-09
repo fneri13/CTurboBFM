@@ -16,7 +16,7 @@ private:
     
     bool parseBool(const std::string& value, bool defaultValue) const;
     
-    std::string parseString(const std::string& value) const;
+    std::string parseString(const std::string& value, bool defaultNoneValue=false) const;
     
     FloatType parseFloat(const std::string& value) const;
 

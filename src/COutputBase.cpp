@@ -31,6 +31,12 @@ void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>&
         scalarsMap["Relative Velocity X"] = Matrix3D<FloatType>(ni, nj, nk);
         scalarsMap["Relative Velocity Y"] = Matrix3D<FloatType>(ni, nj, nk);
         scalarsMap["Relative Velocity Z"] = Matrix3D<FloatType>(ni, nj, nk);
+        // scalarsMap["Viscous Body Force X"] = Matrix3D<FloatType>(ni, nj, nk);
+        // scalarsMap["Viscous Body Force Y"] = Matrix3D<FloatType>(ni, nj, nk);
+        // scalarsMap["Viscous Body Force Z"] = Matrix3D<FloatType>(ni, nj, nk);
+        // scalarsMap["Inviscid Body Force X"] = Matrix3D<FloatType>(ni, nj, nk);
+        // scalarsMap["Inviscid Body Force Y"] = Matrix3D<FloatType>(ni, nj, nk);
+        // scalarsMap["Inviscid Body Force Z"] = Matrix3D<FloatType>(ni, nj, nk);
     }
 
     FloatType rho, ux, uy, uz, et;
@@ -65,6 +71,7 @@ void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>&
                     scalarsMap["Relative Velocity Z"](i, j, k) = scalarsMap["Velocity Z"](i, j, k) - gridVelocityCartesian.z();
 
                     scalarsMap["Relative Mach"](i, j, k) = _fluid.computeMachNumber_rho_u_et(rho, {scalarsMap["Relative Velocity X"](i, j, k), scalarsMap["Relative Velocity Y"](i, j, k), scalarsMap["Relative Velocity Z"](i, j, k)}, et);
+                    
                 }
 
             }

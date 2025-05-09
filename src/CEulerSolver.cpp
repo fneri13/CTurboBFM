@@ -182,7 +182,7 @@ void CEulerSolver::printHeader() const {
     std::cout << "|" << std::setw(col_width * 7 + 6) << std::setfill('-') << "" << "|" << std::endl;
 }
 
-Matrix3D<FloatType> CEulerSolver::computeTimestepArray(const FlowSolution &solution, Matrix3D<FloatType> &timestep){
+void CEulerSolver::computeTimestepArray(const FlowSolution &solution, Matrix3D<FloatType> &timestep){
     FloatType cflMax = _config.getCFL();
     Vector3D iEdge, jEdge, kEdge;
     Vector3D iDir, jDir, kDir;
@@ -227,8 +227,6 @@ Matrix3D<FloatType> CEulerSolver::computeTimestepArray(const FlowSolution &solut
             }
         }
     }
-
-    return timestep;
 }
 
 
@@ -462,8 +460,6 @@ void CEulerSolver::writeLogResidualsToCSV() const {
 
 
 void CEulerSolver::updateRadialProfiles(FlowSolution &solution){
-    
-
     size_t nj = _mesh.getNumberPointsJ();
     StateVector conservative, primitive;
     Vector3D velocityCart, velocityCyl;

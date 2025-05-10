@@ -33,7 +33,7 @@ def read_structured_csv(filename):
 
 
 def writeVTK(data, filename):
-    
+        
     pointsData = {
         "Velocity": (
             np.ascontiguousarray(data['Velocity X'], dtype=np.float64),
@@ -41,6 +41,7 @@ def writeVTK(data, filename):
             np.ascontiguousarray(data['Velocity Z'], dtype=np.float64)
         )
     }
+    print("Added Velocity field")
 
     try:
         pointsData["Grid Velocity"] = (
@@ -48,6 +49,7 @@ def writeVTK(data, filename):
             np.ascontiguousarray(data['Grid Velocity Y'], dtype=np.float64),
             np.ascontiguousarray(data['Grid Velocity Z'], dtype=np.float64)
         )
+
 
         pointsData["Relative Velocity"] = (
             np.ascontiguousarray(data['Relative Velocity X'], dtype=np.float64),
@@ -66,8 +68,11 @@ def writeVTK(data, filename):
             np.ascontiguousarray(data['Viscous Body Force Y'], dtype=np.float64),
             np.ascontiguousarray(data['Viscous Body Force Z'], dtype=np.float64)
         )
+        
+        print("BFM Fields present")
+        
     except KeyError:
-        pass
+        print("BFM Fields not present")
         
     
     for key in data.keys():
@@ -77,6 +82,7 @@ def writeVTK(data, filename):
                        'Inviscid Body Force X', 'Inviscid Body Force Y', 'Inviscid Body Force Z',
                        'Viscous Body Force X', 'Viscous Body Force Y', 'Viscous Body Force Z']:
             pointsData[key] = np.ascontiguousarray(data[key], dtype=np.float64)
+            print("Added scalar field ", key)
 
     gridToVTK(
         filename,

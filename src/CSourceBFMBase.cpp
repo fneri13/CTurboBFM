@@ -1,6 +1,6 @@
 #include "CSourceBFMBase.hpp"
 
-StateVector CSourceBFMBase::computeSource(size_t i, size_t j, size_t k, const StateVector& primitive) {
+StateVector CSourceBFMBase::computeSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce) {
 
     StateVector blockageSource({0,0,0,0,0});
     if (_config.isBlockageActive()){
@@ -12,7 +12,8 @@ StateVector CSourceBFMBase::computeSource(size_t i, size_t j, size_t k, const St
         return blockageSource;
     }
 
-    StateVector bodyForceSource = computeBodyForceSource(i, j, k, primitive);
+    StateVector bodyForceSource = computeBodyForceSource(i, j, k, primitive, inviscidForce, viscousForce);
+
     return blockageSource + bodyForceSource;
 }
 
@@ -36,7 +37,9 @@ StateVector CSourceBFMBase::computeBlockageSource(size_t i, size_t j, size_t k, 
 }
 
 
-StateVector CSourceBFMBase::computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive) {
+StateVector CSourceBFMBase::computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce) {
+    inviscidForce(i, j, k) = {0, 0, 0};
+    viscousForce(i, j, k) = {0, 0, 0};
     return StateVector({0, 0, 0, 0, 0});
 }
 

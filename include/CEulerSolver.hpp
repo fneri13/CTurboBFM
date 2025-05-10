@@ -31,10 +31,16 @@ public:
 private:
     
     FlowSolution _conservativeVars; // conservative variables solution
+    
     std::unique_ptr<COutputBase> _output;
+    
     std::unique_ptr<CSourceBFMBase> _bfmSource;
+    
     std::vector<StateVector> _logResiduals;
+    
     std::map<TurboPerformance, FloatType> _turboPerformance; // map of turbo performance>
+
+    Matrix3D<Vector3D> _inviscidForce, _viscousForce;
 
     /** @brief Initialize the solution arrays.*/
     void initializeSolutionArrays() override;
@@ -60,7 +66,7 @@ private:
      * @param[in] itCounter The iteration counter
      * @return The global residual 3D matrix
     */
-    FlowSolution computeFluxResiduals(const FlowSolution& solution, size_t itCounter) const;
+    FlowSolution computeFluxResiduals(const FlowSolution& solution, size_t itCounter);
 
     /** @brief compute the residuals contribution from advection fluxes
      * @param[in] direction The flux direction
@@ -116,11 +122,13 @@ private:
     void updateRadialProfiles(FlowSolution &solution);
 
     /**
-     * \brief Compute the residuals contribution from the source terms
+     * \brief Compute the residuals contribution from the source terms. Store the BFM inviscid and viscous forces at the same time
      * \param[in] solution The conservative variables solution
      * \param[in] itCounter The iteration counter
      * \param[out] residuals The reference to the residuals matrix
+     * \param[out] inviscidForce The reference to the inviscid force matrix to update
+     * \param[out] viscousForce The reference to the viscous force matrix to update
      */
-    void computeSourceResiduals(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals) const;
+    void computeSourceResiduals(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce);
 
 };

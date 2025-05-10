@@ -54,6 +54,18 @@ def writeVTK(data, filename):
             np.ascontiguousarray(data['Relative Velocity Y'], dtype=np.float64),
             np.ascontiguousarray(data['Relative Velocity Z'], dtype=np.float64)
         )
+        
+        pointsData["Inviscid Body Force"] = (
+            np.ascontiguousarray(data['Inviscid Body Force X'], dtype=np.float64),
+            np.ascontiguousarray(data['Inviscid Body Force Y'], dtype=np.float64),
+            np.ascontiguousarray(data['Inviscid Body Force Z'], dtype=np.float64)
+        )
+        
+        pointsData["Viscous Body Force"] = (
+            np.ascontiguousarray(data['Viscous Body Force X'], dtype=np.float64),
+            np.ascontiguousarray(data['Viscous Body Force Y'], dtype=np.float64),
+            np.ascontiguousarray(data['Viscous Body Force Z'], dtype=np.float64)
+        )
     except KeyError:
         pass
         
@@ -61,7 +73,9 @@ def writeVTK(data, filename):
     for key in data.keys():
         if key not in ['Velocity X', 'Velocity Y', 'Velocity Z', 'x', 'y', 'z',
                        'Grid Velocity X', 'Grid Velocity Y', 'Grid Velocity Z',
-                       'Relative Velocity X', 'Relative Velocity Y', 'Relative Velocity Z']:
+                       'Relative Velocity X', 'Relative Velocity Y', 'Relative Velocity Z',
+                       'Inviscid Body Force X', 'Inviscid Body Force Y', 'Inviscid Body Force Z',
+                       'Viscous Body Force X', 'Viscous Body Force Y', 'Viscous Body Force Z']:
             pointsData[key] = np.ascontiguousarray(data[key], dtype=np.float64)
 
     gridToVTK(

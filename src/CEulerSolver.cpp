@@ -80,9 +80,7 @@ void CEulerSolver::solve(){
     for (size_t it=1; it<nIterMax; it++){        
         FlowSolution solutionOld = _conservativeVars;                                       // place holder for the solution at the previous timestep
         
-        if (it%updateMassFlowsFreq == 0) {
-            updateMassFlows(solutionOld);
-        }   
+        updateMassFlows(solutionOld);
         
         updateTurboPerformance(solutionOld);
         

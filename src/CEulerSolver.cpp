@@ -434,7 +434,7 @@ void CEulerSolver::updateSolution(const FlowSolution &solOld, FlowSolution &solN
 
 void CEulerSolver::writeLogResidualsToCSV() const {
 
-    std::string filename = "logResiduals.csv";
+    std::string filename = "residuals.csv";
     std::ofstream file(filename); // open in truncate (default) mode
 
     if (!file.is_open()) {

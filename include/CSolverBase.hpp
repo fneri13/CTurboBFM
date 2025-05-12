@@ -14,6 +14,7 @@
 #include "CBoundaryConditionOutletSupersonic.hpp"
 #include "CBoundaryConditionWedge.hpp"
 #include "CBoundaryConditionRadialEquilibrium.hpp"
+#include "CBoundaryConditionPeriodic.hpp"
 
 /** 
   *  \brief     Class handling base solver capabilities.

@@ -7,7 +7,7 @@ CBoundaryConditionOutletSupersonic::CBoundaryConditionOutletSupersonic(const Con
     }
 
 
-StateVector CBoundaryConditionOutletSupersonic::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices) {
+StateVector CBoundaryConditionOutletSupersonic::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution) {
     auto primitive = getEulerPrimitiveFromConservative(internalConservative);
     auto flux = computeEulerFluxFromPrimitive(primitive, surface, _fluid);
     return flux;

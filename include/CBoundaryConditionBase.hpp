@@ -33,7 +33,7 @@ class CBoundaryConditionBase {
          * @param midPoint The midpoint of the boundary face.
          * @param indices The indices (i,j,k) of the boundary face.
          */
-        virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices) = 0;
+        virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution) = 0;
         
     protected:
         const Config& _config;

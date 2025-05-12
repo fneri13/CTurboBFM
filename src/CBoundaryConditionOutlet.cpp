@@ -7,7 +7,7 @@ CBoundaryConditionOutlet::CBoundaryConditionOutlet(const Config &config, const C
     }
 
 
-StateVector CBoundaryConditionOutlet::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices) {
+StateVector CBoundaryConditionOutlet::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution) {
     auto primitive = getEulerPrimitiveFromConservative(internalConservative);
     Vector3D velocity = {primitive[1], primitive[2], primitive[3]};
     auto density = primitive[0];

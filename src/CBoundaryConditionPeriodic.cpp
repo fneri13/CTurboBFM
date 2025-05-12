@@ -1,13 +1,13 @@
-#include "CBoundaryConditionInlet.hpp"
+#include "CBoundaryConditionPeriodic.hpp"
 #include "commonFunctions.hpp"
 
-CBoundaryConditionInlet::CBoundaryConditionInlet(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues)
+CBoundaryConditionPeriodic::CBoundaryConditionPeriodic(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues)
     : CBoundaryConditionBase(config, mesh, fluid, boundIndex) {
         _boundaryValues = inletValues;
     }
 
 
-StateVector CBoundaryConditionInlet::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution) {
+StateVector CBoundaryConditionPeriodic::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution) {
     // properties of internal point
     StateVector primitive = getEulerPrimitiveFromConservative(internalConservative);
     Vector3D velocityInt({primitive[1], primitive[2], primitive[3]});

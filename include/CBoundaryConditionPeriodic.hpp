@@ -3,10 +3,9 @@
 #include "CBoundaryConditionBase.hpp"
 
 /**
- * @brief Class for inlet boundary condition flux calculation.
- * Provides a common interface for it.
+ * @brief Class for periodic boundary condition flux calculation.
  */
-class CBoundaryConditionInlet : public CBoundaryConditionBase {
+class CBoundaryConditionPeriodic : public CBoundaryConditionBase {
     
     public:
 
@@ -18,13 +17,12 @@ class CBoundaryConditionInlet : public CBoundaryConditionBase {
          * @param boundIndex The boundary index.
          * @param inletValues The inlet values (total pressure, total temperature, flow direction).
          */
-        CBoundaryConditionInlet(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues);
+        CBoundaryConditionPeriodic(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues);
             
-        virtual ~CBoundaryConditionInlet() {}
+        virtual ~CBoundaryConditionPeriodic() {}
 
         /**
          * @brief Compute the boundary flux.
-         * Formulation taken from 'Formulation and Implementation of Inflow/Outflow Boundary Conditions to Simulate Propulsive Effects', Rodriguez et al.
          * @param internalConservative The internal point conservative variables.
          * @param surface The surface normal vector (also not normalized).
          * @param midPoint The midpoint of the boundary face.

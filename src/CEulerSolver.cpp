@@ -82,7 +82,7 @@ void CEulerSolver::solve(){
         
         updateMassFlows(solutionOld);
         
-        updateTurboPerformance(solutionOld);
+        if (turboOutput) updateTurboPerformance(solutionOld);
         
         computeTimestepArray(solutionOld, timestep);                                        // compute the physical time step
         
@@ -108,7 +108,7 @@ void CEulerSolver::solve(){
         if (it%solutionOutputFreq == 0) _output->writeSolution(); 
         if (it%solutionOutputFreq == 0) {
             writeLogResidualsToCSV();
-            writeTurboPerformanceToCSV();
+            if (turboOutput) writeTurboPerformanceToCSV();
         } 
     }
 }

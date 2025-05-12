@@ -25,7 +25,7 @@ def plot_residuals(data):
     plt.grid(alpha=0.3)
     plt.xlabel("Iteration [-]")
     plt.ylabel("Residuals Drop [-]")
-    plt.savefig("Residuals.pdf", bbox_inches='tight')
+    plt.savefig("pictures/residuals.pdf", bbox_inches='tight')
     plt.show()
     
 
@@ -38,4 +38,5 @@ if __name__ == "__main__":
     input_filename = args.input_file
     
     data = read_residuals(input_filename)
+    os.makedirs("pictures", exist_ok=True)
     plot_residuals(data)

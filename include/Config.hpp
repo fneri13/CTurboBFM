@@ -124,6 +124,10 @@ public:
 
     size_t getSolutionOutputFrequency() const {return getSaveUnsteadyInterval();}
 
+    FloatType getPeriodicityValueRad() const {return parseFloat("PERIODICITY_VALUE")*M_PI/180.0;} 
+
+    FloatType getPeriodicityValueDeg() const {return parseFloat("PERIODICITY_VALUE");} 
+
     void printAllConfigValues() const;
 
 };

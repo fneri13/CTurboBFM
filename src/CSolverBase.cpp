@@ -55,6 +55,9 @@ void CSolverBase::readBoundaryConditions(){
             _boundaryValues[bound] = _config.getOutletBCValues();
             _hubStaticPressure = _boundaryValues[bound][0];
         }
+        else if (_boundaryTypes[bound] == BoundaryType::PERIODIC){
+            _boundaryValues[bound].push_back(_config.getPeriodicityValueRad());
+        }
         else {
             _boundaryValues[bound] = std::vector<FloatType> {};
         }
@@ -82,6 +85,9 @@ void CSolverBase::readBoundaryConditions(){
         }
         else if (_boundaryTypes[bound] == BoundaryType::WEDGE){
             _boundaryConditions[bound] = std::make_unique<CBoundaryConditionWedge>(_config, _mesh, *_fluid, bound);
+        }
+        else if (_boundaryTypes[bound] == BoundaryType::PERIODIC){
+            _boundaryConditions[bound] = std::make_unique<CBoundaryConditionPeriodic>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
         }
     }
 }

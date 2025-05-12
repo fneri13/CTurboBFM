@@ -172,7 +172,8 @@ enum class BoundaryType {
     RADIAL_EQUILIBRIUM = 4,
     WALL = 5,
     EMPTY = 6,
-    WEDGE = 7
+    WEDGE = 7,
+    PERIODIC = 8
 };
 
 

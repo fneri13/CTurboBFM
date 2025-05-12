@@ -216,6 +216,9 @@ BoundaryType Config::getBoundaryType(BoundaryIndices bcIndex) const{
     } 
     else if (boundaryString == "wedge") {
         boundaryType = BoundaryType::WEDGE;
+    }
+    else if (boundaryString == "periodic") {
+        boundaryType = BoundaryType::PERIODIC;
     } 
     else {
         throw std::runtime_error("Invalid value for key \"BOUNDARY_TYPES\" in configuration.");

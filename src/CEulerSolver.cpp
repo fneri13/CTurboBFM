@@ -79,30 +79,38 @@ void CEulerSolver::solve(){
     // time integration
     for (size_t it=1; it<nIterMax; it++){        
         FlowSolution solutionOld = _conservativeVars;                                       // place holder for the solution at the previous timestep
+        
         if (it%updateMassFlowsFreq == 0) {
             updateMassFlows(solutionOld);
-            if (turboOutput) updateTurboPerformance(solutionOld);
-        }                      
+        }   
+        
+        updateTurboPerformance(solutionOld);
+        
         computeTimestepArray(solutionOld, timestep);                                        // compute the physical time step
-        FlowSolution tmpSol = solutionOld;                                                  // place holder for the solution at the runge-kutta step
         
         // runge-kutta steps
+        FlowSolution tmpSol = solutionOld;                                                  // place holder for the solution at the runge-kutta step
         for (const auto &integrationCoeff: timeIntegrationCoeffs){
             updateRadialProfiles(tmpSol);
             fluxResiduals = computeFluxResiduals(tmpSol, it);
             updateSolution(solutionOld, tmpSol, fluxResiduals, integrationCoeff, timestep);
         }
         
-        // update the solution and print information
+        // update the solution
         _conservativeVars = tmpSol;
+        
+        // print info on terminal
         printInfoResiduals(fluxResiduals, it);
         if (it%updateMassFlowsFreq == 0) {
             printInfoMassFlows(it);
             if (turboOutput) printInfoTurboPerformance(it);
         }
+
+        // write output files
         if (it%solutionOutputFreq == 0) _output->writeSolution(); 
         if (it%solutionOutputFreq == 0) {
             writeLogResidualsToCSV();
+            writeTurboPerformanceToCSV();
         } 
     }
 }
@@ -127,10 +135,10 @@ void CEulerSolver::printInfoMassFlows(size_t it) const {
 
 void CEulerSolver::printInfoTurboPerformance(size_t it) const {
     std::cout << "\nTURBOMACHINERY PERFORMANCE:\n";
-    std::cout << "Mass Flow [kg/s]: " << std::setprecision(6) << _turboPerformance.at(TurboPerformance::MASS_FLOW) << std::endl;
-    std::cout << "Total Pressure Ratio [-]: " << std::setprecision(6) << _turboPerformance.at(TurboPerformance::TOTAL_PRESSURE_RATIO) << std::endl;
-    std::cout << "Total Temperature Ratio [-]: " << std::setprecision(6) << _turboPerformance.at(TurboPerformance::TOTAL_TEMPERATURE_RATIO) << std::endl;
-    std::cout << "Total Efficiency [-]: " << std::setprecision(6) << _turboPerformance.at(TurboPerformance::TOTAL_EFFICIENCY) << std::endl << std::endl;
+    std::cout << "Mass Flow [kg/s]: " << std::setprecision(6) << _turboPerformance.at(TurboPerformance::MASS_FLOW).back() << std::endl;
+    std::cout << "Total Pressure Ratio [-]: " << std::setprecision(6) << _turboPerformance.at(TurboPerformance::TOTAL_PRESSURE_RATIO).back() << std::endl;
+    std::cout << "Total Temperature Ratio [-]: " << std::setprecision(6) << _turboPerformance.at(TurboPerformance::TOTAL_TEMPERATURE_RATIO).back() << std::endl;
+    std::cout << "Total Efficiency [-]: " << std::setprecision(6) << _turboPerformance.at(TurboPerformance::TOTAL_EFFICIENCY).back() << std::endl << std::endl;
 }
 
 void CEulerSolver::printLogResiduals(const StateVector &logRes, unsigned long int it) const {
@@ -252,12 +260,15 @@ void CEulerSolver::updateMassFlows(const FlowSolution&solution){
 
 
 void CEulerSolver::updateTurboPerformance(const FlowSolution&solution){
-    _turboPerformance[TurboPerformance::MASS_FLOW] = 0.5 * (_massFlows[BoundaryIndices::I_START] + _massFlows[BoundaryIndices::I_END]);
-    if (_config.getTopology() == Topology::AXISYMMETRIC){
-        _turboPerformance[TurboPerformance::MASS_FLOW] *= 2.0 * M_PI / _mesh.getWedgeAngle();
-    }
     
-
+    // mass flow
+    FloatType massFlow = 0.5 * (_massFlows[BoundaryIndices::I_START] + _massFlows[BoundaryIndices::I_END]);
+    if (_config.getTopology() == Topology::AXISYMMETRIC){
+        massFlow *= 2.0 * M_PI / _mesh.getWedgeAngle();
+    }
+    _turboPerformance[TurboPerformance::MASS_FLOW].push_back(massFlow);
+    
+    // performance quantities
     std::array<BoundaryIndices, 2> bcIndices {BoundaryIndices::I_START, BoundaryIndices::I_END};
     std::vector<FloatType> totalPressure;
     std::vector<FloatType> totalTemperature;
@@ -303,10 +314,14 @@ void CEulerSolver::updateTurboPerformance(const FlowSolution&solution){
         totalPressure.push_back(computeSurfaceIntegral(surface, rhoUX_pt, rhoUY_pt, rhoUZ_pt) / _massFlows[bcIndex]);
         totalTemperature.push_back(computeSurfaceIntegral(surface, rhoUX_Tt, rhoUY_Tt, rhoUZ_Tt) / _massFlows[bcIndex]);
     }
+    
+    FloatType PRtt = totalPressure.at(1) / totalPressure.at(0);
+    FloatType TRtt = totalTemperature.at(1) / totalTemperature.at(0);
+    FloatType ETAtt = _fluid->computeTotalEfficiency_PRtt_TRt(PRtt, TRtt);
 
-    _turboPerformance[TurboPerformance::TOTAL_PRESSURE_RATIO] = totalPressure.at(1) / totalPressure.at(0);
-    _turboPerformance[TurboPerformance::TOTAL_TEMPERATURE_RATIO] = totalTemperature.at(1) / totalTemperature.at(0);
-    _turboPerformance[TurboPerformance::TOTAL_EFFICIENCY] = _fluid->computeTotalEfficiency_PRtt_TRt(_turboPerformance[TurboPerformance::TOTAL_PRESSURE_RATIO], _turboPerformance[TurboPerformance::TOTAL_TEMPERATURE_RATIO]);
+    _turboPerformance[TurboPerformance::TOTAL_PRESSURE_RATIO].push_back(PRtt);
+    _turboPerformance[TurboPerformance::TOTAL_TEMPERATURE_RATIO].push_back(TRtt);
+    _turboPerformance[TurboPerformance::TOTAL_EFFICIENCY].push_back(ETAtt);
     
 }
 
@@ -455,6 +470,30 @@ void CEulerSolver::writeLogResidualsToCSV() const {
         logRes[4] = _logResiduals[i][4];
         // Write data row
         file << logRes[0] << "," << logRes[1] << "," << logRes[2] << "," << logRes[3] << "," << logRes[4] << "\n";
+    }
+
+    file.close();
+}
+
+void CEulerSolver::writeTurboPerformanceToCSV() const {
+
+    std::string filename = "turbo.csv";
+    std::ofstream file(filename); // open in truncate (default) mode
+
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open turbo performance file: " << filename << std::endl;
+        return;
+    }
+
+    // Write header
+    file << "Massflow,PRtt,TRtt,ETAtt\n";
+
+    size_t size = _turboPerformance.at(TurboPerformance::MASS_FLOW).size();
+    for (size_t i = 0; i < size; i++) {
+        file    << _turboPerformance.at(TurboPerformance::MASS_FLOW)[i] << "," 
+                << _turboPerformance.at(TurboPerformance::TOTAL_PRESSURE_RATIO)[i] << "," 
+                << _turboPerformance.at(TurboPerformance::TOTAL_TEMPERATURE_RATIO)[i] << "," 
+                << _turboPerformance.at(TurboPerformance::TOTAL_EFFICIENCY)[i] << std::endl; 
     }
 
     file.close();

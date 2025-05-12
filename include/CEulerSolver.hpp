@@ -38,7 +38,7 @@ private:
     
     std::vector<StateVector> _logResiduals;
     
-    std::map<TurboPerformance, FloatType> _turboPerformance; // map of turbo performance>
+    std::map<TurboPerformance, std::vector<FloatType>> _turboPerformance; // map of turbo performance>
 
     Matrix3D<Vector3D> _inviscidForce, _viscousForce;
 
@@ -115,6 +115,9 @@ private:
 
     /** @brief write the residuals log10 to a csv file*/
     void writeLogResidualsToCSV() const;
+
+    /** @brief write the turbo performance to a csv file*/
+    void writeTurboPerformanceToCSV() const;
 
     /** @brief update the radial profiles (pressure) at the outlet, needed by boundary conditions.
      * @param[in] solution The current conservative variables solution

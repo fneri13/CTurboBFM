@@ -15,6 +15,10 @@ FloatType CFluid::computePressure_rho_e(FloatType rho, FloatType e) const {
     return (_gamma - 1) * rho * e;
 }
 
+FloatType CFluid::computePressure_rho_T(FloatType rho, FloatType Temp) const {
+    return rho * _R * Temp;
+}
+
 FloatType CFluid::computeSoundSpeed_p_rho(FloatType p, FloatType rho) const {
     return std::sqrt(_gamma * p / rho);
 }

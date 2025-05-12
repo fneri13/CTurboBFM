@@ -24,6 +24,13 @@ public:
      * @return Pressure [Pa]
     */
     FloatType computePressure_rho_e(FloatType rho, FloatType e) const;
+
+    /** Compute pressure from density and temperature
+     * @param rho Density [kg/m³]
+     * @param e Static energy [J/kg]
+     * @return Pressure [Pa]
+    */
+    FloatType computePressure_rho_T(FloatType rho, FloatType Temp) const;
     
     /** Compute speed of sound from pressure and density
      * @param p Pressure [Pa]

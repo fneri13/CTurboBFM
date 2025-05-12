@@ -107,6 +107,8 @@ public:
 
     std::string getSolutionName() const {return parseString("SOLUTION_NAME");}
 
+    std::string getRestartFilepath() const {return parseString("RESTART_SOLUTION_FILEPATH");}
+
     bool saveTurboOutput() const {return parseBool("TURBO_OUTPUT", false);}
 
     TimeIntegration getTimeIntegration() const;

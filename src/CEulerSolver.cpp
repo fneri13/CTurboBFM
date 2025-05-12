@@ -31,7 +31,29 @@ CEulerSolver::CEulerSolver(Config& config, CMesh& mesh)
 
 
 void CEulerSolver::initializeSolutionArrays(){
-    
+    _conservativeVars.resize(_nPointsI, _nPointsJ, _nPointsK);
+    _radialProfilePressure.resize(_nPointsJ);
+    _radialProfileCoords.resize(_nPointsJ);
+    _inviscidForce.resize(_nPointsI, _nPointsJ, _nPointsK);
+    _viscousForce.resize(_nPointsI, _nPointsJ, _nPointsK);
+
+    bool restartSolution = _config.restartSolution();
+    if (restartSolution) {
+        initializeSolutionFromRestart();
+    }
+    else {
+        initializeSolutionFromScratch();
+    }
+
+    size_t nj = _mesh.getNumberPointsJ();
+    for (size_t j = 0; j < nj; j++) {
+        _radialProfileCoords[j] = std::sqrt(_mesh.getVertex(0,j,0).y()*_mesh.getVertex(0,j,0).y() + _mesh.getVertex(0,j,0).z()*_mesh.getVertex(0,j,0).z());
+    }
+
+}
+
+
+void CEulerSolver::initializeSolutionFromScratch(){
     FloatType initMach = _config.getInitMachNumber();
     FloatType initTemperature = _config.getInitTemperature();
     FloatType initPressure = _config.getInitPressure();
@@ -41,7 +63,6 @@ void CEulerSolver::initializeSolutionArrays(){
     Vector3D velocity {0.0, 0.0, 0.0};
     _fluid->computeInitFields(initMach, initTemperature, initPressure, initDirection, density, velocity, totEnergy);
     
-    _conservativeVars.resize(_nPointsI, _nPointsJ, _nPointsK);
     for (int i=0; i<_nPointsI; i++) {
         for (int j=0; j<_nPointsJ; j++){
             for (int k=0; k<_nPointsK; k++){
@@ -53,19 +74,99 @@ void CEulerSolver::initializeSolutionArrays(){
             }
         }
     }
+}
 
-    _radialProfilePressure.resize(_nPointsJ);
-    _radialProfileCoords.resize(_nPointsJ);
-
-    _inviscidForce.resize(_nPointsI, _nPointsJ, _nPointsK);
-    _viscousForce.resize(_nPointsI, _nPointsJ, _nPointsK);
-
-    size_t nj = _mesh.getNumberPointsJ();
-    for (size_t j = 0; j < nj; j++) {
-        _radialProfileCoords[j] = std::sqrt(_mesh.getVertex(0,j,0).y()*_mesh.getVertex(0,j,0).y() + _mesh.getVertex(0,j,0).z()*_mesh.getVertex(0,j,0).z());
+void CEulerSolver::initializeSolutionFromRestart(){
+    std::string restartFileName = _config.getRestartFilepath();
+    std::ifstream file(restartFileName);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file.\n";
     }
 
+    size_t NI, NJ, NK;
+    std::string line;
+
+    // Read NI, NJ, NK
+    std::getline(file, line); NI = std::stoi(line.substr(line.find('=') + 1));
+    std::getline(file, line); NJ = std::stoi(line.substr(line.find('=') + 1));
+    std::getline(file, line); NK = std::stoi(line.substr(line.find('=') + 1));
+
+    if (NI != _nPointsI || NJ != _nPointsJ || NK != _nPointsK) {
+        std::cerr << "Restart file has incompatible dimensions with the mesh provided.\n";
+        std::exit(EXIT_FAILURE);
+    }
+
+    // Read header
+    std::getline(file, line);
+    std::istringstream headerStream(line);
+    std::string column;
+    std::unordered_map<std::string, int> columnIndex;
+    int idx = 0;
+    while (std::getline(headerStream, column, ',')) {
+        columnIndex[column] = idx++;
+    }
+
+    // Get indexes of the fields of interest
+    size_t iDensity     = columnIndex["Density"];
+    size_t iVelX        = columnIndex["Velocity X"];
+    size_t iVelY        = columnIndex["Velocity Y"];
+    size_t iVelZ        = columnIndex["Velocity Z"];
+    size_t iTemperature = columnIndex["Temperature"];
+
+    // Allocate arrays
+    Matrix3D<FloatType> inputDensity(NI, NJ, NK);
+    Matrix3D<FloatType> inputVelX(NI, NJ, NK);
+    Matrix3D<FloatType> inputVelY(NI, NJ, NK);
+    Matrix3D<FloatType> inputVelZ(NI, NJ, NK);
+    Matrix3D<FloatType> inputTemperature(NI, NJ, NK);
+
+    // Read data
+    int i = 0, j = 0, k = 0;
+    while (std::getline(file, line)) {
+        std::istringstream ss(line);
+        std::string value;
+        std::vector<FloatType> row;
+        while (std::getline(ss, value, ',')) {
+            row.push_back(std::stod(value));
+        }
+
+        // Store using current indices
+        inputDensity(i,j,k)     = row[iDensity];
+        inputVelX(i,j,k)        = row[iVelX];
+        inputVelY(i,j,k)        = row[iVelY];
+        inputVelZ(i,j,k)        = row[iVelZ];
+        inputTemperature(i,j,k) = row[iTemperature];
+
+        // Update indices: k fastest, then j, then i
+        if (++k == NK) {
+            k = 0;
+            if (++j == NJ) {
+                j = 0;
+                ++i;
+            }
+        }
+    }
+
+    file.close();
+    std::cout << "Data read successfully.\n";
+
+    for (size_t i=0; i<_nPointsI; i++) {
+        for (size_t j=0; j<_nPointsJ; j++){
+            for (size_t k=0; k<_nPointsK; k++){
+                _conservativeVars._rho(i,j,k) = inputDensity(i,j,k);
+                _conservativeVars._rhoU(i,j,k) = inputDensity(i,j,k) * inputVelX(i,j,k);
+                _conservativeVars._rhoV(i,j,k) = inputDensity(i,j,k) * inputVelY(i,j,k);
+                _conservativeVars._rhoW(i,j,k) = inputDensity(i,j,k) * inputVelZ(i,j,k);
+
+                FloatType pressure = _fluid->computePressure_rho_T(inputDensity(i,j,k), inputTemperature(i,j,k));
+                FloatType staticEnergy = _fluid->computeStaticEnergy_p_rho(pressure, inputDensity(i,j,k));
+                FloatType totalEnergy = staticEnergy + 0.5*(inputVelX(i,j,k)*inputVelX(i,j,k) + inputVelY(i,j,k)*inputVelY(i,j,k) + inputVelZ(i,j,k)*inputVelZ(i,j,k));
+                _conservativeVars._rhoE(i,j,k) = inputDensity(i,j,k) * totalEnergy;
+            }
+        }
+    }
 }
+
 
 void CEulerSolver::solve(){
     size_t nIterMax = _config.getMaxIterations();

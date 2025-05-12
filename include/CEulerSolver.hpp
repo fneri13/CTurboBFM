@@ -91,6 +91,12 @@ private:
     */
     void printInfoResiduals(FlowSolution &residuals, size_t it);
 
+    /** @brief initialize the solution from scratch*/
+    void initializeSolutionFromScratch();
+
+    /** @brief initialize the solution from restart file*/
+    void initializeSolutionFromRestart();
+
     /** @brief print information about the mass flows
      * @param[in] it The iteration counter
     */

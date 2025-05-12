@@ -33,4 +33,5 @@ class CBoundaryConditionPeriodic : public CBoundaryConditionBase {
         
     protected:
         std::vector<FloatType> _boundaryValues;
+        FloatType _periodicityAngle = 0.0;
 };

@@ -26,6 +26,8 @@ private:
     
     FloatType parseFloat(const std::string& value) const;
 
+    FloatType parseFloat(const std::string& value, FloatType defaultValue) const;
+
     template <typename T>
     std::vector<T> parseVector(const std::string& key) const {
         if (!has(key)) {
@@ -137,5 +139,9 @@ public:
     FloatType getPeriodicityAngleDeg() const {return parseFloat("PERIODICITY_ANGLE");} 
 
     void printAllConfigValues() const;
+
+    FloatType computeRampedOutletPressure(const size_t iterCounter, const FloatType outletPressure) const;
+
+    FloatType getOutletPressureRampMaxIterations() const {return parseFloat("OUTLET_PRESSURE_RAMP_ITERATIONS", 0.0);}
 
 };

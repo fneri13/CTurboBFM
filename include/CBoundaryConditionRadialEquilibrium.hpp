@@ -32,7 +32,7 @@ class CBoundaryConditionRadialEquilibrium : public CBoundaryConditionBase {
          * @param indices The indices (i,j,k) of the boundary face.
          * @return The boundary flux.
          */
-        virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution) override;
+        virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution, const size_t iterCounter) override;
         
     protected:
         std::vector<FloatType>& _radialPressureProfile; // Reference to the radial profile of the static pressure (which is updated at every iteration)

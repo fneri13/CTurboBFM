@@ -6,7 +6,7 @@ CBoundaryConditionWedge::CBoundaryConditionWedge(const Config &config, const CMe
     }
 
 
-    StateVector CBoundaryConditionWedge::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution) {
+    StateVector CBoundaryConditionWedge::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution, const size_t iterCounter) {
         StateVector primitive = getEulerPrimitiveFromConservative(internalConservative);
         
         FloatType yCoord = midPoint.y();

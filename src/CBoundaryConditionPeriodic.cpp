@@ -8,7 +8,7 @@ CBoundaryConditionPeriodic::CBoundaryConditionPeriodic(const Config &config, con
     }
 
 
-StateVector CBoundaryConditionPeriodic::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &solution) {
+StateVector CBoundaryConditionPeriodic::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &solution, const size_t iterCounter) {
 
     // properties of the periodic node
     size_t periodicIdx = 0;

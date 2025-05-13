@@ -7,7 +7,7 @@ CBoundaryConditionInlet::CBoundaryConditionInlet(const Config &config, const CMe
     }
 
 
-StateVector CBoundaryConditionInlet::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution) {
+StateVector CBoundaryConditionInlet::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution, const size_t iterCounter) {
     // properties of internal point
     StateVector primitive = getEulerPrimitiveFromConservative(internalConservative);
     Vector3D velocityInt({primitive[1], primitive[2], primitive[3]});

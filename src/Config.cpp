@@ -81,6 +81,20 @@ FloatType Config::parseFloat(const std::string& key) const {
     }
 }
 
+FloatType Config::parseFloat(const std::string& key, FloatType defaultValue) const {
+    if (!has(key)) {
+        return defaultValue;
+    }
+    std::string value = get(key);
+    try {
+        return static_cast<FloatType>(std::stod(value));  // or std::stof if FloatType is float
+    } catch (const std::invalid_argument& e) {
+        throw std::runtime_error("Invalid float format for key \"" + key + "\": \"" + value + "\"");
+    } catch (const std::out_of_range& e) {
+        throw std::runtime_error("Float value out of range for key \"" + key + "\": \"" + value + "\"");
+    }
+}
+
 bool Config::parseBool(const std::string& key, bool defaultValue) const {
     if (!has(key)) {
         return defaultValue;
@@ -315,3 +329,15 @@ void Config::printAllConfigValues() const {
 
     
 }
+
+
+    FloatType Config::computeRampedOutletPressure(const size_t iterCounter, const FloatType outletPressure) const{
+        FloatType maxIter = getOutletPressureRampMaxIterations();
+        FloatType iterRatio = static_cast<FloatType>(iterCounter) / maxIter;
+        if (iterRatio >= 1.0) {
+            return outletPressure;
+        }
+        
+        FloatType initialPressure = getInitPressure();
+        return initialPressure + (outletPressure - initialPressure) * iterRatio;
+    }

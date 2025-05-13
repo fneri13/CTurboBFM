@@ -7,7 +7,7 @@ CBoundaryConditionInletSupersonic::CBoundaryConditionInletSupersonic(const Confi
     }
 
 
-StateVector CBoundaryConditionInletSupersonic::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution) {
+StateVector CBoundaryConditionInletSupersonic::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution, const size_t iterCounter) {
     FloatType pressureBoundary = _boundaryValues[0];
     FloatType temperatureBoundary = _boundaryValues[1];
     Vector3D velocityBoundary({_boundaryValues[2], _boundaryValues[3], _boundaryValues[4]});

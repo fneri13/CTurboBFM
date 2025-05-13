@@ -7,7 +7,7 @@ CBoundaryConditionOutlet::CBoundaryConditionOutlet(const Config &config, const C
     }
 
 
-StateVector CBoundaryConditionOutlet::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution) {
+StateVector CBoundaryConditionOutlet::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution, const size_t iterCounter) {
     auto primitive = getEulerPrimitiveFromConservative(internalConservative);
     Vector3D velocity = {primitive[1], primitive[2], primitive[3]};
     auto density = primitive[0];
@@ -19,7 +19,8 @@ StateVector CBoundaryConditionOutlet::computeBoundaryFlux(StateVector internalCo
         return flux;
     }
     else {
-        FloatType pressureBoundary = _boundaryValues[0];
+        FloatType outletPressure = _boundaryValues[0];
+        FloatType pressureBoundary = _config.computeRampedOutletPressure(iterCounter, outletPressure);
         FloatType densityBoundary = pressureBoundary * density / pressure;
         Vector3D velocityBoundary = velocity;
         FloatType energyBoundary = _fluid.computeStaticEnergy_p_rho(pressureBoundary, densityBoundary);

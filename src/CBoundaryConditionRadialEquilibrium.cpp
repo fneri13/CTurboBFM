@@ -5,7 +5,7 @@ CBoundaryConditionRadialEquilibrium::CBoundaryConditionRadialEquilibrium(const C
     : CBoundaryConditionBase(config, mesh, fluid, boundIndex), _radialPressureProfile(pressure){}
 
 
-StateVector CBoundaryConditionRadialEquilibrium::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution) {
+StateVector CBoundaryConditionRadialEquilibrium::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution, const size_t iterCounter) {
     auto primitive = getEulerPrimitiveFromConservative(internalConservative);
     Vector3D velocity = {primitive[1], primitive[2], primitive[3]};
     auto density = primitive[0];

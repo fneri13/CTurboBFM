@@ -9,10 +9,6 @@ CBoundaryConditionPeriodic::CBoundaryConditionPeriodic(const Config &config, con
 
 
 StateVector CBoundaryConditionPeriodic::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &solution) {
-    
-    // properties of the node itself
-    StateVector primitiveBoundaryOld = getEulerPrimitiveFromConservative(internalConservative);
-    Vector3D velocityBoundaryOld({primitiveBoundaryOld[1], primitiveBoundaryOld[2], primitiveBoundaryOld[3]});
 
     // properties of the periodic node
     size_t periodicIdx = 0;

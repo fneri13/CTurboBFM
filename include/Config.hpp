@@ -16,6 +16,12 @@ private:
     
     bool parseBool(const std::string& value, bool defaultValue) const;
     
+
+    /**
+     * @brief Return the string file corresponding to a certain entry.
+     * @param value option to read from config file.
+     * @param defaultNoneValue if true return None string if the option is not present, otherwise throw an error
+     */
     std::string parseString(const std::string& value, bool defaultNoneValue=false) const;
     
     FloatType parseFloat(const std::string& value) const;
@@ -108,6 +114,8 @@ public:
     std::string getSolutionName() const {return parseString("SOLUTION_NAME");}
 
     std::string getRestartFilepath() const {return parseString("RESTART_SOLUTION_FILEPATH");}
+
+    std::string getRestartType() const {return parseString("RESTART_TYPE", true);}
 
     bool saveTurboOutput() const {return parseBool("TURBO_OUTPUT", false);}
 

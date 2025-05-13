@@ -78,12 +78,95 @@ void CEulerSolver::initializeSolutionFromScratch(){
 
 void CEulerSolver::initializeSolutionFromRestart(){
     std::string restartFileName = _config.getRestartFilepath();
+    
+    size_t NI=0, NJ=0, NK=0;
+    
+    // Allocate arrays for input data
+    Matrix3D<FloatType> inputDensity;
+    Matrix3D<FloatType> inputVelX;
+    Matrix3D<FloatType> inputVelY;
+    Matrix3D<FloatType> inputVelZ;
+    Matrix3D<FloatType> inputTemperature;
+    
+    readRestartFile(restartFileName, NI, NJ, NK, inputDensity, inputVelX, inputVelY, inputVelZ, inputTemperature);
+
+    if (NI != _nPointsI || NJ != _nPointsJ || NK != _nPointsK) {
+        if (NI == _nPointsI && NJ == _nPointsJ && _config.getRestartType()=="axisymmetric") {
+            axisymmetricRestart(inputDensity, inputVelX, inputVelY, inputVelZ, inputTemperature);
+        }
+        else if (NI == _nPointsI && NJ == _nPointsJ && _config.getRestartType()!="axisymmetric") {
+            std::cerr << "Restart file dimensions (I,J) coincides with solver dimensions, but K does not. If you want to restart in axisymmetric mode, specify RESTART_TYPE=axisymmetric\n";
+            exit(1);
+        }
+        else {
+            std::cerr << "Restart file dimensions do not match solver dimensions.\n";
+            exit(1);
+        }
+    }
+    else {
+        standardRestart(inputDensity, inputVelX, inputVelY, inputVelZ, inputTemperature);
+    }
+    
+}
+
+
+void CEulerSolver::standardRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature) {
+    for (size_t i=0; i<_nPointsI; i++) {
+        for (size_t j=0; j<_nPointsJ; j++){
+            for (size_t k=0; k<_nPointsK; k++){
+                _conservativeVars._rho(i,j,k) = inputDensity(i,j,k);
+                _conservativeVars._rhoU(i,j,k) = inputDensity(i,j,k) * inputVelX(i,j,k);
+                _conservativeVars._rhoV(i,j,k) = inputDensity(i,j,k) * inputVelY(i,j,k);
+                _conservativeVars._rhoW(i,j,k) = inputDensity(i,j,k) * inputVelZ(i,j,k);
+
+                FloatType pressure = _fluid->computePressure_rho_T(inputDensity(i,j,k), inputTemperature(i,j,k));
+                FloatType staticEnergy = _fluid->computeStaticEnergy_p_rho(pressure, inputDensity(i,j,k));
+                FloatType totalEnergy = staticEnergy + 0.5*(inputVelX(i,j,k)*inputVelX(i,j,k) + inputVelY(i,j,k)*inputVelY(i,j,k) + inputVelZ(i,j,k)*inputVelZ(i,j,k));
+                _conservativeVars._rhoE(i,j,k) = inputDensity(i,j,k) * totalEnergy;
+            }
+        }
+    }
+    std::cout << "Standard initialization done.\n";
+}
+
+
+void CEulerSolver::axisymmetricRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature) {
+    FloatType thetaInitial, thetaPoint, thetaRotation;
+    Vector3D velocityInitial, velocityPoint;
+    for (size_t i=0; i<_nPointsI; i++) {
+        for (size_t j=0; j<_nPointsJ; j++){
+            for (size_t k=0; k<_nPointsK; k++){
+                thetaInitial = atan2_from0_to2pi(_mesh.getVertex(i,j,0).z(), _mesh.getVertex(i,j,0).y());
+                thetaPoint = atan2_from0_to2pi(_mesh.getVertex(i,j,k).z(), _mesh.getVertex(i,j,k).y());
+                thetaRotation = thetaPoint - thetaInitial;
+                
+                velocityInitial = Vector3D(inputVelX(i,j,0), inputVelY(i,j,0), inputVelZ(i,j,0));
+                velocityPoint = rotateVectorAlongXAxis(velocityInitial, thetaRotation);
+
+                _conservativeVars._rho(i,j,k) = inputDensity(i,j,0);
+                _conservativeVars._rhoU(i,j,k) = inputDensity(i,j,0) * velocityPoint.x();
+                _conservativeVars._rhoV(i,j,k) = inputDensity(i,j,0) * velocityPoint.y();
+                _conservativeVars._rhoW(i,j,k) = inputDensity(i,j,0) * velocityPoint.z();
+
+                FloatType pressure = _fluid->computePressure_rho_T(inputDensity(i,j,0), inputTemperature(i,j,0));
+                FloatType staticEnergy = _fluid->computeStaticEnergy_p_rho(pressure, inputDensity(i,j,0));
+                FloatType totalEnergy = staticEnergy + 0.5*(velocityPoint.dot(velocityPoint));
+                _conservativeVars._rhoE(i,j,k) = inputDensity(i,j,0) * totalEnergy;
+            }
+        }
+    }
+    std::cout << "Axisymmetric initialization done.\n";
+}
+
+
+void CEulerSolver::readRestartFile(const std::string &restartFileName, size_t &NI, size_t &NJ, size_t &NK,
+                                   Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature) {
+
     std::ifstream file(restartFileName);
     if (!file.is_open()) {
         std::cerr << "Failed to open file.\n";
     }
 
-    size_t NI, NJ, NK;
     std::string line;
 
     // Read NI, NJ, NK
@@ -91,10 +174,11 @@ void CEulerSolver::initializeSolutionFromRestart(){
     std::getline(file, line); NJ = std::stoi(line.substr(line.find('=') + 1));
     std::getline(file, line); NK = std::stoi(line.substr(line.find('=') + 1));
 
-    if (NI != _nPointsI || NJ != _nPointsJ || NK != _nPointsK) {
-        std::cerr << "Restart file has incompatible dimensions with the mesh provided.\n";
-        std::exit(EXIT_FAILURE);
-    }
+    inputDensity.resize(NI, NJ, NK);
+    inputVelX.resize(NI, NJ, NK);
+    inputVelY.resize(NI, NJ, NK);
+    inputVelZ.resize(NI, NJ, NK);
+    inputTemperature.resize(NI, NJ, NK);
 
     // Read header
     std::getline(file, line);
@@ -112,13 +196,6 @@ void CEulerSolver::initializeSolutionFromRestart(){
     size_t iVelY        = columnIndex["Velocity Y"];
     size_t iVelZ        = columnIndex["Velocity Z"];
     size_t iTemperature = columnIndex["Temperature"];
-
-    // Allocate arrays
-    Matrix3D<FloatType> inputDensity(NI, NJ, NK);
-    Matrix3D<FloatType> inputVelX(NI, NJ, NK);
-    Matrix3D<FloatType> inputVelY(NI, NJ, NK);
-    Matrix3D<FloatType> inputVelZ(NI, NJ, NK);
-    Matrix3D<FloatType> inputTemperature(NI, NJ, NK);
 
     // Read data
     int i = 0, j = 0, k = 0;
@@ -149,22 +226,6 @@ void CEulerSolver::initializeSolutionFromRestart(){
 
     file.close();
     std::cout << "Data read successfully.\n";
-
-    for (size_t i=0; i<_nPointsI; i++) {
-        for (size_t j=0; j<_nPointsJ; j++){
-            for (size_t k=0; k<_nPointsK; k++){
-                _conservativeVars._rho(i,j,k) = inputDensity(i,j,k);
-                _conservativeVars._rhoU(i,j,k) = inputDensity(i,j,k) * inputVelX(i,j,k);
-                _conservativeVars._rhoV(i,j,k) = inputDensity(i,j,k) * inputVelY(i,j,k);
-                _conservativeVars._rhoW(i,j,k) = inputDensity(i,j,k) * inputVelZ(i,j,k);
-
-                FloatType pressure = _fluid->computePressure_rho_T(inputDensity(i,j,k), inputTemperature(i,j,k));
-                FloatType staticEnergy = _fluid->computeStaticEnergy_p_rho(pressure, inputDensity(i,j,k));
-                FloatType totalEnergy = staticEnergy + 0.5*(inputVelX(i,j,k)*inputVelX(i,j,k) + inputVelY(i,j,k)*inputVelY(i,j,k) + inputVelZ(i,j,k)*inputVelZ(i,j,k));
-                _conservativeVars._rhoE(i,j,k) = inputDensity(i,j,k) * totalEnergy;
-            }
-        }
-    }
 }
 
 
@@ -364,6 +425,9 @@ void CEulerSolver::updateTurboPerformance(const FlowSolution&solution){
     FloatType massFlow = 0.5 * (_massFlows[BoundaryIndices::I_START] + _massFlows[BoundaryIndices::I_END]);
     if (_config.getTopology() == Topology::AXISYMMETRIC){
         massFlow *= 2.0 * M_PI / _mesh.getWedgeAngle();
+    }
+    else {
+        massFlow *= 360.0 / _config.getPeriodicityAngleDeg();
     }
     _turboPerformance[TurboPerformance::MASS_FLOW].push_back(massFlow);
     

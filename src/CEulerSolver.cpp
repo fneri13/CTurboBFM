@@ -59,13 +59,22 @@ void CEulerSolver::initializeSolutionFromScratch(){
     FloatType initPressure = _config.getInitPressure();
     Vector3D initDirection = _config.getInitDirection();
 
+    Matrix3D<Vector3D> flowDirection(_nPointsI, _nPointsJ, _nPointsK);
+
+    if (initDirection == Vector3D{0.0, 0.0, 0.0}) { // alias for adaptive scenario
+        _mesh.computeAdaptiveFlowDirection(flowDirection);
+    }
+    else { // standard uniform initialization
+        _mesh.computeUniformFlowDirection(initDirection, flowDirection);    
+    }
+
     FloatType density {0.0}, totEnergy {0.0};
     Vector3D velocity {0.0, 0.0, 0.0};
-    _fluid->computeInitFields(initMach, initTemperature, initPressure, initDirection, density, velocity, totEnergy);
     
     for (int i=0; i<_nPointsI; i++) {
         for (int j=0; j<_nPointsJ; j++){
             for (int k=0; k<_nPointsK; k++){
+                _fluid->computeInitFields(initMach, initTemperature, initPressure, flowDirection(i,j,k), density, velocity, totEnergy);
                 _conservativeVars._rho(i,j,k) = density;
                 _conservativeVars._rhoU(i,j,k) = density * velocity.x();
                 _conservativeVars._rhoV(i,j,k) = density * velocity.y();

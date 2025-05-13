@@ -73,6 +73,18 @@ class CMesh {
 
         void checkPeriodicity(FloatType periodicityAngle) const;
 
+        /** \brief Compute the flow direction for each cell, following the mesh lines. It assumes that the inlet-outlet direction is the i-axis. Other directions not supported
+         * \param[out] flowDirection The flow direction array
+        */
+        void computeAdaptiveFlowDirection(Matrix3D<Vector3D> &flowDirection) const;
+
+
+        /** \brief Compute the flow direction for each cell, copy pasting the values. Trivial 
+         * \param[in] initDirection The flow direction array
+         * \param[out] flowDirection The flow direction array
+        */
+        void computeUniformFlowDirection(Vector3D initDirection, Matrix3D<Vector3D> &flowDirection) const;
+
     private:
         const Config& _config;
 

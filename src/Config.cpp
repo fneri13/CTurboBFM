@@ -272,9 +272,19 @@ ConvectionScheme Config::getConvectionScheme() const {
 
 
 Vector3D Config::getInitDirection() const { 
+    std::string raw = get("INIT_DIRECTION"); // getOption retrieves the string value from config
+    
+    if (raw == "adaptive") {
+        // Compute or return a default adaptive direction
+        return Vector3D{0.0, 0.0, 0.0}; 
+    }
+
     std::vector<FloatType> direction = parseVector<FloatType>("INIT_DIRECTION");
-    Vector3D dir {direction[0], direction[1], direction[2]};
-    return dir;
+    if (direction.size() != 3) {
+        throw std::runtime_error("INIT_DIRECTION must have 3 components or be 'adaptive'");
+    }
+
+    return Vector3D{direction[0], direction[1], direction[2]};
 }
 
 std::vector<FloatType> Config::getTimeIntegrationCoeffs() const {

@@ -519,3 +519,39 @@ void CMesh::checkPeriodicity(FloatType periodicityAngle) const{
         }
     }
 }
+
+
+void CMesh::computeUniformFlowDirection(Vector3D initDirection, Matrix3D<Vector3D> &flowDirection) const{
+    std::cout << "Uniform flow direction initialization" << std::endl;
+    for (size_t i=0; i<_nPointsI; i++){
+        for (size_t j=0; j<_nPointsJ; j++){
+            for (size_t k=0; k<_nPointsK; k++){
+                flowDirection(i,j,k) = initDirection;
+            }
+        }
+    }
+}
+
+
+void CMesh::computeAdaptiveFlowDirection(Matrix3D<Vector3D> &flowDirection) const{
+    std::cout << "Adaptive flow direction initialization" << std::endl;
+
+    for (size_t i=0; i<_nPointsI-1; i++){
+        for (size_t j=0; j<_nPointsJ; j++){
+            for (size_t k=0; k<_nPointsK; k++){
+                Vector3D pointA = _vertices(i,j,k);
+                Vector3D pointB = _vertices(i+1,j,k);
+                flowDirection(i,j,k) = (pointB - pointA).normalized();
+            }
+        }
+    }
+
+    // last streamwise position
+    for (size_t j=0; j<_nPointsJ; j++){
+        for (size_t k=0; k<_nPointsK; k++){
+            Vector3D pointA = _vertices(_nPointsI-2,j,k);
+            Vector3D pointB = _vertices(_nPointsI-1,j,k);
+            flowDirection(_nPointsI-1,j,k) = (pointB - pointA).normalized();
+        }
+    }
+}

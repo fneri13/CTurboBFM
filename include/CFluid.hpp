@@ -163,12 +163,12 @@ public:
      * @param initMach Freestream Mach number [-]
      * @param initTemperature Freestream static temperature [K]
      * @param initPressure Freestream static pressure [Pa]
-     * @param initDirection Unit vector for flow direction [-]
+     * @param flowDirection Array of unit vector for flow direction [-]
      * @param density Output: initial density [kg/m³]
      * @param velocity Output: initial velocity vector [m/s]
      * @param totEnergy Output: initial total energy [J/kg]
     */
-    void computeInitFields(FloatType initMach, FloatType initTemperature, FloatType initPressure, Vector3D initDirection, FloatType &density, Vector3D &velocity, FloatType &totEnergy);
+    void computeInitFields(FloatType initMach, FloatType initTemperature, FloatType initPressure, Vector3D flowDirection, FloatType &density, Vector3D &velocity, FloatType &totEnergy);
 
     /** Compute pressure from primitive state vector
      * @param primitive State vector (rho, u, v, w, et) [SI units]

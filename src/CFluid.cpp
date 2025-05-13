@@ -102,9 +102,9 @@ FloatType CFluid::computeEntropy_p_rho(FloatType pressure, FloatType density) co
     return pressure / std::pow(density, _gamma);
 }
 
-void CFluid::computeInitFields(FloatType initMach, FloatType initTemperature, FloatType initPressure, Vector3D initDirection, FloatType &density, Vector3D &velocity, FloatType &totEnergy){
+void CFluid::computeInitFields(FloatType initMach, FloatType initTemperature, FloatType initPressure, Vector3D flowDirection, FloatType &density, Vector3D &velocity, FloatType &totEnergy){
     FloatType soundSpeed = std::sqrt(_gamma*_R*initTemperature);
-    velocity = (initDirection / initDirection.magnitude()) * soundSpeed * initMach;
+    velocity = (flowDirection / flowDirection.magnitude()) * soundSpeed * initMach;
     density = computeDensity_p_T(initPressure, initTemperature);
     FloatType energy = computeStaticEnergy_p_rho(initPressure, density);
     totEnergy = energy + 0.5 * pow(velocity.magnitude(), 2);

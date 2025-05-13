@@ -14,10 +14,11 @@ The Fundamentals of Computational Fluid Dynamics (Second Edition) by Charles Hir
 
 OUTPUT_FOLDER = 'Grid'
 L = 1
+HUB_RADIUS = L/5
 NX = 128
 NY = 48
-NK = 10
-SPAN = L/8
+NK = 15
+THETA_MAX = 30*np.pi/180
 STREAMWISE_COEFF = 1.1
 SPANWISE_COEFF = 1.1
 
@@ -34,14 +35,14 @@ r_bump = 1/2/np.sin(alpha)
 NX_bump = NX//3
 
 x1 = np.linspace(0, L, NX_bump)
-y1 = np.zeros_like(x1)
+y1 = np.zeros_like(x1) + HUB_RADIUS
 
 theta = np.linspace(0, 2*alpha, NX_bump)
 x2 = 1.5*L + r_bump*np.cos(np.pi/2+alpha-theta)
-y2 = -(r_bump-0.1*L)+r_bump*np.sin(np.pi/2+alpha-theta)
+y2 = -(r_bump-0.1*L)+r_bump*np.sin(np.pi/2+alpha-theta) + HUB_RADIUS
 
 x3 = np.linspace(2*L, 3*L, NX_bump)
-y3 = np.zeros_like(x3)
+y3 = np.zeros_like(x3) + HUB_RADIUS
 
 # three blocks
 x_wall = [x1, x2, x3]
@@ -90,10 +91,11 @@ NI, NJ = X.shape
 X3d = np.zeros((NI, NJ, NK))
 Y3d = np.zeros((NI, NJ, NK))
 Z3d = np.zeros((NI, NJ, NK))
+theta = np.linspace(0, THETA_MAX, NK)
 for k in range(NK):
     X3d[:,:,k] = X
-    Y3d[:,:,k] = Y
-    Z3d[:,:,k] = SPAN*k/(NK-1)
+    Y3d[:,:,k] = Y*np.cos(theta[k])
+    Z3d[:,:,k] = Y*np.sin(theta[k])
 
 # Create a 3D scatter plots
 mesh = pv.StructuredGrid(X3d, Y3d, Z3d)

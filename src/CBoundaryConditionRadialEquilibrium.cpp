@@ -17,7 +17,8 @@ StateVector CBoundaryConditionRadialEquilibrium::computeBoundaryFlux(StateVector
         return flux;
     }
     else {
-        FloatType pressureBoundary = _radialPressureProfile[indices[1]];
+        FloatType outletPressure = _radialPressureProfile[indices[1]];
+        FloatType pressureBoundary = _config.computeRampedOutletPressure(iterCounter, outletPressure);
         FloatType densityBoundary = pressureBoundary * density / pressure;
         Vector3D velocityBoundary = velocity;
         FloatType energyBoundary = _fluid.computeStaticEnergy_p_rho(pressureBoundary, densityBoundary);

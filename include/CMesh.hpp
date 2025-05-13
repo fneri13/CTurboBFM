@@ -71,6 +71,8 @@ class CMesh {
 
         void computeInputGradients();
 
+        void checkPeriodicity(FloatType periodicityAngle) const;
+
     private:
         const Config& _config;
 

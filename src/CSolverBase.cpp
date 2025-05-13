@@ -43,6 +43,8 @@ void CSolverBase::readBoundaryConditions(){
         _boundaryTypes[bound] = _config.getBoundaryType(bound);
     }
 
+    bool periodicityChecked = false;
+
     // read the boundaries values
     for (auto& bound : bounds) {
         if (_boundaryTypes[bound] == BoundaryType::INLET || _boundaryTypes[bound] == BoundaryType::INLET_SUPERSONIC) {
@@ -56,7 +58,11 @@ void CSolverBase::readBoundaryConditions(){
             _hubStaticPressure = _boundaryValues[bound][0];
         }
         else if (_boundaryTypes[bound] == BoundaryType::PERIODIC){
-            _boundaryValues[bound].push_back(_config.getPeriodicityValueRad());
+            _boundaryValues[bound].push_back(_config.getPeriodicityAngleRad());
+            if (!periodicityChecked) {
+                _mesh.checkPeriodicity(_boundaryValues[bound].back());
+                periodicityChecked = true;
+            }
         }
         else {
             _boundaryValues[bound] = std::vector<FloatType> {};

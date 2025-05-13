@@ -269,3 +269,10 @@ Vector3D computeGreenGaussFormula(const std::array<Vector3D,6>& surfaces, const 
     }
     return gradient / volume;
 }
+
+FloatType atan2_from0_to2pi(FloatType y, FloatType x){
+    FloatType angle = std::atan2(y, x);
+    if (angle < 0)
+        angle += 2 * M_PI;
+    return angle;
+}

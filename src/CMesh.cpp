@@ -499,3 +499,23 @@ void CMesh::computeInputGradients() {
                                     _vertices, _volumes, blockage, _gradientsMap[FieldNames::BLOCKAGE]);
     }
 }
+
+
+void CMesh::checkPeriodicity(FloatType periodicityAngle) const{
+    FloatType tolerance = 1E-4;
+    for (size_t i=0; i<_nPointsI; i++){
+        for (size_t j=0; j<_nPointsJ; j++){
+            Vector3D pointA = _vertices(i,j,0);
+            Vector3D pointB = _vertices(i,j,_nPointsK-1);
+
+            FloatType thetaA = atan2_from0_to2pi(pointA.z(), pointA.y());
+            FloatType thetaB = atan2_from0_to2pi(pointB.z(), pointB.y());
+
+            FloatType deltaTheta = std::abs(thetaA-thetaB);
+
+            if (std::abs(deltaTheta - periodicityAngle) > tolerance){
+                throw std::invalid_argument("Periodicity check failed!");
+            }
+        }
+    }
+}

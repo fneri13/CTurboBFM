@@ -45,3 +45,5 @@ void computeGradientGreenGauss(const Matrix3D<Vector3D>& surfacesI, const Matrix
 FloatType interpolateScalar(const Matrix3D<FloatType>& field, size_t i, size_t j, size_t k, const Matrix3D<Vector3D>& nodes, const Vector3D& point, Direction3D direction);
 
 Vector3D computeGreenGaussFormula(const std::array<Vector3D,6>& surfaces, const std::array<FloatType,6>& scalars, const FloatType& volume);
+
+FloatType atan2_from0_to2pi(FloatType y, FloatType x);

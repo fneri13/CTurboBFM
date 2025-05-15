@@ -2,6 +2,7 @@
 
 #include "CSolverBase.hpp"
 #include "fstream"
+#include <filesystem>
 
 /** 
   *  \brief     Class handling base output capabilities.
@@ -12,12 +13,11 @@
 class COutputBase {
     
     public:
-        COutputBase(const Config &config, const CMesh &mesh, const FlowSolution &solution, const CFluid &fluid, const Matrix3D<Vector3D> &inviscidForce, const Matrix3D<Vector3D> &viscousForce) 
-              : _config(config), _mesh(mesh), _solution(solution),  _fluid(fluid), _inviscidForce(inviscidForce), _viscousForce(viscousForce){};
+        COutputBase(const Config &config, const CMesh &mesh, const FlowSolution &solution, const CFluid &fluid, const Matrix3D<Vector3D> &inviscidForce, const Matrix3D<Vector3D> &viscousForce);
         
         virtual ~COutputBase() = default;
 
-        virtual void writeSolution() = 0;
+        virtual void writeSolution(size_t iterationCounter) = 0;
 
         void getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>& scalarsMap);
 
@@ -28,4 +28,8 @@ class COutputBase {
         const CFluid& _fluid;
         const Matrix3D<Vector3D>& _inviscidForce;
         const Matrix3D<Vector3D>& _viscousForce;
+        bool _isUnsteadyOutput;
+
+        std::string getOutputFilename(size_t iterationCounter);
+        std::string _outputDirectory = "volumeData";
 };

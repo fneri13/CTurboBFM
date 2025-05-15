@@ -1,8 +1,9 @@
 #include "COutputCSV.hpp"
 
-void COutputCSV::writeSolution(){
-    std::string filename = _config.getSolutionName() + ".csv";
-    std::ofstream file(filename);
+void COutputCSV::writeSolution(size_t iterationCounter){
+    std::string filename = getOutputFilename(iterationCounter);
+
+    std::ofstream file(_outputDirectory + "/" + filename + ".csv");
 
     if (!file.is_open()) {
         throw std::runtime_error("Failed to open file: " + filename);

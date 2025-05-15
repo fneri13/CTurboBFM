@@ -280,7 +280,7 @@ void CEulerSolver::solve(){
         }
 
         // write output files
-        if (it%solutionOutputFreq == 0) _output->writeSolution(); 
+        if (it%solutionOutputFreq == 0) _output->writeSolution(it); 
         if (it%solutionOutputFreq == 0) {
             writeLogResidualsToCSV();
             if (turboOutput) writeTurboPerformanceToCSV();

@@ -45,9 +45,10 @@ void CEulerSolver::initializeSolutionArrays(){
         initializeSolutionFromScratch();
     }
 
+    size_t ni = _mesh.getNumberPointsI();
     size_t nj = _mesh.getNumberPointsJ();
     for (size_t j = 0; j < nj; j++) {
-        _radialProfileCoords[j] = std::sqrt(_mesh.getVertex(0,j,0).y()*_mesh.getVertex(0,j,0).y() + _mesh.getVertex(0,j,0).z()*_mesh.getVertex(0,j,0).z());
+        _radialProfileCoords[j] = std::sqrt(_mesh.getVertex(ni-1,j,0).y()*_mesh.getVertex(ni-1,j,0).y() + _mesh.getVertex(ni-1,j,0).z()*_mesh.getVertex(ni-1,j,0).z());
     }
 
 }
@@ -691,7 +692,7 @@ void CEulerSolver::updateRadialProfiles(FlowSolution &solution){
         densityProfile[j] = primitive[0];
         theta = std::atan2(_mesh.getVertex(0,j,0).z(), _mesh.getVertex(0,j,0).y());
         velocityCyl = computeCylindricalVectorFromCartesian(velocityCart, theta);
-        velTangProfile[j] = velocityCyl.z();
+        velTangProfile[j] = std::abs(velocityCyl.z());
     }
 
     integrateRadialEquilibrium(densityProfile, velTangProfile, _radialProfileCoords, _hubStaticPressure, _radialProfilePressure);

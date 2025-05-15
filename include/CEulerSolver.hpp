@@ -6,6 +6,7 @@
 #include "CSourceBFMBase.hpp"
 #include "CSourceBFMHall.hpp"
 #include "CSourceBFMThollet.hpp"
+#include "CSourceBFMLiftDrag.hpp"
 
 /**
  * \brief     Solver for the Euler equations.

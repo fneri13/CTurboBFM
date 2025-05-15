@@ -772,7 +772,12 @@ enum class FieldNames {
     RPM=12,
     STREAMWISE_LENGTH=13,
     BLADE_PRESENT=14,
-    NUMBER_BLADES=15
+    NUMBER_BLADES=15,
+    LIFT_DRAG_BETA_0,
+    LIFT_DRAG_KP_ETA_MAX,
+    LIFT_DRAG_BETA_ETA_MAX,
+    SOLIDITY,
+    LIFT_DRAG_H_PARAMETER
 };
 
 
@@ -796,7 +801,12 @@ public:
             {"rpm", FieldNames::RPM},
             {"streamwiseLength", FieldNames::STREAMWISE_LENGTH},
             {"bladePresent", FieldNames::BLADE_PRESENT},
-            {"numberBlades", FieldNames::NUMBER_BLADES}
+            {"numberBlades", FieldNames::NUMBER_BLADES},
+            {"beta_0", FieldNames::LIFT_DRAG_BETA_0},
+            {"kp_etaMax", FieldNames::LIFT_DRAG_KP_ETA_MAX},
+            {"beta_etaMax", FieldNames::LIFT_DRAG_BETA_ETA_MAX},
+            {"solidity", FieldNames::SOLIDITY},
+            {"h_parameter", FieldNames::LIFT_DRAG_H_PARAMETER}
         };
         return map;
     }
@@ -818,7 +828,12 @@ public:
             {FieldNames::RPM, "rpm"},
             {FieldNames::STREAMWISE_LENGTH, "streamwiseLength"},
             {FieldNames::BLADE_PRESENT, "bladePresent"},
-            {FieldNames::NUMBER_BLADES, "numberBlades"}
+            {FieldNames::NUMBER_BLADES, "numberBlades"},
+            {FieldNames::LIFT_DRAG_BETA_0, "beta_0"},
+            {FieldNames::LIFT_DRAG_KP_ETA_MAX, "kp_etaMax"},
+            {FieldNames::LIFT_DRAG_BETA_ETA_MAX, "beta_etaMax"},
+            {FieldNames::SOLIDITY, "solidity"},
+            {FieldNames::LIFT_DRAG_H_PARAMETER, "h_parameter"}
         };
         return map;
     }

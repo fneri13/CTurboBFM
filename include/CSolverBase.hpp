@@ -46,6 +46,8 @@ class CSolverBase {
         int _nDimensions {0}, _nPointsI, _nPointsJ, _nPointsK;
         
         Matrix3D<FloatType> _timeStep;
+
+        std::vector<FloatType> _time;
         
         std::unique_ptr<CFluid> _fluid;
 

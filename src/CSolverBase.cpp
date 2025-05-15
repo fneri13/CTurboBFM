@@ -9,6 +9,7 @@ CSolverBase::CSolverBase(Config& config, CMesh& mesh)
     _nPointsJ = _mesh.getNumberPointsJ();
     _nPointsK = _mesh.getNumberPointsK();
     _timeStep.resize(_nPointsI, _nPointsJ, _nPointsK);
+    _time.push_back(0.0);
 
     _topology = _config.getTopology();
 

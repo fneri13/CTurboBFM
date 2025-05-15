@@ -111,7 +111,7 @@ public:
 
     bool saveUnsteadySolution() const {return parseBool("SAVE_UNSTEADY", true);}
 
-    int getSaveUnsteadyInterval() const {return static_cast<int>(parseFloat("SAVE_UNSTEADY_INTERVAL"));}
+    int getSaveIterationsInterval() const {return static_cast<int>(parseFloat("SAVE_ITERATIONS_INTERVAL"));}
 
     std::string getSolutionName() const {return parseString("SOLUTION_NAME");}
 
@@ -132,7 +132,7 @@ public:
 
     size_t getMassFlowUpdateFrequency() const {return massFlowUpdateFrequency;}
 
-    size_t getSolutionOutputFrequency() const {return getSaveUnsteadyInterval();}
+    size_t getSolutionOutputFrequency() const {return getSaveIterationsInterval();}
 
     FloatType getPeriodicityAngleRad() const {return parseFloat("PERIODICITY_ANGLE")*M_PI/180.0;} 
 

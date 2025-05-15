@@ -260,6 +260,7 @@ void CEulerSolver::solve(){
         if (turboOutput) updateTurboPerformance(solutionOld);
         
         computeTimestepArray(solutionOld, timestep);                                        // compute the physical time step
+        _time.push_back(_time.back() + timestep.min());                                     // update the physical time
         
         // runge-kutta steps
         FlowSolution tmpSol = solutionOld;                                                  // place holder for the solution at the runge-kutta step
@@ -316,9 +317,9 @@ void CEulerSolver::printInfoTurboPerformance(size_t it) const {
 
 void CEulerSolver::printLogResiduals(const StateVector &logRes, unsigned long int it) const {
     int col_width = 14;
-    std::cout << std::fixed << std::setprecision(6); // Set fixed format with 6 decimals
+    std::cout << std::fixed << std::setprecision(6);
     std::cout << "|" << std::setw(col_width) << std::setfill(' ') << std::left << it << "|"
-              << std::setw(col_width) << std::left << 0.0 << "|"
+              << std::setw(col_width) << std::left << _time.back()*1E6 << "|"
               << std::setw(col_width) << std::right << logRes[0] << "|"
               << std::setw(col_width) << std::right << logRes[1] << "|"
               << std::setw(col_width) << std::right << logRes[2] << "|"
@@ -353,7 +354,7 @@ void CEulerSolver::printHeader() const {
     // Print the column headers
     std::cout << "|"
                 << std::setw(col_width) << std::setfill(' ') << std::left << "Iteration" << "|"
-                << std::setw(col_width) << std::left << "Time[s]" << "|"
+                << std::setw(col_width) << std::left << "Time[μs]" << "|"
                 << std::setw(col_width) << std::right << "rms[Rho]" << "|"
                 << std::setw(col_width) << std::right << "rms[RhoU]" << "|"
                 << std::setw(col_width) << std::right << "rms[RhoV]" << "|"
@@ -662,10 +663,11 @@ void CEulerSolver::writeTurboPerformanceToCSV() const {
     }
 
     // Write header
-    file << "Massflow,PRtt,TRtt,ETAtt\n";
+    file << "Time[μs],Massflow[kg/s],PRtt,TRtt,ETAtt\n";
 
     size_t size = _turboPerformance.at(TurboPerformance::MASS_FLOW).size();
     for (size_t i = 0; i < size; i++) {
+        file << _time.at(i+1)*1E6 << ",";
         file    << _turboPerformance.at(TurboPerformance::MASS_FLOW)[i] << "," 
                 << _turboPerformance.at(TurboPerformance::TOTAL_PRESSURE_RATIO)[i] << "," 
                 << _turboPerformance.at(TurboPerformance::TOTAL_TEMPERATURE_RATIO)[i] << "," 

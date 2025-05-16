@@ -21,7 +21,7 @@ def plot_turbo(data):
     
     # mass flow plot
     plt.figure()
-    plt.plot(data["Massflow"])
+    plt.plot(data["Massflow[kg/s]"])
     plt.grid(alpha=0.3)
     plt.xlabel("Iteration [-]")
     plt.ylabel(r"$\dot{m}$ [kg/s]")
@@ -39,8 +39,8 @@ def plot_turbo(data):
     
     # beta evolution plot
     plt.figure()
-    plt.plot(data["Massflow"], data["PRtt"], '-k', lw=0.5)
-    plt.scatter(data["Massflow"], data["PRtt"], c=np.linspace(1, len(data["Massflow"]), len(data["Massflow"])))
+    plt.plot(data["Massflow[kg/s]"], data["PRtt"], '-k', lw=0.5)
+    plt.scatter(data["Massflow[kg/s]"], data["PRtt"], c=np.linspace(1, len(data["Massflow[kg/s]"]), len(data["Massflow[kg/s]"])))
     plt.grid(alpha=0.3)
     plt.xlabel(r"$\dot{m}$ [kg/s]")
     plt.ylabel(r"$\beta_{tt}$ [-]")
@@ -49,8 +49,8 @@ def plot_turbo(data):
     
     # eta evolution plot
     plt.figure()
-    plt.plot(data["Massflow"], data["ETAtt"], '-k', lw=0.5)
-    plt.scatter(data["Massflow"], data["ETAtt"], c=np.linspace(1, len(data["Massflow"]), len(data["Massflow"])))
+    plt.plot(data["Massflow[kg/s]"], data["ETAtt"], '-k', lw=0.5)
+    plt.scatter(data["Massflow[kg/s]"], data["ETAtt"], c=np.linspace(1, len(data["Massflow[kg/s]"]), len(data["Massflow[kg/s]"])))
     plt.grid(alpha=0.3)
     plt.xlabel(r"$\dot{m}$ [kg/s]")
     plt.ylabel(r"$\eta_{tt}$ [-]")

@@ -39,8 +39,6 @@ private:
     
     std::vector<StateVector> _logResiduals;
     
-    std::map<TurboPerformance, std::vector<FloatType>> _turboPerformance; // map of turbo performance>
-
     Matrix3D<Vector3D> _inviscidForce, _viscousForce;
 
 

@@ -173,7 +173,8 @@ enum class BoundaryType {
     WALL = 5,
     EMPTY = 6,
     WEDGE = 7,
-    PERIODIC = 8
+    PERIODIC = 8,
+    THROTTLE = 9
 };
 
 

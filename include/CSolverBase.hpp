@@ -15,6 +15,7 @@
 #include "CBoundaryConditionWedge.hpp"
 #include "CBoundaryConditionRadialEquilibrium.hpp"
 #include "CBoundaryConditionPeriodic.hpp"
+#include "CBoundaryConditionThrottle.hpp"
 
 /** 
   *  \brief     Class handling base solver capabilities.
@@ -68,6 +69,8 @@ class CSolverBase {
         std::vector<FloatType> _radialProfilePressure;
         
         std::vector<FloatType> _radialProfileCoords;
+
+        std::map<TurboPerformance, std::vector<FloatType>> _turboPerformance; // map of turbo performance>
 
         
 

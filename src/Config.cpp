@@ -224,6 +224,9 @@ BoundaryType Config::getBoundaryType(BoundaryIndices bcIndex) const{
     } 
     else if (boundaryString == "radial_equilibrium") {
         boundaryType = BoundaryType::RADIAL_EQUILIBRIUM;
+    }
+    else if (boundaryString == "throttle") {
+        boundaryType = BoundaryType::THROTTLE;
     } 
     else if (boundaryString == "wall") {
         boundaryType = BoundaryType::WALL;

@@ -51,7 +51,7 @@ void CSolverBase::readBoundaryConditions(){
         if (_boundaryTypes[bound] == BoundaryType::INLET || _boundaryTypes[bound] == BoundaryType::INLET_SUPERSONIC) {
             _boundaryValues[bound] = _config.getInletBCValues();
         }
-        else if (_boundaryTypes[bound] == BoundaryType::OUTLET || _boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC){
+        else if (_boundaryTypes[bound] == BoundaryType::OUTLET || _boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC || _boundaryTypes[bound] == BoundaryType::THROTTLE){
             _boundaryValues[bound] = _config.getOutletBCValues();
         }
         else if (_boundaryTypes[bound] == BoundaryType::RADIAL_EQUILIBRIUM){
@@ -89,6 +89,9 @@ void CSolverBase::readBoundaryConditions(){
         }
         else if (_boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC){
             _boundaryConditions[bound] = std::make_unique<CBoundaryConditionOutletSupersonic>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
+        }
+        else if (_boundaryTypes[bound] == BoundaryType::THROTTLE){
+            _boundaryConditions[bound] = std::make_unique<CBoundaryConditionThrottle>(_config, _mesh, *_fluid, bound, _boundaryValues[bound], _turboPerformance);
         }
         else if (_boundaryTypes[bound] == BoundaryType::WEDGE){
             _boundaryConditions[bound] = std::make_unique<CBoundaryConditionWedge>(_config, _mesh, *_fluid, bound);

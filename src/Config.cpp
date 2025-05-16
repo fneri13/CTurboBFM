@@ -147,6 +147,8 @@ BFM_Model Config::getBFMModel() const {
         model = BFM_Model::HALL;
     } else if (value == "Lift-Drag") {
         model = BFM_Model::LIFT_DRAG;
+    } else if (value == "Frozen-Force") {
+        model = BFM_Model::FROZEN_FORCE;
     } else if (value == "None") {
         model = BFM_Model::NONE;
     } 

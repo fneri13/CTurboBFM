@@ -126,7 +126,8 @@ enum class BFM_Model {
     NONE = 0,
     HALL = 1,
     HALL_THOLLET = 2,
-    LIFT_DRAG = 3
+    LIFT_DRAG = 3,
+    FROZEN_FORCE = 4
 };
 
 
@@ -778,7 +779,10 @@ enum class FieldNames {
     LIFT_DRAG_KP_ETA_MAX,
     LIFT_DRAG_BETA_ETA_MAX,
     SOLIDITY,
-    LIFT_DRAG_H_PARAMETER
+    LIFT_DRAG_H_PARAMETER,
+    AXIAL_FORCE,
+    RADIAL_FORCE,
+    TANGENTIAL_FORCE
 };
 
 
@@ -807,7 +811,11 @@ public:
             {"kp_etaMax", FieldNames::LIFT_DRAG_KP_ETA_MAX},
             {"beta_etaMax", FieldNames::LIFT_DRAG_BETA_ETA_MAX},
             {"solidity", FieldNames::SOLIDITY},
-            {"h_parameter", FieldNames::LIFT_DRAG_H_PARAMETER}
+            {"h_parameter", FieldNames::LIFT_DRAG_H_PARAMETER},
+            {"axialForce", FieldNames::AXIAL_FORCE},
+            {"radialForce", FieldNames::RADIAL_FORCE},
+            {"tangentialForce", FieldNames::TANGENTIAL_FORCE}
+
         };
         return map;
     }
@@ -834,7 +842,10 @@ public:
             {FieldNames::LIFT_DRAG_KP_ETA_MAX, "kp_etaMax"},
             {FieldNames::LIFT_DRAG_BETA_ETA_MAX, "beta_etaMax"},
             {FieldNames::SOLIDITY, "solidity"},
-            {FieldNames::LIFT_DRAG_H_PARAMETER, "h_parameter"}
+            {FieldNames::LIFT_DRAG_H_PARAMETER, "h_parameter"},
+            {FieldNames::AXIAL_FORCE, "axialForce"},
+            {FieldNames::RADIAL_FORCE, "radialForce"},
+            {FieldNames::TANGENTIAL_FORCE, "tangentialForce"}
         };
         return map;
     }

@@ -26,6 +26,9 @@ CEulerSolver::CEulerSolver(Config& config, CMesh& mesh)
     else if (bfmModel == BFM_Model::LIFT_DRAG) {
         _bfmSource = std::make_unique<CSourceBFMLiftDrag>(_config, *_fluid, _mesh);
     }
+    else if (bfmModel == BFM_Model::FROZEN_FORCE) {
+        _bfmSource = std::make_unique<CSourceBFMFrozenForce>(_config, *_fluid, _mesh);
+    }
     else {
         _bfmSource = std::make_unique<CSourceBFMBase>(_config, *_fluid, _mesh);
     }
@@ -280,9 +283,9 @@ void CEulerSolver::solve(){
             if (turboOutput) printInfoTurboPerformance(it);
         }
 
-        // write output files
-        if (it%solutionOutputFreq == 0) _output->writeSolution(it); 
+        // write output files  
         if (it%solutionOutputFreq == 0) {
+            _output->writeSolution(it);
             writeLogResidualsToCSV();
             if (turboOutput) writeTurboPerformanceToCSV();
         } 

@@ -28,7 +28,7 @@ def read_solutions(inputFolder):
     for run in runFolders:
         input_filename = inputFolder + '/' + run + '/turbo.csv'
         data = read_file(input_filename)
-        massflow.append(data['Massflow'][-1])
+        massflow.append(data['Massflow[kg/s]'][-1])
         PRtt.append(data['PRtt'][-1])
         TRtt.append(data['TRtt'][-1])
         ETAtt.append(data['ETAtt'][-1])

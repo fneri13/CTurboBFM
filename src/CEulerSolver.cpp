@@ -29,6 +29,9 @@ CEulerSolver::CEulerSolver(Config& config, CMesh& mesh)
     else if (bfmModel == BFM_Model::FROZEN_FORCE) {
         _bfmSource = std::make_unique<CSourceBFMFrozenForce>(_config, *_fluid, _mesh);
     }
+    else if (bfmModel == BFM_Model::FROZEN_GRADIENT) {
+        _bfmSource = std::make_unique<CSourceBFMFrozenGradient>(_config, *_fluid, _mesh);
+    }
     else {
         _bfmSource = std::make_unique<CSourceBFMBase>(_config, *_fluid, _mesh);
     }

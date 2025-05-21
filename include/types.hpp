@@ -127,7 +127,8 @@ enum class BFM_Model {
     HALL = 1,
     HALL_THOLLET = 2,
     LIFT_DRAG = 3,
-    FROZEN_FORCE = 4
+    FROZEN_FORCE = 4,
+    FROZEN_GRADIENT = 5
 };
 
 
@@ -782,7 +783,9 @@ enum class FieldNames {
     LIFT_DRAG_H_PARAMETER,
     AXIAL_FORCE,
     RADIAL_FORCE,
-    TANGENTIAL_FORCE
+    TANGENTIAL_FORCE,
+    ANGULAR_MOMENTUM_DERIVATIVE,
+    ENTROPY_DERIVATIVE
 };
 
 
@@ -814,7 +817,9 @@ public:
             {"h_parameter", FieldNames::LIFT_DRAG_H_PARAMETER},
             {"axialForce", FieldNames::AXIAL_FORCE},
             {"radialForce", FieldNames::RADIAL_FORCE},
-            {"tangentialForce", FieldNames::TANGENTIAL_FORCE}
+            {"tangentialForce", FieldNames::TANGENTIAL_FORCE},
+            {"angularMomentumDerivative", FieldNames::ANGULAR_MOMENTUM_DERIVATIVE},
+            {"entropyDerivative", FieldNames::ENTROPY_DERIVATIVE}
 
         };
         return map;
@@ -845,7 +850,9 @@ public:
             {FieldNames::LIFT_DRAG_H_PARAMETER, "h_parameter"},
             {FieldNames::AXIAL_FORCE, "axialForce"},
             {FieldNames::RADIAL_FORCE, "radialForce"},
-            {FieldNames::TANGENTIAL_FORCE, "tangentialForce"}
+            {FieldNames::TANGENTIAL_FORCE, "tangentialForce"},
+            {FieldNames::ANGULAR_MOMENTUM_DERIVATIVE, "angularMomentumDerivative"},
+            {FieldNames::ENTROPY_DERIVATIVE, "entropyDerivative"}
         };
         return map;
     }

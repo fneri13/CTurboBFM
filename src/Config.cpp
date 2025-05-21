@@ -149,6 +149,8 @@ BFM_Model Config::getBFMModel() const {
         model = BFM_Model::LIFT_DRAG;
     } else if (value == "Frozen-Force") {
         model = BFM_Model::FROZEN_FORCE;
+    } else if (value == "Frozen-Gradient") {
+        model = BFM_Model::FROZEN_GRADIENT;
     } else if (value == "None") {
         model = BFM_Model::NONE;
     } 

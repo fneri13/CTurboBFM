@@ -15,7 +15,7 @@ StateVector CSourceBFMFrozenForce::computeInviscidComponent(size_t i, size_t j, 
     Vector3D forceCartesian = _forceCartesian - _viscousForceCartesian;
     Vector3D forceCyl = computeCylindricalVectorFromCartesian(forceCartesian, _theta);
 
-    inviscidForce(i, j, k) = forceCartesian;
+    inviscidForce(i, j, k) = forceCartesian*_bladeIsPresent;
     
     StateVector source({0,0,0,0,0});
     source[1] = forceCartesian.x();
@@ -25,12 +25,12 @@ StateVector CSourceBFMFrozenForce::computeInviscidComponent(size_t i, size_t j, 
     
     FloatType volume = _mesh.getVolume(i, j, k);
 
-    return source*volume*primitive[0];
+    return source*volume*primitive[0]*_bladeIsPresent;
 }
 
 StateVector CSourceBFMFrozenForce::computeViscousComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &viscousForce) {
 
-    viscousForce(i, j, k) = _viscousForceCartesian;
+    viscousForce(i, j, k) = _viscousForceCartesian*_bladeIsPresent;
 
     StateVector source({0,0,0,0,0});
     source[1] = _viscousForceCartesian.x();
@@ -40,7 +40,7 @@ StateVector CSourceBFMFrozenForce::computeViscousComponent(size_t i, size_t j, s
     
     FloatType volume = _mesh.getVolume(i, j, k);
 
-    return source*volume*primitive[0];
+    return source*volume*primitive[0]*_bladeIsPresent;
 }
 
 void CSourceBFMFrozenForce::updateState(size_t i, size_t j, size_t k, const StateVector& primitive) {
@@ -49,4 +49,5 @@ void CSourceBFMFrozenForce::updateState(size_t i, size_t j, size_t k, const Stat
     _viscousForceDirectionCartesian = - _relativeVelocityCartesian.normalized();
     _viscousForceCartesian = _viscousForceDirectionCartesian *_forceCartesian.dot(_viscousForceDirectionCartesian);
     _viscousForceCyl = computeCylindricalVectorFromCartesian(_viscousForceCartesian, _theta);
+    _bladeIsPresent = _mesh.getInputFields(FieldNames::BLADE_PRESENT, i, j, k);
 }

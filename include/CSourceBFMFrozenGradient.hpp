@@ -3,13 +3,13 @@
 #include "CSourceBFMBase.hpp"
 
 // Base class handling BFM Thollet model source terms computation
-class CSourceBFMFrozenForce : public CSourceBFMBase {
+class CSourceBFMFrozenGradient : public CSourceBFMBase {
 public:
 
-    CSourceBFMFrozenForce(const Config &config, const CFluid &fluid, const CMesh &mesh) 
+    CSourceBFMFrozenGradient(const Config &config, const CFluid &fluid, const CMesh &mesh) 
         : CSourceBFMBase(config, fluid, mesh) {}
 
-    virtual ~CSourceBFMFrozenForce() = default;  
+    virtual ~CSourceBFMFrozenGradient() = default;  
 
 protected:
 
@@ -21,7 +21,7 @@ protected:
 
     void updateState(size_t i, size_t j, size_t k, const StateVector& primitive);
 
-    Vector3D _forceCylindrical, _forceCartesian, _viscousForceDirectionCartesian, _viscousForceCartesian, _viscousForceCyl;
+    Vector3D _forceCylindrical, _forceCartesian, _viscousForceDirectionCartesian, _viscousForceCartesian, _viscousForceCyl, _inviscidForceCyl, _inviscidForceCartesian;
     FloatType _bladeIsPresent;
     
 };

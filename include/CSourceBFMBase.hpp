@@ -32,28 +32,42 @@ protected:
     FloatType _radius;
     FloatType _theta;
     FloatType _blockage;
-    Vector3D _velocityCartesian;
-    Vector3D _relativeVelocityCartesian;
-    Vector3D _velocityCylindrical;
     FloatType _omega;
-    Vector3D _dragVelocityCylindrical;
-    Vector3D _relativeVelocityCylindric;
     FloatType _numberBlades;
     FloatType _pitch;
-    FloatType _normalCamberAxial;
-    FloatType _normalCamberRadial;
-    FloatType _normalCamberTangential;
+    Vector3D _velocityCartesian, _velocityCylindrical;
+    Vector3D _relativeVelocityCartesian, _dragVelocityCylindrical, _relativeVelocityCylindric;
+    FloatType _normalCamberAxial, _normalCamberRadial, _normalCamberTangential;
     Vector3D _normalCamberCylindric;
     FloatType _deviationAngle;
-    Vector3D _inviscidForceDirectionCylindrical;
-    Vector3D _viscousForceDirectionCylindrical;
+    Vector3D _inviscidForceDirectionCylindrical, _inviscidForceDirectionCartesian;
+    Vector3D _viscousForceDirectionCylindrical, _viscousForceDirectionCartesian;
 
+    /** Compute the flow state at a given point, needed for the computation of source terms
+     * 
+     * @param i x index
+     * @param j y index
+     * @param k z index
+     * @param primitive primitive variables
+    */
     void computeFlowState(size_t i, size_t j, size_t k, const StateVector& primitive);
 
+    /** Compute the deviation angle, using the relative velocity and the normal camber 
+     * 
+     * @param relativeVelocity relative velocity
+     * @param normalCamber normal camber
+    */
     FloatType computeDeviationAngle(Vector3D relativeVelocity, Vector3D normalCamber);
 
+    /** Compute the inviscid force direction, using the relative velocity and the normal camber. The direction must be orthogonal to the relative velocity, 
+     * and the radial component of it should reflect the radial component of the normal camber. Non linear set of equations needed here, problems possile.
+     * 
+     * @param relativeVelocity relative velocity
+     * @param normalCamber normal camber
+     */
     Vector3D computeInviscidForceDirection(const Vector3D& relativeVelocity, const Vector3D& normalCamber);
 
+    /** Compute the tangential component of the inviscid force direction. Function used from the other method */
     FloatType computeTangentialComponent(FloatType fAxial, const Vector3D& relativeVelocityDirection, const Vector3D& normalCamber);
     
 };

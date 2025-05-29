@@ -44,25 +44,36 @@ StateVector CSourceBFMBase::computeBodyForceSource(size_t i, size_t j, size_t k,
 }
 
 void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateVector& primitive){
+    // geometrical considerations
     _point = _mesh.getVertex(i, j, k);
     _radius = std::sqrt(_point.z() * _point.z() + _point.y() * _point.y());
     _theta = std::atan2(_point.z(), _point.y());
+    
+    // velocity vector in both reference frame
     _velocityCartesian = {primitive[1], primitive[2], primitive[3]};
     _velocityCylindrical = computeCylindricalVectorFromCartesian(_velocityCartesian, _theta);
+    
+    // relative velocity vector in both reference frame
     _omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
     _dragVelocityCylindrical = {0, 0, _omega * _radius};
     _relativeVelocityCylindric = _velocityCylindrical - _dragVelocityCylindrical;
+    _relativeVelocityCartesian = computeCartesianVectorFromCylindrical(_relativeVelocityCylindric, _theta);
+    
+    // blade properties
     _numberBlades = _mesh.getInputFields(FieldNames::NUMBER_BLADES, i, j, k);
     _pitch = 2.0 * M_PI * _radius / _numberBlades;
     _normalCamberAxial = _mesh.getInputFields(FieldNames::NORMAL_AXIAL, i, j, k);
     _normalCamberRadial = _mesh.getInputFields(FieldNames::NORMAL_RADIAL, i, j, k);
     _normalCamberTangential = _mesh.getInputFields(FieldNames::NORMAL_TANGENTIAL, i, j, k);
     _normalCamberCylindric = {_normalCamberAxial, _normalCamberRadial, _normalCamberTangential};
+    _blockage = _mesh.getInputFields(FieldNames::BLOCKAGE, i, j, k);
+    
+    // force directions 
     _deviationAngle = computeDeviationAngle(_relativeVelocityCylindric, _normalCamberCylindric);
     _inviscidForceDirectionCylindrical = computeInviscidForceDirection(_relativeVelocityCylindric, _normalCamberCylindric);
-    _relativeVelocityCartesian = computeCartesianVectorFromCylindrical(_relativeVelocityCylindric, _theta);
+    _inviscidForceDirectionCartesian = computeCartesianVectorFromCylindrical(_inviscidForceDirectionCylindrical, _theta);
     _viscousForceDirectionCylindrical = - _relativeVelocityCylindric.normalized();
-    _blockage = _mesh.getInputFields(FieldNames::BLOCKAGE, i, j, k);
+    _viscousForceDirectionCartesian = - _relativeVelocityCartesian.normalized();
 }
 
 

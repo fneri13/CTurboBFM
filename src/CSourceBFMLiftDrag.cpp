@@ -29,12 +29,13 @@ StateVector CSourceBFMLiftDrag::computeInviscidComponent(size_t i, size_t j, siz
     FloatType forceMag = 2.0 * M_PI * solidity * _relativeVelocityCylindric.dot(_relativeVelocityCylindric) / hParameter;
     
     FloatType omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
-    if (omega < 0) {
-        forceMag *= (_relativeFlowAngle - beta0);
+    FloatType deltaBeta = std::abs(beta0 - _relativeFlowAngle);
+
+    if (_deviationAngle < 0) { // if the deviation angle is negative, use a pull force, not a push
+        deltaBeta *= -1;
     }
-    else {
-        forceMag *= (beta0 - _relativeFlowAngle);
-    }
+
+    forceMag *= deltaBeta;
     
     Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceMag;
     Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);

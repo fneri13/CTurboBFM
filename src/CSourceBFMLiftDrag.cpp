@@ -25,13 +25,11 @@ StateVector CSourceBFMLiftDrag::computeInviscidComponent(size_t i, size_t j, siz
     FloatType hParameter = _mesh.getInputFields(FieldNames::LIFT_DRAG_H_PARAMETER, i, j, k);
     FloatType beta0 = _mesh.getInputFields(FieldNames::LIFT_DRAG_BETA_0, i, j, k);
 
-
-    FloatType forceMag = 2.0 * M_PI * solidity * _relativeVelocityCylindric.dot(_relativeVelocityCylindric) / hParameter;
-    
-    FloatType omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
+    // compute the magnitude of the inviscid force. Positive when pushing, negative when pulling
+    FloatType forceMag = 2.0 * M_PI * solidity * _relativeVelocityCylindric.dot(_relativeVelocityCylindric) / hParameter;    
     FloatType deltaBeta = std::abs(beta0 - _relativeFlowAngle);
 
-    if (_deviationAngle < 0) { // if the deviation angle is negative, use a pull force, not a push
+    if (_deviationAngle < 0) {
         deltaBeta *= -1;
     }
 

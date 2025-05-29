@@ -12,16 +12,14 @@ StateVector CSourceBFMFrozenForce::computeBodyForceSource(size_t i, size_t j, si
 
 
 StateVector CSourceBFMFrozenForce::computeInviscidComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce) {
-    Vector3D forceCartesian = _forceCartesian - _viscousForceCartesian;
-    Vector3D forceCyl = computeCylindricalVectorFromCartesian(forceCartesian, _theta);
 
-    inviscidForce(i, j, k) = forceCartesian*_bladeIsPresent;
+    inviscidForce(i, j, k) = _inviscidForceCartesian*_bladeIsPresent;
     
     StateVector source({0,0,0,0,0});
-    source[1] = forceCartesian.x();
-    source[2] = forceCartesian.y();
-    source[3] = forceCartesian.z();
-    source[4] = forceCyl.z() * _omega * _radius;
+    source[1] = _inviscidForceCartesian.x();
+    source[2] = _inviscidForceCartesian.y();
+    source[3] = _inviscidForceCartesian.z();
+    source[4] = _inviscidForceCylindrical.z() * _omega * _radius;
     
     FloatType volume = _mesh.getVolume(i, j, k);
 
@@ -36,7 +34,7 @@ StateVector CSourceBFMFrozenForce::computeViscousComponent(size_t i, size_t j, s
     source[1] = _viscousForceCartesian.x();
     source[2] = _viscousForceCartesian.y();
     source[3] = _viscousForceCartesian.z();
-    source[4] = _viscousForceCyl.z() * _omega * _radius;
+    source[4] = _viscousForceCylindrical.z() * _omega * _radius;
     
     FloatType volume = _mesh.getVolume(i, j, k);
 
@@ -44,10 +42,10 @@ StateVector CSourceBFMFrozenForce::computeViscousComponent(size_t i, size_t j, s
 }
 
 void CSourceBFMFrozenForce::updateState(size_t i, size_t j, size_t k, const StateVector& primitive) {
-    _forceCylindrical = {_mesh.getInputFields(FieldNames::AXIAL_FORCE, i, j, k), _mesh.getInputFields(FieldNames::RADIAL_FORCE, i, j, k), _mesh.getInputFields(FieldNames::TANGENTIAL_FORCE, i, j, k)};
-    _forceCartesian = computeCartesianVectorFromCylindrical(_forceCylindrical, _theta);
-    _viscousForceDirectionCartesian = - _relativeVelocityCartesian.normalized();
-    _viscousForceCartesian = _viscousForceDirectionCartesian *_forceCartesian.dot(_viscousForceDirectionCartesian);
-    _viscousForceCyl = computeCylindricalVectorFromCartesian(_viscousForceCartesian, _theta);
-    _bladeIsPresent = _mesh.getInputFields(FieldNames::BLADE_PRESENT, i, j, k);
+    Vector3D forceCylindrical = {_mesh.getInputFields(FieldNames::AXIAL_FORCE, i, j, k), _mesh.getInputFields(FieldNames::RADIAL_FORCE, i, j, k), _mesh.getInputFields(FieldNames::TANGENTIAL_FORCE, i, j, k)};
+    Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
+    _viscousForceCartesian = _viscousForceDirectionCartesian * forceCartesian.dot(_viscousForceDirectionCartesian);
+    _viscousForceCylindrical = computeCylindricalVectorFromCartesian(_viscousForceCartesian, _theta);
+    _inviscidForceCartesian = forceCartesian - _viscousForceCartesian;
+    _inviscidForceCylindrical = computeCylindricalVectorFromCartesian(_inviscidForceCartesian, _theta);
 }

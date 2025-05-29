@@ -21,7 +21,6 @@ protected:
 
     void updateState(size_t i, size_t j, size_t k, const StateVector& primitive);
 
-    Vector3D _forceCylindrical, _forceCartesian, _viscousForceDirectionCartesian, _viscousForceCartesian, _viscousForceCyl;
-    FloatType _bladeIsPresent;
+    Vector3D _viscousForceCartesian, _viscousForceCylindrical, _inviscidForceCylindrical, _inviscidForceCartesian;
     
 };

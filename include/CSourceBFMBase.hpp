@@ -31,7 +31,7 @@ protected:
     Vector3D _point;
     FloatType _radius;
     FloatType _theta;
-    FloatType _blockage;
+    FloatType _blockage, _bladeIsPresent;
     FloatType _omega;
     FloatType _numberBlades;
     FloatType _pitch;

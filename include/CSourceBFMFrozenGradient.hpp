@@ -19,9 +19,9 @@ protected:
     
     StateVector computeViscousComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &viscousForce);
 
+    /** Update the state variables used to compute the source terms. Reconstruct the forces starting from the gradients given in input*/
     void updateState(size_t i, size_t j, size_t k, const StateVector& primitive);
 
-    Vector3D _forceCylindrical, _forceCartesian, _viscousForceDirectionCartesian, _viscousForceCartesian, _viscousForceCyl, _inviscidForceCyl, _inviscidForceCartesian;
-    FloatType _bladeIsPresent;
+    Vector3D _viscousForceCartesian, _viscousForceCylindrical, _inviscidForceCylindrical, _inviscidForceCartesian;
     
 };

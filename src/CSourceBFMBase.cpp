@@ -67,6 +67,7 @@ void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateV
     _normalCamberTangential = _mesh.getInputFields(FieldNames::NORMAL_TANGENTIAL, i, j, k);
     _normalCamberCylindric = {_normalCamberAxial, _normalCamberRadial, _normalCamberTangential};
     _blockage = _mesh.getInputFields(FieldNames::BLOCKAGE, i, j, k);
+    _bladeIsPresent = _mesh.getInputFields(FieldNames::BLADE_PRESENT, i, j, k);
     
     // force directions 
     _deviationAngle = computeDeviationAngle(_relativeVelocityCylindric, _normalCamberCylindric);

@@ -19,7 +19,7 @@ StateVector CSourceBFMFrozenGradient::computeInviscidComponent(size_t i, size_t 
     source[1] = _inviscidForceCartesian.x();
     source[2] = _inviscidForceCartesian.y();
     source[3] = _inviscidForceCartesian.z();
-    source[4] = _inviscidForceCyl.z() * _omega * _radius;
+    source[4] = _inviscidForceCylindrical.z() * _omega * _radius;
     
     FloatType volume = _mesh.getVolume(i, j, k);
 
@@ -34,7 +34,7 @@ StateVector CSourceBFMFrozenGradient::computeViscousComponent(size_t i, size_t j
     source[1] = _viscousForceCartesian.x();
     source[2] = _viscousForceCartesian.y();
     source[3] = _viscousForceCartesian.z();
-    source[4] = _viscousForceCyl.z() * _omega * _radius;
+    source[4] = _viscousForceCylindrical.z() * _omega * _radius;
     
     FloatType volume = _mesh.getVolume(i, j, k);
 
@@ -42,32 +42,26 @@ StateVector CSourceBFMFrozenGradient::computeViscousComponent(size_t i, size_t j
 }
 
 void CSourceBFMFrozenGradient::updateState(size_t i, size_t j, size_t k, const StateVector& primitive) {
-    FloatType angularMomDerivative = _mesh.getInputFields(FieldNames::ANGULAR_MOMENTUM_DERIVATIVE, i, j, k);
+    FloatType angularMomentumDerivative = _mesh.getInputFields(FieldNames::ANGULAR_MOMENTUM_DERIVATIVE, i, j, k);
     FloatType entropyDerivative = _mesh.getInputFields(FieldNames::ENTROPY_DERIVATIVE, i, j, k);
 
     // compute the theta global component
-    FloatType meridionalVelMag = std::sqrt(_relativeVelocityCartesian.y() * _relativeVelocityCartesian.y() + _relativeVelocityCartesian.x() * _relativeVelocityCartesian.x());
-    FloatType ftheta = angularMomDerivative * meridionalVelMag / _radius;
+    FloatType meridionalVelMag = std::sqrt(_relativeVelocityCylindric.y() * _relativeVelocityCylindric.y() + _relativeVelocityCylindric.x() * _relativeVelocityCylindric.x());
+    FloatType ftheta = angularMomentumDerivative * meridionalVelMag / _radius;
 
     // compute the loss component
-    FloatType relVelMag = _relativeVelocityCartesian.magnitude();
+    FloatType relVelMag = _relativeVelocityCylindric.magnitude();
     FloatType temperature = _fluid.computeTemperature_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
     FloatType floss = temperature * meridionalVelMag / relVelMag * entropyDerivative;
 
     // reconstruct the viscous force
-    _viscousForceDirectionCartesian = - _relativeVelocityCartesian.normalized();
     _viscousForceCartesian = _viscousForceDirectionCartesian * floss;
-    _viscousForceCyl = computeCylindricalVectorFromCartesian(_viscousForceCartesian, _theta);
+    _viscousForceCylindrical = computeCylindricalVectorFromCartesian(_viscousForceCartesian, _theta);
     
     // reconstruct the turning force
-    FloatType fnTheta = ftheta - _viscousForceCyl.z();
-    FloatType fnMag = fnTheta / _inviscidForceDirectionCylindrical.z();
-    _inviscidForceCyl = _inviscidForceDirectionCylindrical * fnMag;
-    _inviscidForceCartesian = computeCartesianVectorFromCylindrical(_inviscidForceCyl, _theta);
+    FloatType fnTheta = ftheta - _viscousForceCylindrical.z();
+    FloatType fnMag = std::abs(fnTheta) / std::abs(_inviscidForceDirectionCylindrical.z());
+    _inviscidForceCylindrical = _inviscidForceDirectionCylindrical * fnMag;
+    _inviscidForceCartesian = computeCartesianVectorFromCylindrical(_inviscidForceCylindrical, _theta);
     
-    _bladeIsPresent = _mesh.getInputFields(FieldNames::BLADE_PRESENT, i, j, k);
-
-
-
-
 }

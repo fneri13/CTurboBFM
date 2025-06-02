@@ -151,6 +151,8 @@ BFM_Model Config::getBFMModel() const {
         model = BFM_Model::FROZEN_FORCE;
     } else if (value == "Frozen-Gradient") {
         model = BFM_Model::FROZEN_GRADIENT;
+    } else if (value == "Gong") {
+        model = BFM_Model::GONG;
     } else if (value == "None") {
         model = BFM_Model::NONE;
     } 

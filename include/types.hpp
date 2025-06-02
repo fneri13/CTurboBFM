@@ -128,7 +128,8 @@ enum class BFM_Model {
     HALL_THOLLET = 2,
     LIFT_DRAG = 3,
     FROZEN_FORCE = 4,
-    FROZEN_GRADIENT = 5
+    FROZEN_GRADIENT = 5,
+    GONG = 6
 };
 
 

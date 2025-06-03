@@ -10,13 +10,10 @@ StateVector CSourceBFMLiftDrag::computeBodyForceSource(size_t i, size_t j, size_
 }
 
 void CSourceBFMLiftDrag::computeRelativeFlowAngle(size_t i, size_t j, size_t k, const StateVector& primitive) {
-    Vector3D relVelMeridional = {_relativeVelocityCylindric.x(), _relativeVelocityCylindric.y(), 0};
-    _relativeFlowAngle = std::acos(_relativeVelocityCylindric.dot(relVelMeridional) / _relativeVelocityCylindric.magnitude() / relVelMeridional.magnitude());
+    FloatType meridionalVelocityMag = std::sqrt(_relativeVelocityCylindric.x()*_relativeVelocityCylindric.x() + _relativeVelocityCylindric.y()*_relativeVelocityCylindric.y());
 
-    // keep the convenetion used when computing beta_0
-    if (_relativeVelocityCylindric.z() < 0) {
-        _relativeFlowAngle *= -1;
-    }
+    // keep the convenetion used when computing beta_0. When the relative velocity is negative, the angle is negative
+    _relativeFlowAngle = std::atan2(_relativeVelocityCylindric.z(), meridionalVelocityMag);
 }
 
 
@@ -56,7 +53,7 @@ StateVector CSourceBFMLiftDrag::computeViscousComponent(size_t i, size_t j, size
     FloatType solidity = _mesh.getInputFields(FieldNames::SOLIDITY, i, j, k);
     FloatType hParameter = _mesh.getInputFields(FieldNames::LIFT_DRAG_H_PARAMETER, i, j, k);
     
-    FloatType kp = kp_etaMax + 2.0 * M_PI * solidity * (_relativeFlowAngle - beta_etaMax) * (_relativeFlowAngle - beta_etaMax);
+    FloatType kp = kp_etaMax + 2.0 * M_PI * solidity * std::pow(_relativeFlowAngle - beta_etaMax, 2);
         
     FloatType forceMag = _relativeVelocityCylindric.dot(_relativeVelocityCylindric) * kp / hParameter;
 

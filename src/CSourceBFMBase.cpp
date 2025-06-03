@@ -81,6 +81,8 @@ void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateV
 FloatType CSourceBFMBase::computeDeviationAngle(Vector3D relativeVelocity, Vector3D normalCamber){
     Vector3D normal = normalCamber / normalCamber.magnitude();
     FloatType normalVelocity = relativeVelocity.dot(normal);
+
+    // the deviation angle is positive when the blade should push, and negative when the blade should pull
     FloatType deviationAngle = -std::asin(normalVelocity / relativeVelocity.magnitude());
     return deviationAngle;
 }

@@ -5,6 +5,7 @@ StateVector CSourceBFMLiftDrag::computeBodyForceSource(size_t i, size_t j, size_
     computeRelativeFlowAngle(i, j, k, primitive);
 
     StateVector inviscidComponent = computeInviscidComponent(i, j, k, primitive, inviscidForce);
+    // StateVector inviscidComponent = computeInviscidComponentGongStyle(i, j, k, primitive, inviscidForce);
     StateVector viscousComponent = computeViscousComponent(i, j, k, primitive, viscousForce);
     return inviscidComponent + viscousComponent;
 }
@@ -31,6 +32,28 @@ StateVector CSourceBFMLiftDrag::computeInviscidComponent(size_t i, size_t j, siz
     }
 
     forceMag *= deltaBeta;
+    
+    Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceMag;
+    Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
+    inviscidForce(i, j, k) = forceCartesian;
+    
+    StateVector source({0,0,0,0,0});
+    source[1] = forceCartesian.x();
+    source[2] = forceCartesian.y();
+    source[3] = forceCartesian.z();
+    source[4] = forceCylindrical.z() * _omega * _radius;
+    
+    FloatType volume = _mesh.getVolume(i, j, k);
+
+    return source*volume*primitive[0];
+}
+
+StateVector CSourceBFMLiftDrag::computeInviscidComponentGongStyle(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce) {
+    FloatType hParameter = _mesh.getInputFields(FieldNames::LIFT_DRAG_H_PARAMETER, i, j, k);
+    FloatType knTurning = _mesh.getInputFields(FieldNames::LIFT_DRAG_KN_TURNING, i, j, k);
+
+    // compute the magnitude of the inviscid force. Positive when pushing, negative when pulling
+    FloatType forceMag = knTurning * _relativeVelocityCylindric.dot(_relativeVelocityCylindric) / hParameter * _deviationAngle;
     
     Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceMag;
     Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);

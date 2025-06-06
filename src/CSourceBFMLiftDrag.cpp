@@ -32,6 +32,7 @@ StateVector CSourceBFMLiftDrag::computeInviscidComponent(size_t i, size_t j, siz
     }
 
     forceMag *= deltaBeta;
+    forceMag *= _bladeIsPresent;
     
     Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceMag;
     Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
@@ -54,6 +55,7 @@ StateVector CSourceBFMLiftDrag::computeInviscidComponentGongStyle(size_t i, size
 
     // compute the magnitude of the inviscid force. Positive when pushing, negative when pulling
     FloatType forceMag = knTurning * _relativeVelocityCylindric.dot(_relativeVelocityCylindric) / hParameter * _deviationAngle;
+    forceMag *= _bladeIsPresent;
     
     Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceMag;
     Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);

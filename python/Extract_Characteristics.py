@@ -15,8 +15,13 @@ def read_file(input_filename):
 
 
 def read_solutions(inputFolder):
+    # KT = throttle valve BC, 
+    # PREQ = pressure outlet with radial equilibrium
+    # P = pressure outlet
+    possibleNames = ['KT', 'PREQ', 'P']
+    
     folders = os.listdir(inputFolder)
-    runFolders = [folder for folder in folders if 'kPa' in folder]
+    runFolders = [folder for folder in folders if folder.split('_')[0] in possibleNames]
     runFolders.sort()
     print("Run folders found: ", runFolders)
     

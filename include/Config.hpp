@@ -144,4 +144,10 @@ public:
 
     FloatType getOutletPressureRampMaxIterations() const {return parseFloat("OUTLET_PRESSURE_RAMP_ITERATIONS", 0.0);}
 
+    FloatType getHallTholletCoefficient_KN() const {return parseFloat("HALL_THOLLET_COEFFICIENT_KN");} 
+
+    FloatType getHallTholletCoefficient_KF() const {return parseFloat("HALL_THOLLET_COEFFICIENT_KF");} 
+
+    FloatType getHallTholletCoefficient_KD() const {return parseFloat("HALL_THOLLET_COEFFICIENT_KD");} 
+
 };

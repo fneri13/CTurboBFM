@@ -10,7 +10,7 @@ StateVector CSourceBFMThollet::computeBodyForceSource(size_t i, size_t j, size_t
 
 StateVector CSourceBFMThollet::computeInviscidComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce) {
     FloatType Kmach = computeCompressibilityCorrection(_relativeVelocityCylindric, primitive);
-    FloatType forceMag = Kmach * _relativeVelocityCylindric.dot(_relativeVelocityCylindric) * M_PI * _deviationAngle / _pitch / std::abs(_normalCamberTangential) / _blockage;
+    FloatType forceMag = _Kn * Kmach * _relativeVelocityCylindric.dot(_relativeVelocityCylindric) * M_PI * _deviationAngle / _pitch / std::abs(_normalCamberTangential) / _blockage;
     Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceMag;
     Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
     inviscidForce(i, j, k) = forceCartesian;
@@ -45,11 +45,18 @@ FloatType CSourceBFMThollet::computeCompressibilityCorrection(const Vector3D& re
 
 StateVector CSourceBFMThollet::computeViscousComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &viscousForce) {
     FloatType nu = _config.getFluidKinematicViscosity();
-    FloatType ReX = _relativeVelocityCylindric.magnitude() * _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, i, j, k) / nu;
+    FloatType stwl = _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, i, j, k);
+
+    // if the stwl is zero, get the average with the downstream points, otherwise the ReX will be zero, and therefore Cf infinity
+    if (stwl < 1e-9){
+        stwl = (_mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, i+1, j, k) + _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, i, j, k)) /2.0 ;
+    }
+
+    FloatType ReX = _relativeVelocityCylindric.magnitude() * stwl / nu;
     FloatType Cf = 0.0592 * std::pow(ReX, -0.2);
     FloatType delta0 = _deviationAngle;
     FloatType Kmach = computeCompressibilityCorrection(_relativeVelocityCylindric, primitive);
-    FloatType forceMag = _relativeVelocityCylindric.dot(_relativeVelocityCylindric) / (_pitch * _blockage * std::abs(_normalCamberTangential)) * (Cf + M_PI * Kmach * std::pow(_deviationAngle - delta0, 2));
+    FloatType forceMag = _Kf * _relativeVelocityCylindric.dot(_relativeVelocityCylindric) / (_pitch * _blockage * std::abs(_normalCamberTangential)) * (Cf + M_PI * Kmach * std::pow(_deviationAngle - delta0, 2 * _Kd));
     Vector3D forceCylindrical = _viscousForceDirectionCylindrical * forceMag;
     Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
     viscousForce(i, j, k) = forceCartesian;

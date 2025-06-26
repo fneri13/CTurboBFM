@@ -150,4 +150,6 @@ public:
 
     FloatType getHallTholletCoefficient_KD() const {return parseFloat("HALL_THOLLET_COEFFICIENT_KD");} 
 
+    std::string getHallTholletOffDesignActive() const {return parseString("HALL_THOLLET_OFF_DESIGN_ACTIVE");}
+
 };

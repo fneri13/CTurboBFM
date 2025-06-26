@@ -25,5 +25,6 @@ private:
     FloatType _Kn = _config.getHallTholletCoefficient_KN();
     FloatType _Kf = _config.getHallTholletCoefficient_KF();
     FloatType _Kd = _config.getHallTholletCoefficient_KD();
+    std::string _offDesignActive = _config.getHallTholletOffDesignActive();
     
 };

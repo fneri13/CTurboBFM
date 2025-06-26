@@ -9,7 +9,6 @@
 #include "CSourceBFMLiftDrag.hpp"
 #include "CSourceBFMFrozenForce.hpp"
 #include "CSourceBFMFrozenGradient.hpp"
-#include "CSourceBFMGong.hpp"
 
 /**
  * \brief     Solver for the Euler equations.
@@ -43,6 +42,8 @@ private:
     std::vector<StateVector> _logResiduals;
     
     Matrix3D<Vector3D> _inviscidForce, _viscousForce;
+    
+    Matrix3D<FloatType> _deviationAngle;
 
 
     /** @brief Initialize the solution arrays.*/
@@ -159,7 +160,7 @@ private:
      * \param[out] inviscidForce The reference to the inviscid force matrix to update
      * \param[out] viscousForce The reference to the viscous force matrix to update
      */
-    void computeSourceResiduals(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce);
+    void computeSourceResiduals(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle);
 
 
     /** @brief read the restart file and store data in the reference arguments

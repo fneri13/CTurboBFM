@@ -13,7 +13,9 @@
 class COutputBase {
     
     public:
-        COutputBase(const Config &config, const CMesh &mesh, const FlowSolution &solution, const CFluid &fluid, const Matrix3D<Vector3D> &inviscidForce, const Matrix3D<Vector3D> &viscousForce);
+        COutputBase(const Config &config, const CMesh &mesh, const FlowSolution &solution, const CFluid &fluid, 
+                    const Matrix3D<Vector3D> &inviscidForce, const Matrix3D<Vector3D> &viscousForce, 
+                    const Matrix3D<FloatType> &deviationAngle);
         
         virtual ~COutputBase() = default;
 
@@ -28,6 +30,7 @@ class COutputBase {
         const CFluid& _fluid;
         const Matrix3D<Vector3D>& _inviscidForce;
         const Matrix3D<Vector3D>& _viscousForce;
+        const Matrix3D<FloatType>& _deviationAngle;
         bool _isUnsteadyOutput;
 
         std::string getOutputFilename(size_t iterationCounter);

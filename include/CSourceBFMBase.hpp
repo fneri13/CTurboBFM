@@ -15,7 +15,7 @@ public:
 
     virtual ~CSourceBFMBase() = default;  
 
-    virtual StateVector computeSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce);
+    virtual StateVector computeSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle);
 
 protected:
     const Config& _config;

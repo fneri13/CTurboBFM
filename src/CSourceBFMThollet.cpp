@@ -52,11 +52,13 @@ StateVector CSourceBFMThollet::computeViscousComponent(size_t i, size_t j, size_
         stwl = (_mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, i+1, j, k) + _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, i, j, k)) /2.0 ;
     }
 
+    FloatType deviationAnglePivot = _mesh.getInputFields(FieldNames::DEVIATION_ANGLE_PIVOT, i, j, k);
+
     FloatType ReX = _relativeVelocityCylindric.magnitude() * stwl / nu;
     FloatType Cf = 0.0592 * std::pow(ReX, -0.2);
-    FloatType delta0 = _deviationAngle;
+    // FloatType delta0 = _deviationAngle;
     FloatType Kmach = computeCompressibilityCorrection(_relativeVelocityCylindric, primitive);
-    FloatType forceMag = _Kf * _relativeVelocityCylindric.dot(_relativeVelocityCylindric) / (_pitch * _blockage * std::abs(_normalCamberTangential)) * (Cf + M_PI * Kmach * std::pow(_deviationAngle - delta0, 2 * _Kd));
+    FloatType forceMag = _Kf * _relativeVelocityCylindric.dot(_relativeVelocityCylindric) / (_pitch * _blockage * std::abs(_normalCamberTangential)) * (Cf + M_PI * Kmach * std::pow(std::abs(_deviationAngle - deviationAnglePivot), 2 * _Kd));
     Vector3D forceCylindrical = _viscousForceDirectionCylindrical * forceMag;
     Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
     viscousForce(i, j, k) = forceCartesian;

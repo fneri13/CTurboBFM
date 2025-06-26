@@ -787,7 +787,8 @@ enum class FieldNames {
     TANGENTIAL_FORCE=23,
     ANGULAR_MOMENTUM_DERIVATIVE=24,
     ENTROPY_DERIVATIVE=25,
-    LIFT_DRAG_KN_TURNING=26
+    LIFT_DRAG_KN_TURNING=26,
+    DEVIATION_ANGLE_PIVOT=27
 };
 
 
@@ -822,7 +823,8 @@ public:
             {"tangentialForce", FieldNames::TANGENTIAL_FORCE},
             {"angularMomentumDerivative", FieldNames::ANGULAR_MOMENTUM_DERIVATIVE},
             {"entropyDerivative", FieldNames::ENTROPY_DERIVATIVE},
-            {"kn_turning", FieldNames::LIFT_DRAG_KN_TURNING}
+            {"kn_turning", FieldNames::LIFT_DRAG_KN_TURNING},
+            {"deviationAnglePivot", FieldNames::DEVIATION_ANGLE_PIVOT}
 
         };
         return map;
@@ -856,7 +858,8 @@ public:
             {FieldNames::TANGENTIAL_FORCE, "tangentialForce"},
             {FieldNames::ANGULAR_MOMENTUM_DERIVATIVE, "angularMomentumDerivative"},
             {FieldNames::ENTROPY_DERIVATIVE, "entropyDerivative"},
-            {FieldNames::LIFT_DRAG_KN_TURNING, "kn_turning"}
+            {FieldNames::LIFT_DRAG_KN_TURNING, "kn_turning"},
+            {FieldNames::DEVIATION_ANGLE_PIVOT, "deviationAnglePivot"}
         };
         return map;
     }

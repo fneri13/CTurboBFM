@@ -2,8 +2,11 @@
 #include "commonFunctions.hpp"
 
 
-COutputBase::COutputBase(const Config &config, const CMesh &mesh, const FlowSolution &solution, const CFluid &fluid, const Matrix3D<Vector3D> &inviscidForce, const Matrix3D<Vector3D> &viscousForce)
-    : _config(config), _mesh(mesh), _solution(solution), _fluid(fluid), _inviscidForce(inviscidForce), _viscousForce(viscousForce) {
+COutputBase::COutputBase(const Config &config, const CMesh &mesh, const FlowSolution &solution, const CFluid &fluid, 
+                        const Matrix3D<Vector3D> &inviscidForce, const Matrix3D<Vector3D> &viscousForce,
+                        const Matrix3D<FloatType> &deviationAngle)
+
+    : _config(config), _mesh(mesh), _solution(solution), _fluid(fluid), _inviscidForce(inviscidForce), _viscousForce(viscousForce), _deviationAngle(deviationAngle) {
         _isUnsteadyOutput = _config.saveUnsteadySolution();
         std::filesystem::create_directory(_outputDirectory);
     }
@@ -47,6 +50,7 @@ void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>&
         scalarsMap["Inviscid Body Force X"] = Matrix3D<FloatType>(ni, nj, nk);
         scalarsMap["Inviscid Body Force Y"] = Matrix3D<FloatType>(ni, nj, nk);
         scalarsMap["Inviscid Body Force Z"] = Matrix3D<FloatType>(ni, nj, nk);
+        scalarsMap["Deviation Angle"] = Matrix3D<FloatType>(ni, nj, nk);
     }
 
     FloatType rho, ux, uy, uz, et;
@@ -88,6 +92,8 @@ void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>&
                     scalarsMap["Inviscid Body Force X"](i, j, k) = _inviscidForce(i, j, k).x();
                     scalarsMap["Inviscid Body Force Y"](i, j, k) = _inviscidForce(i, j, k).y();
                     scalarsMap["Inviscid Body Force Z"](i, j, k) = _inviscidForce(i, j, k).z();
+
+                    scalarsMap["Deviation Angle"](i, j, k) = _deviationAngle(i, j, k);
                 }
 
             }

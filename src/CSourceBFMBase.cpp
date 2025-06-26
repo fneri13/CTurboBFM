@@ -1,6 +1,6 @@
 #include "CSourceBFMBase.hpp"
 
-StateVector CSourceBFMBase::computeSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce) {
+StateVector CSourceBFMBase::computeSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle) {
 
     StateVector blockageSource({0,0,0,0,0});
     if (_config.isBlockageActive()){
@@ -13,6 +13,8 @@ StateVector CSourceBFMBase::computeSource(size_t i, size_t j, size_t k, const St
     }
 
     StateVector bodyForceSource = computeBodyForceSource(i, j, k, primitive, inviscidForce, viscousForce);
+
+    deviationAngle(i, j, k) = _deviationAngle; // update the deviation angle that has been computed from every bfm model, getting it ready for the output
 
     return blockageSource + bodyForceSource;
 }

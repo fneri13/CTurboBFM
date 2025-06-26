@@ -14,7 +14,7 @@ CEulerSolver::CEulerSolver(Config& config, CMesh& mesh)
     
     initializeSolutionArrays();
     
-    _output = std::make_unique<COutputCSV>(_config, _mesh, _conservativeVars, *_fluid, _inviscidForce, _viscousForce);
+    _output = std::make_unique<COutputCSV>(_config, _mesh, _conservativeVars, *_fluid, _inviscidForce, _viscousForce, _deviationAngle);
 
     BFM_Model bfmModel = _config.getBFMModel();
     if (bfmModel == BFM_Model::HALL) {
@@ -32,9 +32,6 @@ CEulerSolver::CEulerSolver(Config& config, CMesh& mesh)
     else if (bfmModel == BFM_Model::FROZEN_GRADIENT) {
         _bfmSource = std::make_unique<CSourceBFMFrozenGradient>(_config, *_fluid, _mesh);
     }
-    else if (bfmModel == BFM_Model::GONG) {
-        _bfmSource = std::make_unique<CSourceBFMGong>(_config, *_fluid, _mesh);
-    }
     else {
         _bfmSource = std::make_unique<CSourceBFMBase>(_config, *_fluid, _mesh);
     }
@@ -48,6 +45,7 @@ void CEulerSolver::initializeSolutionArrays(){
     _radialProfileCoords.resize(_nPointsJ);
     _inviscidForce.resize(_nPointsI, _nPointsJ, _nPointsK);
     _viscousForce.resize(_nPointsI, _nPointsJ, _nPointsK);
+    _deviationAngle.resize(_nPointsI, _nPointsJ, _nPointsK);
 
     bool restartSolution = _config.restartSolution();
     if (restartSolution) {
@@ -522,7 +520,7 @@ FlowSolution CEulerSolver::computeFluxResiduals(const FlowSolution& solution, si
     }
 
     // compute residuals contribution from sources
-    computeSourceResiduals(solution, it, residuals, _inviscidForce, _viscousForce);
+    computeSourceResiduals(solution, it, residuals, _inviscidForce, _viscousForce, _deviationAngle);
 
     return residuals;
 }
@@ -714,7 +712,7 @@ void CEulerSolver::updateRadialProfiles(FlowSolution &solution){
 }
 
 
-void CEulerSolver::computeSourceResiduals(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce) {
+void CEulerSolver::computeSourceResiduals(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle) {
     if (!_config.isBFMActive()){
         return ;
     }
@@ -726,7 +724,7 @@ void CEulerSolver::computeSourceResiduals(const FlowSolution& solution, size_t i
                 if (blockageGradient.magnitude() > 1E-10){
                     StateVector conservative = solution.at(i, j, k);
                     StateVector primitive = getEulerPrimitiveFromConservative(conservative);
-                    StateVector source = _bfmSource->computeSource(i, j, k, primitive, inviscidForce, viscousForce);
+                    StateVector source = _bfmSource->computeSource(i, j, k, primitive, inviscidForce, viscousForce, deviationAngle);
                     residuals.subtract(i, j, k, source);
                 }
             }

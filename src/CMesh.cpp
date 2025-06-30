@@ -513,7 +513,7 @@ void CMesh::checkPeriodicity(FloatType periodicityAngle) const{
 
             FloatType deltaTheta = std::abs(thetaA-thetaB);
 
-            if (std::abs(deltaTheta - periodicityAngle) > tolerance){
+            if (std::abs(deltaTheta - periodicityAngle) > tolerance && std::abs(std::abs(deltaTheta - periodicityAngle)-2*M_PI) > tolerance){
                 throw std::invalid_argument("Periodicity check failed!");
             }
         }

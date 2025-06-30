@@ -202,6 +202,17 @@ enum class TurboPerformance {
     TOTAL_TEMPERATURE_RATIO = 3,
 };
 
+/** @brief Enum class for turbo performance*/
+enum class MonitorOutputFields {
+    PRESSURE = 0,
+    VELOCITY_X = 1,
+    VELOCITY_Y = 2,
+    VELOCITY_Z = 3,
+    TIME = 4,
+};
+
+
+
 
 /** @brief Enum class for convection schemes*/
 enum class ConvectionScheme {

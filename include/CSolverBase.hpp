@@ -72,6 +72,6 @@ class CSolverBase {
 
         std::map<TurboPerformance, std::vector<FloatType>> _turboPerformance; // map of turbo performance>
 
-        
+        std::vector<std::map<MonitorOutputFields, std::vector<FloatType>>> _monitorPoints; // vector of maps of monitor points data
 
 };

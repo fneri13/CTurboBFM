@@ -26,6 +26,8 @@ private:
     
     FloatType parseFloat(const std::string& value) const;
 
+    int parseInt(const std::string& value) const;
+
     FloatType parseFloat(const std::string& value, FloatType defaultValue) const;
 
     template <typename T>
@@ -121,6 +123,8 @@ public:
 
     bool saveTurboOutput() const {return parseBool("TURBO_OUTPUT", false);}
 
+    bool isMonitorPointsActive() const {return parseBool("MONITOR_POINTS_ACTIVE", false);}
+
     TimeIntegration getTimeIntegration() const;
 
     TimeStepMethod getTimeStepMethod() const;
@@ -152,4 +156,9 @@ public:
 
     std::string getHallTholletOffDesignActive() const {return parseString("HALL_THOLLET_OFF_DESIGN_ACTIVE");}
 
+    int getMonitorPointsCoordsI() const { return parseInt("MONITOR_POINTS_I_COORDS");}
+
+    int getMonitorPointsCoordsJ() const { return parseInt("MONITOR_POINTS_J_COORDS");}
+
+    int getCircumferentialNumberMonitorPoints() const { return parseInt("MONITOR_POINTS_NUMBER");}
 };

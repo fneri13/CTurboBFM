@@ -45,6 +45,9 @@ private:
     
     Matrix3D<FloatType> _deviationAngle;
 
+    std::vector<unsigned int> _monitorPoints_idxI, _monitorPoints_idxJ, _monitorPoints_idxK;
+    unsigned int _numberMonitorPoints = 0;
+
 
     /** @brief Initialize the solution arrays.*/
     void initializeSolutionArrays() override;
@@ -67,6 +70,15 @@ private:
      * @param[in] solution The conservative variables solution
     */
     void updateTurboPerformance(const FlowSolution &solution);
+
+    /** @brief update the monitor points data 
+     * @param[in] solution The conservative variables solution
+    */
+    void updateMonitorPoints(const FlowSolution &solution);
+
+    /** @brief initialize the monitor points data 
+    */
+    void initializeMonitorPoints();
 
 
     /** @brief compute the global residual, defined as V*du/dt + R = 0 
@@ -144,6 +156,9 @@ private:
 
     /** @brief write the turbo performance to a csv file*/
     void writeTurboPerformanceToCSV() const;
+
+    /** @brief write the turbo performance to a csv file*/
+    void writeMonitorPointsToCSV() const;
 
 
     /** @brief update the radial profiles (pressure) at the outlet, needed by boundary conditions.

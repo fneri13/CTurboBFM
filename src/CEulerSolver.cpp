@@ -255,8 +255,12 @@ void CEulerSolver::solve(){
     std::vector<FloatType> timeIntegrationCoeffs = _config.getTimeIntegrationCoeffs();      // time integration coefficients (runge kutta)
     FlowSolution fluxResiduals(_nPointsI, _nPointsJ, _nPointsK);                            // place holder for flux residuals
     size_t updateMassFlowsFreq = _config.getMassFlowUpdateFrequency();                      // frequency to update the mass flows at the boundaries
+    size_t monitorOutputFreq = 10;
     size_t solutionOutputFreq = _config.getSolutionOutputFrequency();                       // frequency to output the solution
     bool turboOutput = _config.saveTurboOutput();                                           // flag to save the solution in turbo format
+    bool monitorPointsActive = _config.isMonitorPointsActive();                             // flag to activate the monitor points
+
+    if (monitorPointsActive) initializeMonitorPoints();                                     // initialize the monitor points
 
     // time integration
     for (size_t it=1; it<nIterMax; it++){        
@@ -264,7 +268,8 @@ void CEulerSolver::solve(){
         
         updateMassFlows(solutionOld);
         
-        if (turboOutput) updateTurboPerformance(solutionOld);
+        if (turboOutput) updateTurboPerformance(solutionOld);                               // extract the turbo performance
+        if (monitorPointsActive) updateMonitorPoints(solutionOld);                          // extract the monitor points data
         
         computeTimestepArray(solutionOld, timestep);                                        // compute the physical time step
         _time.push_back(_time.back() + timestep.min());                                     // update the physical time
@@ -290,9 +295,14 @@ void CEulerSolver::solve(){
         // write output files  
         if (it%solutionOutputFreq == 0) {
             _output->writeSolution(it);
+        } 
+
+        if (it%monitorOutputFreq == 0) {
             writeLogResidualsToCSV();
             if (turboOutput) writeTurboPerformanceToCSV();
+            if (monitorPointsActive) writeMonitorPointsToCSV();
         } 
+        
     }
 }
 
@@ -684,6 +694,39 @@ void CEulerSolver::writeTurboPerformanceToCSV() const {
     file.close();
 }
 
+void CEulerSolver::writeMonitorPointsToCSV() const {
+
+    std::string folder = "monitorPoints";
+    std::filesystem::create_directories(folder); // Ensure the folder exists
+
+    for (size_t iPoint = 0; iPoint < _monitorPoints.size(); iPoint++) {
+        std::string filename = folder + "/monitorPoint_" + std::to_string(iPoint) + ".csv";
+        std::ofstream file(filename); // open in truncate (default) mode
+
+        if (!file.is_open()) {
+            std::cerr << "Error: Could not open turbo performance file: " << filename << std::endl;
+            return;
+        }
+
+        // Write header
+        file << "Time[s],Pressure[Pa],Velocity_X[m/s],Velocity_Y[m/s],Velocity_Z[m/s]\n";
+        file << std::scientific << std::setprecision(6);
+        size_t size = _monitorPoints[iPoint].at(MonitorOutputFields::TIME).size();
+        for (size_t i = 0; i < size; i++) {
+            file    << _monitorPoints[iPoint].at(MonitorOutputFields::TIME)[i] << "," 
+                    << _monitorPoints[iPoint].at(MonitorOutputFields::PRESSURE)[i] << "," 
+                    << _monitorPoints[iPoint].at(MonitorOutputFields::VELOCITY_X)[i] << "," 
+                    << _monitorPoints[iPoint].at(MonitorOutputFields::VELOCITY_Y)[i] << "," 
+                    << _monitorPoints[iPoint].at(MonitorOutputFields::VELOCITY_Z)[i] << std::endl; 
+        }
+
+        file.close();
+        
+    }
+
+    
+}
+
 
 void CEulerSolver::updateRadialProfiles(FlowSolution &solution){
     size_t nj = _mesh.getNumberPointsJ();
@@ -729,5 +772,63 @@ void CEulerSolver::computeSourceResiduals(const FlowSolution& solution, size_t i
                 }
             }
         }
+    }
+}
+
+void CEulerSolver::initializeMonitorPoints(){
+    // monitor points seed
+    unsigned int seedI = _config.getMonitorPointsCoordsI();
+    unsigned int seedJ = _config.getMonitorPointsCoordsJ();
+
+    // add to monitor points data structure
+    _monitorPoints_idxI.push_back(seedI);
+    _monitorPoints_idxJ.push_back(seedJ);
+    _monitorPoints_idxK.push_back(0);
+
+    // if the domain is 2D, put only one monitor points
+    if (_config.getTopology() == Topology::THREE_DIMENSIONAL){
+        unsigned int circumferentialPoints = _config.getCircumferentialNumberMonitorPoints();
+        size_t deltaK = _nPointsK / circumferentialPoints;
+        int leftOver = _nPointsK%circumferentialPoints;
+
+        if (leftOver > 0){
+            std::cerr << "Error: Monitor points not evenly distributed. Please choose a number of monitor points that can divide the number of circumferential points" << std::endl;
+            return;
+        }
+
+        FloatType deltaAngle = 360 / (circumferentialPoints-1);
+        std::cout << "Delta angle of monitor points is: " << deltaAngle << " degrees" << std::endl;
+
+        for (unsigned int k = 1; k < circumferentialPoints; k++){
+            _monitorPoints_idxI.push_back(seedI);
+            _monitorPoints_idxJ.push_back(seedJ);
+            _monitorPoints_idxK.push_back(k * deltaK);
+        }
+    }
+
+    if (_monitorPoints_idxI.size() != _monitorPoints_idxJ.size() || _monitorPoints_idxI.size() != _monitorPoints_idxK.size()){
+        std::cerr << "Error: Monitor points indices vectors are not the same size" << std::endl;
+        return;
+    }
+
+    _numberMonitorPoints = _monitorPoints_idxI.size();
+    _monitorPoints.resize(_numberMonitorPoints);
+
+}
+
+void CEulerSolver::updateMonitorPoints(const FlowSolution &solution){
+    for (unsigned int i = 0; i < _numberMonitorPoints; i++){
+        size_t idxI = _monitorPoints_idxI[i];
+        size_t idxJ = _monitorPoints_idxJ[i];
+        size_t idxK = _monitorPoints_idxK[i];
+        StateVector conservative = solution.at(idxI, idxJ, idxK);
+        StateVector primitive = getEulerPrimitiveFromConservative(conservative);
+        FloatType pressure = _fluid->computePressure_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
+
+        _monitorPoints[i][MonitorOutputFields::PRESSURE].push_back(pressure);
+        _monitorPoints[i][MonitorOutputFields::VELOCITY_X].push_back(primitive[1]);
+        _monitorPoints[i][MonitorOutputFields::VELOCITY_Y].push_back(primitive[2]);
+        _monitorPoints[i][MonitorOutputFields::VELOCITY_Z].push_back(primitive[3]);
+        _monitorPoints[i][MonitorOutputFields::TIME].push_back(_time.back());
     }
 }

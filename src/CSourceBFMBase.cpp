@@ -176,6 +176,10 @@ FloatType CSourceBFMBase::computeTangentialComponent(FloatType fAxial, const Vec
 
 FloatType CSourceBFMBase::computeBodyForcePerturbationScaling(size_t i, size_t j, size_t k, FloatType timePhysical) const{
 
+    if (!_config.isPerturbationBodyForceActive()){
+        return 1.0;
+    }
+
     // if time not in the perturbation, return 1
     if (timePhysical < _perturbationTimeStart || timePhysical > _perturbationTimeStart + _perturbationTimeDuration){
         return 1.0;

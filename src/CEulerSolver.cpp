@@ -669,6 +669,9 @@ void CEulerSolver::writeLogResidualsToCSV() const {
     }
 
     file.close();
+    std::cout << std::endl;
+    std::cout << "Log residuals written to " << filename << std::endl;
+    std::cout << std::endl;
 }
 
 void CEulerSolver::writeTurboPerformanceToCSV() const {
@@ -694,6 +697,9 @@ void CEulerSolver::writeTurboPerformanceToCSV() const {
     }
 
     file.close();
+    std::cout << std::endl;
+    std::cout << "Turbo performance written to " << filename << std::endl;
+    std::cout << std::endl;
 }
 
 void CEulerSolver::writeMonitorPointsToCSV() const {
@@ -725,6 +731,9 @@ void CEulerSolver::writeMonitorPointsToCSV() const {
         file.close();
         
     }
+    std::cout << std::endl;
+    std::cout << "Written monitor points to monitorPoints/ " << std::endl;
+    std::cout << std::endl;
 
     
 }

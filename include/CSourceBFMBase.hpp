@@ -10,12 +10,11 @@
 class CSourceBFMBase {
 public:
 
-    CSourceBFMBase(const Config &config, const CFluid &fluid, const CMesh &mesh) 
-        : _config(config), _fluid(fluid), _mesh(mesh) {};
+    CSourceBFMBase(const Config &config, const CFluid &fluid, const CMesh &mesh);
 
     virtual ~CSourceBFMBase() = default;  
 
-    virtual StateVector computeSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle);
+    virtual StateVector computeSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType &timePhysical);
 
 protected:
     const Config& _config;
@@ -42,6 +41,14 @@ protected:
     FloatType _deviationAngle;
     Vector3D _inviscidForceDirectionCylindrical, _inviscidForceDirectionCartesian;
     Vector3D _viscousForceDirectionCylindrical, _viscousForceDirectionCartesian;
+    bool _perturbationBodyForceActive = false;
+
+    // body force perturbation data
+    size_t _perturbationCenterI = 0, _perturbationCenterJ = 0, _perturbationCenterK = 0;
+    size_t _perturbationExtensionI = 0, _perturbationExtensionJ = 0, _perturbationExtensionK = 0;
+    FloatType _perturbationScalingFactor = 1.0;
+    FloatType _perturbationTimeStart = 0.0;
+    FloatType _perturbationTimeDuration = 0.0;
 
     /** Compute the flow state at a given point, needed for the computation of source terms
      * 
@@ -69,5 +76,7 @@ protected:
 
     /** Compute the tangential component of the inviscid force direction. Function used from the other method */
     FloatType computeTangentialComponent(FloatType fAxial, const Vector3D& relativeVelocityDirection, const Vector3D& normalCamber);
+
+    FloatType computeBodyForcePerturbationScaling(size_t i, size_t j, size_t k, FloatType timePhysical) const;
     
 };

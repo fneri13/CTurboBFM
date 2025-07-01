@@ -161,4 +161,16 @@ public:
     int getMonitorPointsCoordsJ() const { return parseInt("MONITOR_POINTS_J_COORDS");}
 
     int getCircumferentialNumberMonitorPoints() const { return parseInt("MONITOR_POINTS_NUMBER");}
+
+    bool isPerturbationBodyForceActive() const {return parseBool("PERTURBATION_BODY_FORCE", false);}
+
+    std::vector<size_t> getPerturbationIJK_Coords() const {return parseVector<size_t>("PERTURBATION_IJK_COORDS");}
+
+    std::vector<size_t> getPerturbationIJK_Extension() const {return parseVector<size_t>("PERTURBATION_IJK_EXTENSION");}
+
+    FloatType getPerturbationScalingFactor() const {return parseFloat("PERTURBATION_SCALING_FACTOR");} 
+
+    FloatType getPerturbationTimeDuration() const {return parseFloat("PERTURBATION_TIME_DURATION");} 
+    
+    FloatType getPerturbationStartTime() const {return parseFloat("PERTURBATION_TIME_START");} 
 };

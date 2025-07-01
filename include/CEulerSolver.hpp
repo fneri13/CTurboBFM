@@ -86,7 +86,7 @@ private:
      * @param[in] itCounter The iteration counter
      * @return The global residual 3D matrix
     */
-    FlowSolution computeFluxResiduals(const FlowSolution& solution, size_t itCounter);
+    FlowSolution computeFluxResiduals(const FlowSolution& solution, size_t itCounter, FloatType timePhysical);
 
 
     /** @brief compute the residuals contribution from advection fluxes
@@ -175,7 +175,7 @@ private:
      * \param[out] inviscidForce The reference to the inviscid force matrix to update
      * \param[out] viscousForce The reference to the viscous force matrix to update
      */
-    void computeSourceResiduals(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle);
+    void computeSourceResiduals(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType timePhysical);
 
 
     /** @brief read the restart file and store data in the reference arguments

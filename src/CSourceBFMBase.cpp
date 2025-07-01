@@ -1,6 +1,47 @@
 #include "CSourceBFMBase.hpp"
 
-StateVector CSourceBFMBase::computeSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle) {
+
+CSourceBFMBase::CSourceBFMBase(const Config &config, const CFluid &fluid, const CMesh &mesh) 
+        : _config(config), _fluid(fluid), _mesh(mesh) {
+
+            // read data associated to body force perturbation
+            _perturbationBodyForceActive = _config.isPerturbationBodyForceActive();
+            if (_perturbationBodyForceActive){
+                
+                _perturbationCenterI = _config.getPerturbationIJK_Coords()[0];
+                _perturbationCenterJ = _config.getPerturbationIJK_Coords()[1];
+                _perturbationCenterK = _config.getPerturbationIJK_Coords()[2];
+
+                if (_perturbationCenterI > _mesh.getNumberPointsI()-1 || _perturbationCenterJ > _mesh.getNumberPointsJ()-1 || _perturbationCenterK > _mesh.getNumberPointsK()-1){
+                    throw std::runtime_error("Perturbation center is outside the mesh.");
+                }
+
+                _perturbationExtensionI = _config.getPerturbationIJK_Extension()[0];
+                _perturbationExtensionJ = _config.getPerturbationIJK_Extension()[1];
+                _perturbationExtensionK = _config.getPerturbationIJK_Extension()[2];
+
+                if (_perturbationCenterI+_perturbationExtensionI > _mesh.getNumberPointsI()-1 ||
+                    _perturbationCenterJ+_perturbationExtensionJ > _mesh.getNumberPointsJ()-1 || 
+                    _perturbationCenterK+_perturbationExtensionK > _mesh.getNumberPointsK()-1){
+                    
+                        throw std::runtime_error("Perturbation extension is outside the mesh.");
+                }
+
+                if (_perturbationCenterI-_perturbationExtensionI > _mesh.getNumberPointsI()-1 || 
+                    _perturbationCenterJ-_perturbationExtensionJ > _mesh.getNumberPointsJ()-1 || 
+                    _perturbationCenterK-_perturbationExtensionK > _mesh.getNumberPointsK()-1){
+                    
+                        throw std::runtime_error("Perturbation extension is outside the mesh.");
+                }
+                _perturbationScalingFactor = _config.getPerturbationScalingFactor();
+                _perturbationTimeStart = _config.getPerturbationStartTime();
+                _perturbationTimeDuration = _config.getPerturbationTimeDuration();
+            }
+  
+        };
+
+
+StateVector CSourceBFMBase::computeSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType &timePhysical) {
 
     StateVector blockageSource({0,0,0,0,0});
     if (_config.isBlockageActive()){
@@ -13,10 +54,11 @@ StateVector CSourceBFMBase::computeSource(size_t i, size_t j, size_t k, const St
     }
 
     StateVector bodyForceSource = computeBodyForceSource(i, j, k, primitive, inviscidForce, viscousForce);
+    FloatType bodyForceScaling = computeBodyForcePerturbationScaling(i, j, k, timePhysical);
 
     deviationAngle(i, j, k) = _deviationAngle; // update the deviation angle that has been computed from every bfm model, getting it ready for the output
 
-    return blockageSource + bodyForceSource;
+    return (blockageSource + bodyForceSource) * bodyForceScaling;
 }
 
 StateVector CSourceBFMBase::computeBlockageSource(size_t i, size_t j, size_t k, const StateVector& primitive) {
@@ -129,4 +171,26 @@ Vector3D CSourceBFMBase::computeInviscidForceDirection(const Vector3D& relativeV
 FloatType CSourceBFMBase::computeTangentialComponent(FloatType fAxial, const Vector3D& relativeVelocityDirection, const Vector3D& normalCamber){
     FloatType fTangential = (-relativeVelocityDirection.x() * fAxial - relativeVelocityDirection.y() * normalCamber.y()) / relativeVelocityDirection.z();
     return fTangential;
+}
+
+
+FloatType CSourceBFMBase::computeBodyForcePerturbationScaling(size_t i, size_t j, size_t k, FloatType timePhysical) const{
+
+    // if time not in the perturbation, return 1
+    if (timePhysical < _perturbationTimeStart || timePhysical > _perturbationTimeStart + _perturbationTimeDuration){
+        return 1.0;
+    }
+
+    // if location out of perturbation, return 1
+    if (i > _perturbationCenterI + _perturbationExtensionI || 
+        j > _perturbationCenterJ + _perturbationExtensionJ || 
+        k > _perturbationCenterK + _perturbationExtensionK ||
+        i < _perturbationCenterI - _perturbationExtensionI || 
+        j < _perturbationCenterJ - _perturbationExtensionJ || 
+        k < _perturbationCenterK - _perturbationExtensionK){
+        
+            return 1.0;
+    }
+
+    return _perturbationScalingFactor;
 }

@@ -27,11 +27,17 @@ fieldList = [
 
 for field in fieldList:
     plt.figure()
-    for i in range(1,len(dfs)):
-        plt.plot(dfs[i]["Time[s]"], dfs[i][field], label=f"Point {i}")
+    
+    if len(dfs) > 1:
+        for i in range(1,len(dfs)):
+            plt.plot(dfs[i]["Time[s]"], dfs[i][field], label=f"Point {i}")
+    else:
+        plt.plot(dfs[0]["Time[s]"], dfs[0][field])
 
     plt.xlabel("Time [s]")
     plt.ylabel(field)
-    plt.legend()
+    
+    if len(dfs) > 1:
+        plt.legend()
     plt.grid(alpha=0.3)
 plt.show()

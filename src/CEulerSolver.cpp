@@ -254,8 +254,8 @@ void CEulerSolver::solve(){
     Matrix3D<FloatType> timestep(_nPointsI, _nPointsJ, _nPointsK);                          // place holder for time step array
     std::vector<FloatType> timeIntegrationCoeffs = _config.getTimeIntegrationCoeffs();      // time integration coefficients (runge kutta)
     FlowSolution fluxResiduals(_nPointsI, _nPointsJ, _nPointsK);                            // place holder for flux residuals
-    size_t updateMassFlowsFreq = _config.getMassFlowUpdateFrequency();                      // frequency to update the mass flows at the boundaries
-    size_t monitorOutputFreq = 10;
+    size_t updateMassFlowsFreq = 250;                                                       // frequency to update the mass flows at the boundaries
+    size_t monitorOutputFreq = 250;
     size_t solutionOutputFreq = _config.getSolutionOutputFrequency();                       // frequency to output the solution
     bool turboOutput = _config.saveTurboOutput();                                           // flag to save the solution in turbo format
     bool monitorPointsActive = _config.isMonitorPointsActive();                             // flag to activate the monitor points
@@ -272,15 +272,17 @@ void CEulerSolver::solve(){
         if (monitorPointsActive) updateMonitorPoints(solutionOld);                          // extract the monitor points data
         
         computeTimestepArray(solutionOld, timestep);                                        // compute the physical time step
-        _time.push_back(_time.back() + timestep.min());                                     // update the physical time
         
         // runge-kutta steps
         FlowSolution tmpSol = solutionOld;                                                  // place holder for the solution at the runge-kutta step
         for (const auto &integrationCoeff: timeIntegrationCoeffs){
             updateRadialProfiles(tmpSol);
-            fluxResiduals = computeFluxResiduals(tmpSol, it);
+            fluxResiduals = computeFluxResiduals(tmpSol, it, _time.back());
             updateSolution(solutionOld, tmpSol, fluxResiduals, integrationCoeff, timestep);
         }
+        
+        // update the physical time
+        _time.push_back(_time.back() + timestep.min());
         
         // update the solution
         _conservativeVars = tmpSol;
@@ -519,7 +521,7 @@ void CEulerSolver::updateTurboPerformance(const FlowSolution&solution){
     
 }
 
-FlowSolution CEulerSolver::computeFluxResiduals(const FlowSolution& solution, size_t it) {
+FlowSolution CEulerSolver::computeFluxResiduals(const FlowSolution& solution, size_t it, FloatType timePhysical) {
     FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK); // residuals place-holder, passed by reference to below functions
 
     // compute residuals contribution from advection
@@ -530,7 +532,7 @@ FlowSolution CEulerSolver::computeFluxResiduals(const FlowSolution& solution, si
     }
 
     // compute residuals contribution from sources
-    computeSourceResiduals(solution, it, residuals, _inviscidForce, _viscousForce, _deviationAngle);
+    computeSourceResiduals(solution, it, residuals, _inviscidForce, _viscousForce, _deviationAngle, timePhysical);
 
     return residuals;
 }
@@ -755,7 +757,7 @@ void CEulerSolver::updateRadialProfiles(FlowSolution &solution){
 }
 
 
-void CEulerSolver::computeSourceResiduals(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle) {
+void CEulerSolver::computeSourceResiduals(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType timePhysical) {
     if (!_config.isBFMActive()){
         return ;
     }
@@ -767,7 +769,7 @@ void CEulerSolver::computeSourceResiduals(const FlowSolution& solution, size_t i
                 if (blockageGradient.magnitude() > 1E-10){
                     StateVector conservative = solution.at(i, j, k);
                     StateVector primitive = getEulerPrimitiveFromConservative(conservative);
-                    StateVector source = _bfmSource->computeSource(i, j, k, primitive, inviscidForce, viscousForce, deviationAngle);
+                    StateVector source = _bfmSource->computeSource(i, j, k, primitive, inviscidForce, viscousForce, deviationAngle, timePhysical);
                     residuals.subtract(i, j, k, source);
                 }
             }

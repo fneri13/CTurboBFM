@@ -819,7 +819,7 @@ void CEulerSolver::initializeMonitorPoints(){
             return;
         }
 
-        FloatType deltaAngle = 360.0 / (circumferentialPoints-1);
+        FloatType deltaAngle = 360.0 / (circumferentialPoints);
         std::cout << "Delta angle of monitor points is: " << deltaAngle << " degrees" << std::endl;
 
         for (unsigned int k = 1; k < circumferentialPoints; k++){

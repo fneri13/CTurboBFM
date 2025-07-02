@@ -32,8 +32,8 @@ def scale_oscillations(pressure, deltaTheta, scaling=1.1):
 nSensors = len(pressureSensors)
 plt.figure()
 for i in range(0, len(pressureSensors)):
-    deltaTheta = 360 / (nSensors-1)
-    theta = i * 360 / (nSensors-1)
+    deltaTheta = 360 / (nSensors)
+    theta = i * 360 / (nSensors)
     plt.plot(time, scale_oscillations(pressureSensors[i], deltaTheta) + theta, label=f"probe {i}")
 
 plt.xlabel(r"$t$ [s]")

@@ -82,9 +82,9 @@ void CEulerSolver::initializeSolutionFromScratch(){
     FloatType density {0.0}, totEnergy {0.0};
     Vector3D velocity {0.0, 0.0, 0.0};
     
-    for (int i=0; i<_nPointsI; i++) {
-        for (int j=0; j<_nPointsJ; j++){
-            for (int k=0; k<_nPointsK; k++){
+    for (size_t i=0; i<_nPointsI; i++) {
+        for (size_t j=0; j<_nPointsJ; j++){
+            for (size_t k=0; k<_nPointsK; k++){
                 _fluid->computeInitFields(initMach, initTemperature, initPressure, flowDirection(i,j,k), density, velocity, totEnergy);
                 _conservativeVars._rho(i,j,k) = density;
                 _conservativeVars._rhoU(i,j,k) = density * velocity.x();

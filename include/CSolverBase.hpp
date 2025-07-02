@@ -16,6 +16,8 @@
 #include "CBoundaryConditionRadialEquilibrium.hpp"
 #include "CBoundaryConditionPeriodic.hpp"
 #include "CBoundaryConditionThrottle.hpp"
+#include <memory>
+
 
 /** 
   *  \brief     Class handling base solver capabilities.

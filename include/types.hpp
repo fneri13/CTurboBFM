@@ -191,7 +191,8 @@ enum class TimeIntegration {
 /** @brief Enum class for time step method*/
 enum class TimeStepMethod {
     LOCAL = 0,
-    GLOBAL = 1
+    GLOBAL = 1,
+    FIXED
 };
 
 /** @brief Enum class for turbo performance*/

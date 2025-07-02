@@ -289,6 +289,9 @@ TimeStepMethod Config::getTimeStepMethod() const {
     else if (value == "global") {
         method = TimeStepMethod::GLOBAL;
     }
+    else if (value == "fixed") {
+        method = TimeStepMethod::FIXED;
+    }
     else {
         throw std::runtime_error("Invalid value for key \"TIME_STEP_METHOD\" in configuration.");
     }

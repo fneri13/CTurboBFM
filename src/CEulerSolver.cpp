@@ -395,6 +395,18 @@ void CEulerSolver::computeTimestepArray(const FlowSolution &solution, Matrix3D<F
     std::array<FloatType, 3> dtEdge;
     FloatType dtMin;
 
+    if (_config.getTimeStepMethod() == TimeStepMethod::FIXED){
+        dtMin = _config.getFixedTimeStep();
+        for (size_t i=0; i<_nPointsI; i++) {
+            for (size_t j=0; j<_nPointsJ; j++){
+                for (size_t k=0; k<_nPointsK; k++){
+                    timestep(i,j,k) = dtMin;
+                }
+            }
+        }
+        return;
+    }
+
     for (size_t i=0; i<_nPointsI; i++) {
         for (size_t j=0; j<_nPointsJ; j++){
             for (size_t k=0; k<_nPointsK; k++){
@@ -807,7 +819,7 @@ void CEulerSolver::initializeMonitorPoints(){
             return;
         }
 
-        FloatType deltaAngle = 360 / (circumferentialPoints-1);
+        FloatType deltaAngle = 360.0 / (circumferentialPoints-1);
         std::cout << "Delta angle of monitor points is: " << deltaAngle << " degrees" << std::endl;
 
         for (unsigned int k = 1; k < circumferentialPoints; k++){

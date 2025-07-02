@@ -173,4 +173,6 @@ public:
     FloatType getPerturbationTimeDuration() const {return parseFloat("PERTURBATION_TIME_DURATION");} 
     
     FloatType getPerturbationStartTime() const {return parseFloat("PERTURBATION_TIME_START");} 
+
+    FloatType getFixedTimeStep() const {return parseFloat("FIXED_TIME_STEP");} 
 };

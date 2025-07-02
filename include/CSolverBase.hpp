@@ -76,4 +76,6 @@ class CSolverBase {
 
         std::vector<std::map<MonitorOutputFields, std::vector<FloatType>>> _monitorPoints; // vector of maps of monitor points data
 
+        
+
 };

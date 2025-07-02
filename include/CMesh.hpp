@@ -88,9 +88,9 @@ class CMesh {
     private:
         const Config& _config;
 
-        unsigned long int _nPointsI, _nPointsJ, _nPointsK, _nPointsTotal;
+        size_t _nPointsI, _nPointsJ, _nPointsK, _nPointsTotal;
 
-        unsigned long int _nDualPointsI, _nDualPointsJ, _nDualPointsK, _nDualPointsTotal;
+        size_t _nDualPointsI, _nDualPointsJ, _nDualPointsK, _nDualPointsTotal;
         
         unsigned short int _nDimensions;
 

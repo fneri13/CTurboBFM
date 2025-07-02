@@ -107,27 +107,27 @@ void CMesh::computeMeshInterfaces() {
     std::cout << "Computing cell elements interfaces\n";
 
     // Computing the i-interfaces
-    for (int i = 0; i < _nDualPointsI; i++) {
-        for (int j = 0; j < _nDualPointsJ-1; j++) {
-            for (int k = 0; k < _nDualPointsK-1; k++) {
+    for (size_t i = 0; i < _nDualPointsI; i++) {
+        for (size_t j = 0; j < _nDualPointsJ-1; j++) {
+            for (size_t k = 0; k < _nDualPointsK-1; k++) {
                 computeSurfaceVectorAndCG(_dualNodes(i,j,k), _dualNodes(i,j+1,k), _dualNodes(i,j+1,k+1), _dualNodes(i,j,k+1), _surfacesI(i,j,k), _centersI(i,j,k));
             }
         }
     }
 
     // Computing the j-interfaces
-    for (int i = 0; i < _nDualPointsI-1; i++) {
-        for (int j = 0; j < _nDualPointsJ; j++) {
-            for (int k = 0; k < _nDualPointsK-1; k++) {
+    for (size_t i = 0; i < _nDualPointsI-1; i++) {
+        for (size_t j = 0; j < _nDualPointsJ; j++) {
+            for (size_t k = 0; k < _nDualPointsK-1; k++) {
                 computeSurfaceVectorAndCG(_dualNodes(i,j,k), _dualNodes(i,j,k+1), _dualNodes(i+1,j,k+1), _dualNodes(i+1,j,k), _surfacesJ(i,j,k), _centersJ(i,j,k));
             }
         }
     }
 
     // Computing the k-interfaces
-    for (int i = 0; i < _nDualPointsI-1; i++) {
-        for (int j = 0; j < _nDualPointsJ-1; j++) {
-            for (int k = 0; k < _nDualPointsK; k++) {
+    for (size_t i = 0; i < _nDualPointsI-1; i++) {
+        for (size_t j = 0; j < _nDualPointsJ-1; j++) {
+            for (size_t k = 0; k < _nDualPointsK; k++) {
                 computeSurfaceVectorAndCG(_dualNodes(i,j,k), _dualNodes(i+1,j,k), _dualNodes(i+1,j+1,k), _dualNodes(i,j+1,k), _surfacesK(i,j,k), _centersK(i,j,k));
             }
         }
@@ -347,8 +347,8 @@ void CMesh::computeDualGrid2D() {
     Matrix2D<Vector3D> nodes(_nDualPointsI, _nDualPointsJ);
 
     // find internal dual nodes
-    for (int i = 1; i < _nDualPointsI-1; i++) {
-        for (int j = 1; j < _nDualPointsJ-1; j++) {
+    for (size_t i = 1; i < _nDualPointsI-1; i++) {
+        for (size_t j = 1; j < _nDualPointsJ-1; j++) {
             nodes(i,j) = (_vertices(i-1,j-1,0) + _vertices(i,j-1,0) + _vertices(i,j,0) + _vertices(i-1,j,0)) / 4.0;
         }
     }
@@ -360,19 +360,19 @@ void CMesh::computeDualGrid2D() {
     nodes(_nDualPointsI-1, _nDualPointsJ-1) = _vertices(_nPointsI-1, _nPointsJ-1, 0);
 
     // find dual nodes on edges
-    for (int i = 1; i < _nDualPointsI-1; i++) {
+    for (size_t i = 1; i < _nDualPointsI-1; i++) {
         nodes(i, 0) = (_vertices(i-1,0,0) + _vertices(i,0,0)) / 2.0;
         nodes(i, _nDualPointsJ-1) = (_vertices(i-1, _nPointsJ-1, 0) + _vertices(i, _nPointsJ-1, 0)) / 2.0;
     }
-    for (int j = 1; j < _nDualPointsJ-1; j++) {
+    for (size_t j = 1; j < _nDualPointsJ-1; j++) {
         nodes(0, j) = (_vertices(0, j-1, 0) + _vertices(0, j, 0)) / 2.0;    
         nodes(_nDualPointsI-1, j) = (_vertices(_nPointsI-1, j-1, 0) + _vertices(_nPointsI-1, j, 0)) / 2.0;    
     }
 
     if (_config.getTopology() == Topology::AXISYMMETRIC) {
         _wedgeAngle = 1.0 * M_PI / 180.0;
-        for (int i = 0; i < _nDualPointsI; i++) {
-            for (int j = 0; j < _nDualPointsJ; j++) {
+        for (size_t i = 0; i < _nDualPointsI; i++) {
+            for (size_t j = 0; j < _nDualPointsJ; j++) {
                 _dualNodes(i,j,0).x() = nodes(i,j).x();
                 _dualNodes(i,j,1).x() = nodes(i,j).x();
 
@@ -386,8 +386,8 @@ void CMesh::computeDualGrid2D() {
     }
     else {
         _cellThickness = 1.0;
-        for (int i = 0; i < _nDualPointsI; i++) {
-            for (int j = 0; j < _nDualPointsJ; j++) {
+        for (size_t i = 0; i < _nDualPointsI; i++) {
+            for (size_t j = 0; j < _nDualPointsJ; j++) {
                 _dualNodes(i,j,0).x() = nodes(i,j).x();
                 _dualNodes(i,j,1).x() = nodes(i,j).x();
 

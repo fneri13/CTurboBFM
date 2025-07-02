@@ -392,14 +392,14 @@ class Matrix3D {
                 slice.resize(nj, nk);
 
                 if (index==BoundaryIndices::I_START){
-                    for (int j=0; j<nj; j++){
-                        for (int k=0; k<nk; k++){
+                    for (size_t j=0; j<nj; j++){
+                        for (size_t k=0; k<nk; k++){
                             slice(j,k) = (*this)(0, j, k);
                         }
                     }
                 } else {
-                    for (int j=0; j<nj; j++){
-                        for (int k=0; k<nk; k++){
+                    for (size_t j=0; j<nj; j++){
+                        for (size_t k=0; k<nk; k++){
                             slice(j,k) = (*this)(ni-1, j, k);
                         }
                     }
@@ -411,14 +411,14 @@ class Matrix3D {
                 slice.resize(ni, nk);
 
                 if (index==BoundaryIndices::J_START){
-                    for (int i=0; i<ni; i++){
-                        for (int k=0; k<nk; k++){
+                    for (size_t i=0; i<ni; i++){
+                        for (size_t k=0; k<nk; k++){
                             slice(i,k) = (*this)(i, 0, k);
                         }
                     }
                 } else {
-                    for (int i=0; i<ni; i++){
-                        for (int k=0; k<nk; k++){
+                    for (size_t i=0; i<ni; i++){
+                        for (size_t k=0; k<nk; k++){
                             slice(i,k) = (*this)(i, nj-1, k);
                         }
                     }
@@ -430,14 +430,14 @@ class Matrix3D {
                 slice.resize(ni, nj);
 
                 if (index==BoundaryIndices::K_START){
-                    for (int i=0; i<ni; i++){
-                        for (int j=0; j<nj; j++){
+                    for (size_t i=0; i<ni; i++){
+                        for (size_t j=0; j<nj; j++){
                             slice(i,j) = (*this)(i, j, 0);
                         }
                     }
                 } else {
-                    for (int i=0; i<ni; i++){
-                        for (int j=0; j<nj; j++){
+                    for (size_t i=0; i<ni; i++){
+                        for (size_t j=0; j<nj; j++){
                             slice(i,j) = (*this)(i, j, nk-1);
                         }
                     }

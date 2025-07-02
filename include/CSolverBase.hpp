@@ -46,7 +46,7 @@ class CSolverBase {
         
         const CMesh& _mesh;
         
-        int _nDimensions {0}, _nPointsI, _nPointsJ, _nPointsK;
+        size_t _nDimensions {0}, _nPointsI, _nPointsJ, _nPointsK;
         
         Matrix3D<FloatType> _timeStep;
 

@@ -7,8 +7,8 @@ FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces, const Matri
     auto nj = surfaces.sizeJ();
     FloatType sum = 0.0;
 
-    for (int i=0; i<ni; i++){
-        for (int j=0; j<nj; j++){
+    for (size_t i=0; i<ni; i++){
+        for (size_t j=0; j<nj; j++){
             sum += surfaces(i,j).dot(vectors(i,j));
         }
     }
@@ -20,8 +20,8 @@ FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces, const Matri
     auto nj = surfaces.sizeJ();
     FloatType sum = 0.0;
 
-    for (int i=0; i<ni; i++){
-        for (int j=0; j<nj; j++){
+    for (size_t i=0; i<ni; i++){
+        for (size_t j=0; j<nj; j++){
             sum += surfaces(i,j).x() * vecX(i,j) + surfaces(i,j).y() * vecY(i,j) + surfaces(i,j).z() * vecZ(i,j);
         }
     }
@@ -34,8 +34,8 @@ FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces){
     auto nj = surfaces.sizeJ();
     FloatType sum = 0.0;
 
-    for (int i=0; i<ni; i++){
-        for (int j=0; j<nj; j++){
+    for (size_t i=0; i<ni; i++){
+        for (size_t j=0; j<nj; j++){
             sum += surfaces(i,j).magnitude();
         }
     }

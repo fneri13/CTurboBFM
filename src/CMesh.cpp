@@ -169,9 +169,9 @@ FloatType CMesh::computeElementVolume(const std::vector<Vector3D> &boundSurfaces
 void CMesh::computeMeshVolumes() {
     std::cout << "Compute element volumes\n";
 
-    for (int i = 0; i< _nPointsI; i++) {
-        for (int j = 0; j<_nPointsJ; j++) {
-            for (int k = 0; k<_nPointsK; k++) {
+    for (size_t i = 0; i< _nPointsI; i++) {
+        for (size_t j = 0; j<_nPointsJ; j++) {
+            for (size_t k = 0; k<_nPointsK; k++) {
                 std::vector<Vector3D> boundSurfaces (6);
                 std::vector<Vector3D> boundCenters (6);
         

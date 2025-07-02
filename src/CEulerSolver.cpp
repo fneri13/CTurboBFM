@@ -218,7 +218,7 @@ void CEulerSolver::readRestartFile(const std::string &restartFileName, size_t &N
     size_t iTemperature = columnIndex["Temperature"];
 
     // Read data
-    int i = 0, j = 0, k = 0;
+    size_t i = 0, j = 0, k = 0;
     while (std::getline(file, line)) {
         std::istringstream ss(line);
         std::string value;

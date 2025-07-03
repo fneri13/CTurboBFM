@@ -8,34 +8,13 @@ CSourceBFMBase::CSourceBFMBase(const Config &config, const CFluid &fluid, const 
             _perturbationBodyForceActive = _config.isPerturbationBodyForceActive();
             if (_perturbationBodyForceActive){
                 
-                _perturbationCenterI = _config.getPerturbationIJK_Coords()[0];
-                _perturbationCenterJ = _config.getPerturbationIJK_Coords()[1];
-                _perturbationCenterK = _config.getPerturbationIJK_Coords()[2];
-
-                if (_perturbationCenterI > _mesh.getNumberPointsI()-1 || _perturbationCenterJ > _mesh.getNumberPointsJ()-1 || _perturbationCenterK > _mesh.getNumberPointsK()-1){
-                    throw std::runtime_error("Perturbation center is outside the mesh.");
-                }
-
-                _perturbationExtensionI = _config.getPerturbationIJK_Extension()[0];
-                _perturbationExtensionJ = _config.getPerturbationIJK_Extension()[1];
-                _perturbationExtensionK = _config.getPerturbationIJK_Extension()[2];
-
-                if (_perturbationCenterI+_perturbationExtensionI > _mesh.getNumberPointsI()-1 ||
-                    _perturbationCenterJ+_perturbationExtensionJ > _mesh.getNumberPointsJ()-1 || 
-                    _perturbationCenterK+_perturbationExtensionK > _mesh.getNumberPointsK()-1){
-                    
-                        throw std::runtime_error("Perturbation extension is outside the mesh.");
-                }
-
-                if (_perturbationCenterI-_perturbationExtensionI > _mesh.getNumberPointsI()-1 || 
-                    _perturbationCenterJ-_perturbationExtensionJ > _mesh.getNumberPointsJ()-1 || 
-                    _perturbationCenterK-_perturbationExtensionK > _mesh.getNumberPointsK()-1){
-                    
-                        throw std::runtime_error("Perturbation extension is outside the mesh.");
-                }
+                std::vector<FloatType> perturbationCenterCoords = _config.getPerturbationCenter();
+                _perturbationCenter = {perturbationCenterCoords[0], perturbationCenterCoords[1], perturbationCenterCoords[2]};
+                _perturbationRadius = _config.getPerturbationRadialExtension();
                 _perturbationScalingFactor = _config.getPerturbationScalingFactor();
                 _perturbationTimeStart = _config.getPerturbationStartTime();
                 _perturbationTimeDuration = _config.getPerturbationTimeDuration();
+                
             }
   
         };
@@ -54,11 +33,11 @@ StateVector CSourceBFMBase::computeSource(size_t i, size_t j, size_t k, const St
     }
 
     StateVector bodyForceSource = computeBodyForceSource(i, j, k, primitive, inviscidForce, viscousForce);
-    FloatType bodyForceScaling = computeBodyForcePerturbationScaling(i, j, k, timePhysical);
+    FloatType bodyForceVariation = computeBodyForcePerturbationScaling(i, j, k, timePhysical);
 
     deviationAngle(i, j, k) = _deviationAngle; // update the deviation angle that has been computed from every bfm model, getting it ready for the output
 
-    return (blockageSource + bodyForceSource) * bodyForceScaling;
+    return blockageSource + bodyForceSource * (1.0 + bodyForceVariation);
 }
 
 StateVector CSourceBFMBase::computeBlockageSource(size_t i, size_t j, size_t k, const StateVector& primitive) {
@@ -177,24 +156,41 @@ FloatType CSourceBFMBase::computeTangentialComponent(FloatType fAxial, const Vec
 FloatType CSourceBFMBase::computeBodyForcePerturbationScaling(size_t i, size_t j, size_t k, FloatType timePhysical) const{
 
     if (!_config.isPerturbationBodyForceActive()){
-        return 1.0;
+        return 0.0;
     }
 
     // if time not in the perturbation, return 1
     if (timePhysical < _perturbationTimeStart || timePhysical > _perturbationTimeStart + _perturbationTimeDuration){
-        return 1.0;
+        return 0.0;
     }
 
-    // if location out of perturbation, return 1
-    if (i > _perturbationCenterI + _perturbationExtensionI || 
-        j > _perturbationCenterJ + _perturbationExtensionJ || 
-        k > _perturbationCenterK + _perturbationExtensionK ||
-        i < _perturbationCenterI - _perturbationExtensionI || 
-        j < _perturbationCenterJ - _perturbationExtensionJ || 
-        k < _perturbationCenterK - _perturbationExtensionK){
-        
-            return 1.0;
+    // if the rest is not true, compute the scaling factor of the body force, through RBF in space and time
+    FloatType variationMax = _perturbationScalingFactor - 1.0;
+
+    Vector3D point = _mesh.getVertex(i,j,k);
+    FloatType d = (point - _perturbationCenter).magnitude(); // distance of the point from the perturbation center
+
+    if (d > 2.0*_perturbationRadius){
+        return 0.0;
     }
 
-    return _perturbationScalingFactor;
+    FloatType spaceModulation = std::exp(-(d*d)/(_perturbationRadius*_perturbationRadius)); // RBF in space. At d=R the modulation is around 35%
+
+    FloatType timeCentral = _perturbationTimeStart + _perturbationTimeDuration/3.0; // central time touches the peak
+    FloatType sigma = _perturbationTimeDuration/2.0; // sharp rise and fall
+    FloatType timeModulation = std::exp( - (std::pow(timePhysical-timeCentral, 2)) / std::pow(sigma,2)); // RBF in time
+
+    FloatType perturbationVariation = variationMax * spaceModulation * timeModulation;
+
+    // if (spaceModulation > 0.5){
+    //     std::cout<< "For point (" << i << "," << j << "," << k << "):" << std::endl;
+    //     std::cout << "Perturbation space scaling factor: " << spaceModulation << std::endl;
+    // }
+
+    // if (timeModulation > 0.5){
+    //     std::cout<< "For point (" << i << "," << j << "," << k << "):" << std::endl;
+    //     std::cout << "Perturbation time scaling factor: " << timeModulation << std::endl;
+    // }
+
+    return perturbationVariation;
 }

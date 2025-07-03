@@ -164,15 +164,15 @@ public:
 
     bool isPerturbationBodyForceActive() const {return parseBool("PERTURBATION_BODY_FORCE", false);}
 
-    std::vector<size_t> getPerturbationIJK_Coords() const {return parseVector<size_t>("PERTURBATION_IJK_COORDS");}
-
-    std::vector<size_t> getPerturbationIJK_Extension() const {return parseVector<size_t>("PERTURBATION_IJK_EXTENSION");}
+    std::vector<FloatType> getPerturbationCenter() const {return parseVector<FloatType>("PERTURBATION_CENTER");}
 
     FloatType getPerturbationScalingFactor() const {return parseFloat("PERTURBATION_SCALING_FACTOR");} 
 
     FloatType getPerturbationTimeDuration() const {return parseFloat("PERTURBATION_TIME_DURATION");} 
     
     FloatType getPerturbationStartTime() const {return parseFloat("PERTURBATION_TIME_START");} 
+
+    FloatType getPerturbationRadialExtension() const {return parseFloat("PERTURBATION_RADIAL_EXTENSION");} 
 
     FloatType getFixedTimeStep() const {return parseFloat("FIXED_TIME_STEP");} 
 };

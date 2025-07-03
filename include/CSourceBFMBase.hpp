@@ -44,8 +44,8 @@ protected:
     bool _perturbationBodyForceActive = false;
 
     // body force perturbation data
-    size_t _perturbationCenterI = 0, _perturbationCenterJ = 0, _perturbationCenterK = 0;
-    size_t _perturbationExtensionI = 0, _perturbationExtensionJ = 0, _perturbationExtensionK = 0;
+    FloatType _perturbationRadius = 0.0;
+    Vector3D _perturbationCenter = {0.0, 0.0, 0.0};
     FloatType _perturbationScalingFactor = 1.0;
     FloatType _perturbationTimeStart = 0.0;
     FloatType _perturbationTimeDuration = 0.0;

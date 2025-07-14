@@ -6,8 +6,9 @@ StateVector CAdvectionSchemeJST::computeFlux(
     const StateVector& Ul,
     const StateVector& Ur,
     const StateVector& Urr,
-    const Vector3D& S) const
+    const Vector3D& S) 
 {
+    
     auto Wll = getEulerPrimitiveFromConservative(Ull);
     auto Wl = getEulerPrimitiveFromConservative(Ul);
     auto Wr = getEulerPrimitiveFromConservative(Ur);

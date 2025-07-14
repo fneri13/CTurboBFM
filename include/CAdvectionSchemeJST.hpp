@@ -31,7 +31,7 @@ class CAdvectionSchemeJST : public CAdvectionSchemeBase {
             const StateVector& Ul,
             const StateVector& Ur,
             const StateVector& Urr,
-            const Vector3D& S) const override;
+            const Vector3D& S) override;
         
         /**
          * @brief Compute the r-factor.

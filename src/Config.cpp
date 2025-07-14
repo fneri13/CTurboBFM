@@ -304,6 +304,9 @@ ConvectionScheme Config::getConvectionScheme() const {
     if (value == "JST") {
         scheme = ConvectionScheme::JST;
     } 
+    else if (value == "ROE" || value == "roe" || value == "Roe") {
+        scheme = ConvectionScheme::ROE;
+    }
     else {
         throw std::runtime_error("Invalid value for key \"CONVECTION_SCHEME\" in configuration.");
     }

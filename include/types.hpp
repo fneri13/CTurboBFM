@@ -217,7 +217,8 @@ enum class MonitorOutputFields {
 
 /** @brief Enum class for convection schemes*/
 enum class ConvectionScheme {
-    JST = 0
+    JST = 0,
+    ROE = 1,
 };
 
 

@@ -6,6 +6,7 @@
 #include "CFluid.hpp"
 #include "CAdvectionSchemeBase.hpp"
 #include "CAdvectionSchemeJST.hpp"
+#include "CAdvectionSchemeROE.hpp"
 #include "CBoundaryConditionBase.hpp"
 #include "CBoundaryConditionEulerWall.hpp"
 #include "CBoundaryConditionInlet.hpp"

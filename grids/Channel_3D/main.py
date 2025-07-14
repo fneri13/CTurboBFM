@@ -54,7 +54,6 @@ if os.path.exists(OUTPUT_FOLDER):
 else:
     os.mkdir(OUTPUT_FOLDER)
 with open(OUTPUT_FOLDER + '/grid_%02i_%02i_%02i.csv' %(NI, NJ, NK), 'w') as file:
-    file.write(f"NDIMENSIONS=2\n")
     file.write(f"NI={NI}\n")
     file.write(f"NJ={NJ}\n")
     file.write(f"NK={NK}\n")

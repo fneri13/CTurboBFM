@@ -25,7 +25,7 @@ for inputFile in inputFiles:
 
 pressureSensors = []
 for df in dfs:
-    pressureSensors.append(df["Pressure[Pa]"])
+    pressureSensors.append(df["Velocity_Magnitude[m/s]"])
 time = dfs[0]["Time[s]"]
 
 print()

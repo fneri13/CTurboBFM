@@ -67,5 +67,6 @@ class CAdvectionSchemeROE : public CAdvectionSchemeBase {
             StateVector _eigenvalues;
             std::array<StateVector, 5> _eigenvectors;
             StateVector _waveStrengths;
+            FloatType _entropyFixCoefficient = 0.001; // coefficient for the entropy fix in the eigenvalues
         
 };

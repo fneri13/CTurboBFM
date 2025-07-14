@@ -130,10 +130,20 @@ void CAdvectionSchemeROE::computeRoeFlux(const Vector3D& S, const StateVector& W
     StateVector fluxL = computeEulerFluxFromPrimitive(WnormL, {1.0, 0.0, 0.0}, _fluid);
     StateVector fluxR = computeEulerFluxFromPrimitive(WnormR, {1.0, 0.0, 0.0}, _fluid);
 
+    // compute the absolute values of the eigenvalues with the entropy fix coefficient
+    StateVector fixedEigenvalues({0.0, 0.0, 0.0, 0.0, 0.0});
+    for (size_t i = 0; i < 5; ++i) {
+        if (std::abs(_eigenvalues[i]) < _entropyFixCoefficient) {
+            fixedEigenvalues[i] = _entropyFixCoefficient;
+        } else {
+            fixedEigenvalues[i] = std::abs(_eigenvalues[i]);
+        }
+    }
+
     StateVector fluxRoe = (fluxL + fluxR) * 0.5;
     for (size_t i = 0; i < 5; ++i) {
         for (size_t j = 0; j < 5; ++j) {
-            fluxRoe[i] -= 0.5 * _waveStrengths[j] * std::abs(_eigenvalues[j]) *_eigenvectors[j][i];
+            fluxRoe[i] -= 0.5 * _waveStrengths[j] * fixedEigenvalues[j] *_eigenvectors[j][i];
         }
     }
 

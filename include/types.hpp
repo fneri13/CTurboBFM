@@ -212,6 +212,14 @@ enum class MonitorOutputFields {
     TIME = 4,
 };
 
+/** @brief Enum class for advection flux limiter*/
+enum class FluxLimiter {
+    NONE = 0,
+    VAN_ALBADA = 1,
+    VAN_LEER = 2,
+    MIN_MOD = 3,
+};
+
 
 
 

@@ -1,6 +1,8 @@
 #include "CAdvectionSchemeROE.hpp"
 #include "commonFunctions.hpp"
 
+
+
 StateVector CAdvectionSchemeROE::computeFlux(
     const StateVector& Ull,
     const StateVector& Ul,
@@ -11,6 +13,16 @@ StateVector CAdvectionSchemeROE::computeFlux(
 
     StateVector Wl = getEulerPrimitiveFromConservative(Ul);
     StateVector Wr = getEulerPrimitiveFromConservative(Ur);
+    StateVector Wrr = getEulerPrimitiveFromConservative(Urr);
+    StateVector Wll = getEulerPrimitiveFromConservative(Ull);
+
+    // if (std::abs(Wl[0]-Wr[0])>1e-3) {
+    //     std::cout<<"flag";
+    // }
+
+    if (_MUSCL){
+        reconstructMUSCL(Wll, Wl, Wr, Wrr, _fluxLimiter);
+    }
 
     computeNormalTriad(S);
 

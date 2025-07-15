@@ -2,6 +2,7 @@
 
 #include "types.hpp"
 #include "CFluid.hpp"
+#include "Config.hpp"
 
 /**
  * @brief Abstract base class for advection flux calculation schemes.
@@ -15,7 +16,7 @@ class CAdvectionSchemeBase {
          * @brief Constructs the advection scheme with a given fluid reference.
          * @param fluid The fluid object.
          */
-        CAdvectionSchemeBase(const CFluid &fluid) : _fluid(fluid) {};
+        CAdvectionSchemeBase(const Config &config, const CFluid &fluid);
 
         virtual ~CAdvectionSchemeBase() = default;  
 
@@ -35,9 +36,18 @@ class CAdvectionSchemeBase {
             const StateVector &Ur, 
             const StateVector &Urr,
             const Vector3D &surface) = 0;
+        
+        void reconstructMUSCL(StateVector& Wll, StateVector& Wl, StateVector& Wr, StateVector& Wrr, FluxLimiter fluxLimiter) const;
+
+        StateVector computeSmoothness(const StateVector& Wl, const StateVector& Wc, const StateVector& Wr) const;
+
+        StateVector computeLimiter(const StateVector& smoothness, FluxLimiter fluxLimiter) const;
 
     protected:
         const CFluid& _fluid;  // fluid object used to compute the thermodynamic properties
+        const Config& _config; // configuration object for accessing simulation parameters
+        bool _MUSCL = false; // flag for MUSCL scheme, default is false
+        FluxLimiter _fluxLimiter = FluxLimiter::NONE; // flag for flux limiter
 
     
 };

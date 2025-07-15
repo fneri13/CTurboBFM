@@ -164,6 +164,10 @@ public:
 
     bool isPerturbationBodyForceActive() const {return parseBool("PERTURBATION_BODY_FORCE", false);}
 
+    bool getMUSCLreconstruction() const {return parseBool("MUSCL_RECONSTRUCTION", false);}
+
+    FluxLimiter getFluxLimiter() const ;
+
     std::vector<FloatType> getPerturbationCenter() const {return parseVector<FloatType>("PERTURBATION_CENTER");}
 
     FloatType getPerturbationScalingFactor() const {return parseFloat("PERTURBATION_SCALING_FACTOR");} 

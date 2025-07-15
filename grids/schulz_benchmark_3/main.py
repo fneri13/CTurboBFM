@@ -14,14 +14,14 @@ Generate a 2D rectangular geometry, that will be used as verification
 OUTPUT_FOLDER = 'Grid'
 LX = 1
 LY = 1
-NX = 200
-NY = 200
+NX = 400
+NY = 400
 
 x = np.linspace(0, LX, NX)
 y = np.linspace(0, LY, NY)
 
-xInterface = 0.8
-yInterface = 0.8
+xInterface = 0.5
+yInterface = 0.5
 
 X, Y = np.meshgrid(x, y, indexing='ij')
 NI, NJ = X.shape
@@ -41,7 +41,7 @@ velocity_y = np.zeros_like(X)
 velocity_z = np.zeros_like(X)
 temperature = np.zeros_like(X)
 
-rho = [1.5, 0.5323, 0.138, 0.5325]
+rho = [1.5, 0.5323, 0.138, 0.5323]
 p = [1.5, 0.3, 0.029, 0.3]
 ux = [0,1.206,1.206,0]
 uy = [0,0,1.206,1.206]
@@ -79,7 +79,7 @@ if os.path.exists(OUTPUT_FOLDER):
     print('Output Folder already present')
 else:
     os.mkdir(OUTPUT_FOLDER)
-with open(OUTPUT_FOLDER + '/grid_%02i_%02i_full.csv' %(NX, NY), 'w') as file:
+with open(OUTPUT_FOLDER + '/grid_%02i_%02i_fullData.csv' %(NX, NY), 'w') as file:
     file.write(f"NI={NI}\n")
     file.write(f"NJ={NJ}\n")
     file.write(f"NK=1\n")

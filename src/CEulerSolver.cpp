@@ -263,7 +263,7 @@ void CEulerSolver::solve(){
     if (monitorPointsActive) initializeMonitorPoints();                                     // initialize the monitor points
 
     // time integration
-    for (size_t it=1; it<nIterMax; it++){        
+    for (size_t it=1; it<=nIterMax; it++){        
         FlowSolution solutionOld = _conservativeVars;                                       // place holder for the solution at the previous timestep
         
         updateMassFlows(solutionOld);
@@ -295,7 +295,7 @@ void CEulerSolver::solve(){
         }
 
         // write output files  
-        if (it%solutionOutputFreq == 0) {
+        if (it%solutionOutputFreq == 0 || it == nIterMax) {
             _output->writeSolution(it);
         } 
 

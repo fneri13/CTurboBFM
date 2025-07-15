@@ -370,3 +370,19 @@ void Config::printAllConfigValues() const {
         FloatType initialPressure = getInitPressure();
         return initialPressure + (outletPressure - initialPressure) * iterRatio;
     }
+
+
+FluxLimiter Config::getFluxLimiter() const {
+        std::string value = parseString("FLUX_LIMITER", true);
+        if (value == "None") {
+            return FluxLimiter::NONE;
+        } else if (value == "van albada") {
+            return FluxLimiter::VAN_ALBADA;
+        } else if (value == "van leer") {
+            return FluxLimiter::VAN_LEER;
+        } else if (value == "min mod") {
+            return FluxLimiter::MIN_MOD;
+        } else {
+            throw std::runtime_error("Invalid value for key \"FLUX_LIMITER\" in configuration.");
+        }
+    }

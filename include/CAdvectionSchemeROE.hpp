@@ -12,7 +12,7 @@ class CAdvectionSchemeROE : public CAdvectionSchemeBase {
          * @brief Constructs the Roe scheme with a given fluid reference. Original Roe formulation, taken from Toro.
          * @param fluid The fluid object.
          */
-        CAdvectionSchemeROE(const CFluid& fluid) : CAdvectionSchemeBase(fluid) {}
+        CAdvectionSchemeROE(const Config &config, const CFluid& fluid)  : CAdvectionSchemeBase(config, fluid) {}
 
 
         /**
@@ -60,7 +60,6 @@ class CAdvectionSchemeROE : public CAdvectionSchemeBase {
         void computeRoeFlux(const Vector3D& S, const StateVector& WnormL, const StateVector& WnormR, StateVector& flux) const;
 
     private:
-            
             Vector3D _x1, _x2, _x3; 
             Vector3D _n1, _n2, _n3; // normal, tangential, binormal versors
             FloatType _rhoAVG, _u1AVG, _u2AVG, _u3AVG, _htAVG, _aAVG;

@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import os
 import re
+from styles import *
+
+os.makedirs("pictures", exist_ok=True)
+
 
 def extractOrder(filepath):
     """Extracts the integer index from filenames like 'monitorPoint_12.csv'."""
@@ -47,5 +51,9 @@ plt.xlabel(r"$t$ [s]")
 plt.ylabel(r"$\theta$ [deg]")
 # plt.legend()
 plt.grid(alpha=.3)
+try:
+    plt.savefig("pictures/PressureSensors.pdf", bbox_inches='tight')
+except:
+    print("Could not save figure. pictures folder not existing.")
 
 plt.show()

@@ -4,6 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
+from styles import *
+
+os.makedirs("pictures", exist_ok=True)
 
 cwd = os.getcwd()
 files = os.listdir(cwd+'/monitorPoints')
@@ -25,7 +28,7 @@ fieldList = [
             'Velocity_Magnitude[m/s]',
              ]
 
-for field in fieldList:
+for ii,field in enumerate(fieldList):
     plt.figure()
     
     if len(dfs) > 1:
@@ -37,7 +40,8 @@ for field in fieldList:
     plt.xlabel("Time [s]")
     plt.ylabel(field)
     
-    if len(dfs) > 1:
-        plt.legend()
+    # if len(dfs) > 1:
+    #     plt.legend()
     plt.grid(alpha=0.3)
+    plt.savefig(f"pictures/monitorPoint_{ii}.pdf", bbox_inches='tight')
 plt.show()

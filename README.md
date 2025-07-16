@@ -17,9 +17,9 @@ C++ CFD solver (translation of python based TurboBFM to C++).
 ##### Schulz benchmark test case 3 #####
 Test case number 3 for shock-capturing properties of numerical scheme, taken from Schulz Riemann problems.
 The following pictures shows the difference between JST, Roe, and Roe with 2nd order reconstruction and Van Leer flux limiter:
-![JST](images/schulz_roe1.png)
-![Roe](images/schulz_roe2.png)
-![Roe + MUSCL + Van Leer](images/schulz_jst.png)
+![JST](images/schulz_jst.png)
+![Roe](images/schulz_roe1.png)
+![Roe + MUSCL + Van Leer](images/schulz_roe2.png)
 
 
 

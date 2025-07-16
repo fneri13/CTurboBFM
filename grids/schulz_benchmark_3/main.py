@@ -11,7 +11,7 @@ from TurboBFM.Preprocess.grid_generation import transfinite_grid_generation
 """
 Generate a 2D rectangular geometry, that will be used as verification
 """
-OUTPUT_FOLDER = 'Grid'
+OUTPUT_FOLDER = 'Grids'
 LX = 1
 LY = 1
 NX = 400

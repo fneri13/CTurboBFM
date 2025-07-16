@@ -9,7 +9,7 @@ CAdvectionSchemeBase::CAdvectionSchemeBase(const Config &config, const CFluid &f
 
 void CAdvectionSchemeBase::reconstructMUSCL(StateVector& Wll, StateVector& Wl, StateVector& Wr, StateVector& Wrr, FluxLimiter fluxLimiter) const {
     StateVector smoothnessL = computeSmoothness(Wll, Wl, Wr);
-    StateVector smoothnessR = computeSmoothness(Wr, Wl, Wrr);
+    StateVector smoothnessR = computeSmoothness(Wl, Wr, Wrr);
 
     StateVector limiterL = computeLimiter(smoothnessL, fluxLimiter);
     StateVector limiterR = computeLimiter(smoothnessR, fluxLimiter);
@@ -27,7 +27,7 @@ StateVector CAdvectionSchemeBase::computeSmoothness(const StateVector& Wl, const
     StateVector smoothness;
     
     for (std::size_t i = 0; i < 5; ++i) {
-        smoothness[i] = (Wc[i] - Wl[i]) * (Wr[i] - Wc[i] + 1E-8);
+        smoothness[i] = (Wc[i] - Wl[i]) / (Wr[i] - Wc[i] + 1E-8);
     }
 
     return smoothness;

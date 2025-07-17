@@ -6,8 +6,15 @@ import pandas as pd
 import os
 import re
 from styles import *
+import argparse
 
 os.makedirs("pictures", exist_ok=True)
+
+# --- Argument Parsing ---
+parser = argparse.ArgumentParser(description="Plot monitor point data with a given time per revolution. Use 1 to plot in seconds.")
+parser.add_argument("time_per_revolution", type=float, help="Time per revolution in seconds")
+args = parser.parse_args()
+time_per_revolution = args.time_per_revolution
 
 def extractOrder(filepath):
     """Extracts the integer index from filenames like 'monitorPoint_12.csv'."""
@@ -44,9 +51,12 @@ plt.figure()
 for i in range(0, len(pressureSensors)):
     deltaTheta = 360 / (nSensors)
     theta = i * 360 / (nSensors)
-    plt.plot(time, scale_oscillations(pressureSensors[i], deltaTheta) + theta, label=f"probe {i}")
+    plt.plot(time/time_per_revolution, scale_oscillations(pressureSensors[i], deltaTheta) + theta, label=f"probe {i}")
 
-plt.xlabel(r"$t$ [s]")
+if time_per_revolution != 1:
+    plt.xlabel("Revs [-]")
+else:
+    plt.xlabel(r"$t$ [s]")
 plt.ylabel(r"$\theta$ [deg]")
 # plt.legend()
 plt.grid(alpha=.3)

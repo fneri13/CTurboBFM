@@ -16,10 +16,8 @@ C++ Euler solver.
 ### Results Example ###
 
 ##### Schulz benchmark test case 3 #####
-Test case number 3 for shock-capturing properties of numerical scheme, taken from Schulz Riemann problems.
-The following pictures shows the difference on a 400x400 grid between the JST, Roe, and Roe with 2nd order reconstruction and Van Leer flux limiter. The quantity represented is the magnitude of density gradient in log scale:
-![JST](images/schulz_jst.png)
-![Roe](images/schulz_roe1.png)
+Test case number 3 for shock-capturing properties of numerical schemes, taken from Schulz Riemann problems.
+The following picture shows the magnitude of the density gradient obtained with Roe scheme, 2nd MUSCL reconstruction and Van Leer limiter on a 400x400 grid:
 ![Roe + MUSCL + Van Leer](images/schulz_roe2.png)
 
 

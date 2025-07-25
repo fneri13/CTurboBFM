@@ -129,7 +129,8 @@ enum class BFM_Model {
     LIFT_DRAG = 3,
     FROZEN_FORCE = 4,
     FROZEN_GRADIENT = 5,
-    GONG = 6
+    GONG = 6,
+    NERI = 7
 };
 
 
@@ -809,7 +810,15 @@ enum class FieldNames {
     ANGULAR_MOMENTUM_DERIVATIVE=24,
     ENTROPY_DERIVATIVE=25,
     LIFT_DRAG_KN_TURNING=26,
-    DEVIATION_ANGLE_PIVOT=27
+    DEVIATION_ANGLE_PIVOT=27,
+    INFERENCE_FN_0=28,
+    INFERENCE_FN_1=29,
+    INFERENCE_FN_2=30,
+    INFERENCE_FN_3=31,
+    INFERENCE_FP_0=32,
+    INFERENCE_FP_1=33,
+    INFERENCE_FP_2=34,
+    INFERENCE_FP_3=35
 };
 
 
@@ -845,7 +854,15 @@ public:
             {"angularMomentumDerivative", FieldNames::ANGULAR_MOMENTUM_DERIVATIVE},
             {"entropyDerivative", FieldNames::ENTROPY_DERIVATIVE},
             {"kn_turning", FieldNames::LIFT_DRAG_KN_TURNING},
-            {"deviationAnglePivot", FieldNames::DEVIATION_ANGLE_PIVOT}
+            {"deviationAnglePivot", FieldNames::DEVIATION_ANGLE_PIVOT},
+            {"fn_0", FieldNames::INFERENCE_FN_0},
+            {"fn_1", FieldNames::INFERENCE_FN_1},
+            {"fn_2", FieldNames::INFERENCE_FN_2},
+            {"fn_3", FieldNames::INFERENCE_FN_3},
+            {"fp_0", FieldNames::INFERENCE_FP_0},
+            {"fp_1", FieldNames::INFERENCE_FP_1},
+            {"fp_2", FieldNames::INFERENCE_FP_2},
+            {"fp_3", FieldNames::INFERENCE_FP_3}
 
         };
         return map;
@@ -880,7 +897,15 @@ public:
             {FieldNames::ANGULAR_MOMENTUM_DERIVATIVE, "angularMomentumDerivative"},
             {FieldNames::ENTROPY_DERIVATIVE, "entropyDerivative"},
             {FieldNames::LIFT_DRAG_KN_TURNING, "kn_turning"},
-            {FieldNames::DEVIATION_ANGLE_PIVOT, "deviationAnglePivot"}
+            {FieldNames::DEVIATION_ANGLE_PIVOT, "deviationAnglePivot"},
+            {FieldNames::INFERENCE_FN_0, "fn_0"},
+            {FieldNames::INFERENCE_FN_1, "fn_1"},
+            {FieldNames::INFERENCE_FN_2, "fn_2"},
+            {FieldNames::INFERENCE_FN_3, "fn_3"},
+            {FieldNames::INFERENCE_FP_0, "fp_0"},
+            {FieldNames::INFERENCE_FP_1, "fp_1"},
+            {FieldNames::INFERENCE_FP_2, "fp_2"},
+            {FieldNames::INFERENCE_FP_3, "fp_3"}
         };
         return map;
     }

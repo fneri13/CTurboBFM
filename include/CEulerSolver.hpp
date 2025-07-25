@@ -9,6 +9,7 @@
 #include "CSourceBFMLiftDrag.hpp"
 #include "CSourceBFMFrozenForce.hpp"
 #include "CSourceBFMFrozenGradient.hpp"
+#include "CSourceBFMNeri.hpp"
 
 /**
  * \brief     Solver for the Euler equations.

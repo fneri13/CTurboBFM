@@ -167,6 +167,8 @@ BFM_Model Config::getBFMModel() const {
         model = BFM_Model::FROZEN_GRADIENT;
     } else if (value == "Gong") {
         model = BFM_Model::GONG;
+    } else if (value == "Neri") {
+        model = BFM_Model::NERI;
     } else if (value == "None") {
         model = BFM_Model::NONE;
     } 

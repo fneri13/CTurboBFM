@@ -15,9 +15,11 @@ StateVector CSourceBFMNeri::computeInviscidComponent(size_t i, size_t j, size_t 
     FloatType fn_3 = _mesh.getInputFields(FieldNames::INFERENCE_FN_3, i, j, k);
     
     FloatType pressure = _fluid.computePressure_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
+    FloatType pressureRescaled = rescaleMinMax(pressure, 75815.169, 124552.234);
 
     // polynomial inference
-    FloatType forceMag = fn_0 + (fn_1 * pressure) + (fn_2 * pressure * pressure) + (fn_3 * pressure * pressure * pressure);
+    FloatType forceMagRescaled = fn_0 + (fn_1 * pressureRescaled) + (fn_2 * pressureRescaled * pressureRescaled) + (fn_3 * pressureRescaled * pressureRescaled * pressureRescaled);
+    FloatType forceMag = inverseRescalingMinMax(forceMagRescaled, 63.909768283815616, 2258022.909220777);
 
     Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceMag;
     Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
@@ -43,9 +45,12 @@ StateVector CSourceBFMNeri::computeViscousComponent(size_t i, size_t j, size_t k
     FloatType fp_3 = _mesh.getInputFields(FieldNames::INFERENCE_FP_3, i, j, k);
     
     FloatType pressure = _fluid.computePressure_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
+    FloatType pressureRescaled = rescaleMinMax(pressure, 75815.169, 124552.234);
 
     // polynomial inference
-    FloatType forceMag = fp_0 + (fp_1 * pressure) + (fp_2 * pressure * pressure) + (fp_3 * pressure * pressure * pressure);
+    FloatType forceMagRescaled = fp_0 + (fp_1 * pressureRescaled) + (fp_2 * pressureRescaled * pressureRescaled) + (fp_3 * pressureRescaled * pressureRescaled * pressureRescaled);
+    FloatType forceMag = inverseRescalingMinMax(forceMagRescaled, 8842.677070929529, 95416.08404793403);
+
 
     Vector3D forceCylindrical = _viscousForceDirectionCylindrical * forceMag;
     Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);

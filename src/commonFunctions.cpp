@@ -276,3 +276,15 @@ FloatType atan2_from0_to2pi(FloatType y, FloatType x){
         angle += 2 * M_PI;
     return angle;
 }
+
+
+FloatType inverseRescalingMinMax(const FloatType& value, const FloatType& min, const FloatType& max){
+    FloatType res = min + (max - min) * value;
+    return res;
+}
+
+
+FloatType rescaleMinMax(const FloatType& value, const FloatType& min, const FloatType& max){
+    FloatType res = (value - min) / (max - min);
+    return res;
+}

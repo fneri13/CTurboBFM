@@ -47,3 +47,7 @@ FloatType interpolateScalar(const Matrix3D<FloatType>& field, size_t i, size_t j
 Vector3D computeGreenGaussFormula(const std::array<Vector3D,6>& surfaces, const std::array<FloatType,6>& scalars, const FloatType& volume);
 
 FloatType atan2_from0_to2pi(FloatType y, FloatType x);
+
+FloatType inverseRescalingMinMax(const FloatType& value, const FloatType& min, const FloatType& max);
+
+FloatType rescaleMinMax(const FloatType& value, const FloatType& min, const FloatType& max);

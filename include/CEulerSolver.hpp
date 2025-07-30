@@ -10,6 +10,7 @@
 #include "CSourceBFMFrozenForce.hpp"
 #include "CSourceBFMFrozenGradient.hpp"
 #include "CSourceBFMNeri.hpp"
+#include "CSourceBFMChima.hpp"
 
 /**
  * \brief     Solver for the Euler equations.

@@ -130,7 +130,8 @@ enum class BFM_Model {
     FROZEN_FORCE = 4,
     FROZEN_GRADIENT = 5,
     GONG = 6,
-    NERI = 7
+    NERI = 7,
+    CHIMA = 8
 };
 
 
@@ -818,7 +819,10 @@ enum class FieldNames {
     INFERENCE_FP_0=32,
     INFERENCE_FP_1=33,
     INFERENCE_FP_2=34,
-    INFERENCE_FP_3=35
+    INFERENCE_FP_3=35,
+    SPANWISE_LENGTH=36,
+    DELTA_ANGULAR_MOMENTUM_DM=37,
+    DELTA_ENTROPY_DM=38
 };
 
 
@@ -862,7 +866,10 @@ public:
             {"fp_0", FieldNames::INFERENCE_FP_0},
             {"fp_1", FieldNames::INFERENCE_FP_1},
             {"fp_2", FieldNames::INFERENCE_FP_2},
-            {"fp_3", FieldNames::INFERENCE_FP_3}
+            {"fp_3", FieldNames::INFERENCE_FP_3},
+            {"spanwiseLength", FieldNames::SPANWISE_LENGTH},
+            {"Drutheta_Dm", FieldNames::DELTA_ANGULAR_MOMENTUM_DM},
+            {"Ds_Dm", FieldNames::DELTA_ENTROPY_DM}
 
         };
         return map;
@@ -905,7 +912,10 @@ public:
             {FieldNames::INFERENCE_FP_0, "fp_0"},
             {FieldNames::INFERENCE_FP_1, "fp_1"},
             {FieldNames::INFERENCE_FP_2, "fp_2"},
-            {FieldNames::INFERENCE_FP_3, "fp_3"}
+            {FieldNames::INFERENCE_FP_3, "fp_3"},
+            {FieldNames::SPANWISE_LENGTH, "spanwiseLength"},
+            {FieldNames::DELTA_ANGULAR_MOMENTUM_DM, "Drutheta_Dm"},
+            {FieldNames::DELTA_ENTROPY_DM, "Ds_Dm"}
         };
         return map;
     }

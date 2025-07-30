@@ -35,6 +35,9 @@ CEulerSolver::CEulerSolver(Config& config, CMesh& mesh)
     else if (bfmModel == BFM_Model::NERI) {
         _bfmSource = std::make_unique<CSourceBFMNeri>(_config, *_fluid, _mesh);
     }
+    else if (bfmModel == BFM_Model::CHIMA) {
+        _bfmSource = std::make_unique<CSourceBFMChima>(_config, *_fluid, _mesh);
+    }
     else {
         _bfmSource = std::make_unique<CSourceBFMBase>(_config, *_fluid, _mesh);
     }

@@ -272,7 +272,7 @@ void CEulerSolver::solve(){
     bool turboOutput = _config.saveTurboOutput();                                           // flag to save the solution in turbo format
     bool monitorPointsActive = _config.isMonitorPointsActive();                             // flag to activate the monitor points
     bool exitLoop = false;                                                                  // flag to exit the loop if convergence is reached
-    config.getUnst
+    bool saveUnsteady = _config.saveUnsteadySolution();                                     // flag to save the unsteady solution
 
     if (monitorPointsActive) initializeMonitorPoints();                                     // initialize the monitor points
 
@@ -310,7 +310,7 @@ void CEulerSolver::solve(){
 
         // check the convergence process
         checkConvergence(exitLoop); 
-        if (exitLoop) {
+        if (exitLoop && saveUnsteady==false) {
             _output->writeSolution(it);
             writeLogResidualsToCSV();
             if (turboOutput) writeTurboPerformanceToCSV();

@@ -117,6 +117,10 @@ public:
 
     std::string getSolutionName() const {return parseString("SOLUTION_NAME");}
 
+    std::string getChimaScalingFunctionsFile() const {return parseString("CHIMA_SCALING_FUNCTIONS_FILEPATH");}
+
+    FloatType getChimaReferenceMassFlow() const {return parseFloat("CHIMA_REFERENCE_MASS_FLOW");}
+
     std::string getRestartFilepath() const {return parseString("RESTART_SOLUTION_FILEPATH");}
 
     std::string getRestartType() const {return parseString("RESTART_TYPE", true);}
@@ -124,6 +128,8 @@ public:
     bool saveTurboOutput() const {return parseBool("TURBO_OUTPUT", false);}
 
     bool isMonitorPointsActive() const {return parseBool("MONITOR_POINTS_ACTIVE", false);}
+
+    size_t getResidualsDropConvergence() const {return static_cast<size_t>(parseInt("RESIDUALS_DROP_CONVERGENCE"));}
 
     TimeIntegration getTimeIntegration() const;
 

@@ -13,6 +13,8 @@ CSolverBase::CSolverBase(Config& config, CMesh& mesh)
 
     _topology = _config.getTopology();
 
+    _residualsDropConvergence = _config.getResidualsDropConvergence();  
+
     _fluid = std::make_unique<CFluid>(_config.getFluidGamma(), _config.getFluidGasConstant());
 
     ConvectionScheme advScheme = _config.getConvectionScheme();

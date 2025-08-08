@@ -2,6 +2,9 @@
 
 #include "types.hpp"
 #include "CFluid.hpp"
+#include <vector>
+#include <stdexcept>
+#include <algorithm>
 
 // compute the integral flux of an array2D of vectors through an array2D of surfaces
 FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces, const Matrix2D<Vector3D> &vectors);
@@ -51,3 +54,5 @@ FloatType atan2_from0_to2pi(FloatType y, FloatType x);
 FloatType inverseRescalingMinMax(const FloatType& value, const FloatType& min, const FloatType& max);
 
 FloatType rescaleMinMax(const FloatType& value, const FloatType& min, const FloatType& max);
+
+FloatType interpolateLinear(const std::vector<double>& x, const std::vector<double>& y, const FloatType& xp);

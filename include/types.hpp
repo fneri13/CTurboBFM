@@ -131,7 +131,8 @@ enum class BFM_Model {
     FROZEN_GRADIENT = 5,
     GONG = 6,
     NERI = 7,
-    CHIMA = 8
+    CHIMA = 8,
+    ONLY_BLOCKAGE = 9
 };
 
 
@@ -822,7 +823,10 @@ enum class FieldNames {
     INFERENCE_FP_3=35,
     SPANWISE_LENGTH=36,
     DELTA_ANGULAR_MOMENTUM_DM=37,
-    DELTA_ENTROPY_DM=38
+    DELTA_ENTROPY_DM=38,
+    CHIMA_MASS_FLOW=39,
+    CHIMA_SCALING_TURNING=40,
+    CHIMA_SCALING_LOSS=41,
 };
 
 
@@ -869,7 +873,10 @@ public:
             {"fp_3", FieldNames::INFERENCE_FP_3},
             {"spanwiseLength", FieldNames::SPANWISE_LENGTH},
             {"Drutheta_Dm", FieldNames::DELTA_ANGULAR_MOMENTUM_DM},
-            {"Ds_Dm", FieldNames::DELTA_ENTROPY_DM}
+            {"Ds_Dm", FieldNames::DELTA_ENTROPY_DM},
+            {"MassFlow", FieldNames::CHIMA_MASS_FLOW},
+            {"PhiTurn", FieldNames::CHIMA_SCALING_TURNING},
+            {"PhiLoss", FieldNames::CHIMA_SCALING_LOSS},
 
         };
         return map;
@@ -915,7 +922,10 @@ public:
             {FieldNames::INFERENCE_FP_3, "fp_3"},
             {FieldNames::SPANWISE_LENGTH, "spanwiseLength"},
             {FieldNames::DELTA_ANGULAR_MOMENTUM_DM, "Drutheta_Dm"},
-            {FieldNames::DELTA_ENTROPY_DM, "Ds_Dm"}
+            {FieldNames::DELTA_ENTROPY_DM, "Ds_Dm"},
+            {FieldNames::CHIMA_MASS_FLOW, "MassFlow"},
+            {FieldNames::CHIMA_SCALING_TURNING, "PhiTurn"},
+            {FieldNames::CHIMA_SCALING_LOSS, "PhiLoss"},
         };
         return map;
     }

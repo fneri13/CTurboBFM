@@ -31,6 +31,8 @@ public:
 
     /** @brief Solves the Euler equations with explicit time integration.*/
     void solve() override;
+
+    virtual void checkConvergence(bool &exitLoop) const override;
     
 
 private:
@@ -49,7 +51,6 @@ private:
 
     std::vector<unsigned int> _monitorPoints_idxI, _monitorPoints_idxJ, _monitorPoints_idxK;
     unsigned int _numberMonitorPoints = 0;
-
 
     /** @brief Initialize the solution arrays.*/
     void initializeSolutionArrays() override;

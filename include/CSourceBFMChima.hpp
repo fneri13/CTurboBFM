@@ -6,8 +6,7 @@
 class CSourceBFMChima : public CSourceBFMBase {
 public:
 
-    CSourceBFMChima(const Config &config, const CFluid &fluid, const CMesh &mesh) 
-        : CSourceBFMBase(config, fluid, mesh) {}
+    CSourceBFMChima(const Config &config, const CFluid &fluid, const CMesh &mesh, std::map<TurboPerformance, std::vector<FloatType>> &turboPerformance);
 
     virtual ~CSourceBFMChima() = default;  
 
@@ -23,7 +22,10 @@ protected:
 
 private:
 
-Vector3D _viscousForceCylindrical = {0, 0, 0};
-FloatType _tangentialForce = 0.0, _velMeridional = 0.0;
+    Vector3D _viscousForceCylindrical = {0, 0, 0};
+    FloatType _tangentialForce = 0.0, _velMeridional = 0.0;
+    CInputTable _inputTable;
+    std::map<TurboPerformance, std::vector<FloatType>> &_turboPerformance;
+    FloatType _scalingTurning=1.0, _scalingLoss = 1.0;
     
 };

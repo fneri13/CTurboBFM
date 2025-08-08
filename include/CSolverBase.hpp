@@ -28,6 +28,8 @@
 class CSolverBase {
     
     public:
+        CSolverBase();
+
         CSolverBase(Config &config, CMesh &mesh);
         
         virtual ~CSolverBase() {}
@@ -41,6 +43,8 @@ class CSolverBase {
         const std::array<int, 3> getStepMask(FluxDirection direction) const;
 
         FloatType getHubStaticPressure() const { return _hubStaticPressure; }
+
+        virtual void checkConvergence(bool &exitLoop) const = 0;
 
     protected:
         const Config& _config;
@@ -76,6 +80,8 @@ class CSolverBase {
         std::map<TurboPerformance, std::vector<FloatType>> _turboPerformance; // map of turbo performance>
 
         std::vector<std::map<MonitorOutputFields, std::vector<FloatType>>> _monitorPoints; // vector of maps of monitor points data
+
+        size_t _residualsDropConvergence = 16;
 
         
 

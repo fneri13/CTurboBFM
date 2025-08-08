@@ -159,6 +159,13 @@ public:
     */
     FloatType computeEntropy_p_rho(FloatType pressure, FloatType density) const;
 
+    /** Compute entropy from pressure and density
+     * @param pressure Pressure [Pa]
+     * @param density Temperature [J/kgK]
+     * @return Entropy [J/kgK]
+    */
+    FloatType computeEntropy_p_T(FloatType pressure, FloatType temperature) const;
+
     /** Compute initial primitive variables from given freestream conditions
      * @param initMach Freestream Mach number [-]
      * @param initTemperature Freestream static temperature [K]

@@ -288,3 +288,36 @@ FloatType rescaleMinMax(const FloatType& value, const FloatType& min, const Floa
     FloatType res = (value - min) / (max - min);
     return res;
 }
+
+
+
+
+FloatType interpolateLinear(const std::vector<double>& x,
+                            const std::vector<double>& y,
+                            const FloatType& xp) {
+
+    // Extrapolate to the left
+    if (xp <= x.front()) {
+        double slope = (y[1] - y[0]) / (x[1] - x[0]);
+        return y[0] + slope * (xp - x[0]);
+    }
+
+    // Extrapolate to the right
+    if (xp >= x.back()) {
+        size_t n = x.size();
+        double slope = (y[n - 1] - y[n - 2]) / (x[n - 1] - x[n - 2]);
+        return y[n - 1] + slope * (xp - x[n - 1]);
+    }
+
+    // Find the interval [x[i], x[i+1]] such that x[i] <= xp < x[i+1]
+    auto it = std::upper_bound(x.begin(), x.end(), xp);
+    size_t i = std::distance(x.begin(), it) - 1;
+
+    double x0 = x[i];
+    double x1 = x[i + 1];
+    double y0 = y[i];
+    double y1 = y[i + 1];
+
+    double t = (xp - x0) / (x1 - x0);
+    return ((1.0 - t) * y0 + t * y1);
+}

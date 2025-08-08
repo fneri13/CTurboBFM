@@ -36,10 +36,16 @@ CEulerSolver::CEulerSolver(Config& config, CMesh& mesh)
         _bfmSource = std::make_unique<CSourceBFMNeri>(_config, *_fluid, _mesh);
     }
     else if (bfmModel == BFM_Model::CHIMA) {
-        _bfmSource = std::make_unique<CSourceBFMChima>(_config, *_fluid, _mesh);
+        _bfmSource = std::make_unique<CSourceBFMChima>(_config, *_fluid, _mesh, _turboPerformance);
+    }
+    else if (bfmModel == BFM_Model::ONLY_BLOCKAGE) {
+        _bfmSource = std::make_unique<CSourceBFMBase>(_config, *_fluid, _mesh);
+    }
+    else if (bfmModel == BFM_Model::NONE) {
+        _bfmSource = std::make_unique<CSourceBFMBase>(_config, *_fluid, _mesh);
     }
     else {
-        _bfmSource = std::make_unique<CSourceBFMBase>(_config, *_fluid, _mesh);
+        throw std::runtime_error("Unsupported BFM model selected.");
     }
     
 }
@@ -265,6 +271,8 @@ void CEulerSolver::solve(){
     size_t solutionOutputFreq = _config.getSolutionOutputFrequency();                       // frequency to output the solution
     bool turboOutput = _config.saveTurboOutput();                                           // flag to save the solution in turbo format
     bool monitorPointsActive = _config.isMonitorPointsActive();                             // flag to activate the monitor points
+    bool exitLoop = false;                                                                  // flag to exit the loop if convergence is reached
+    config.getUnst
 
     if (monitorPointsActive) initializeMonitorPoints();                                     // initialize the monitor points
 
@@ -300,11 +308,22 @@ void CEulerSolver::solve(){
             if (turboOutput) printInfoTurboPerformance(it);
         }
 
-        // write output files  
+        // check the convergence process
+        checkConvergence(exitLoop); 
+        if (exitLoop) {
+            _output->writeSolution(it);
+            writeLogResidualsToCSV();
+            if (turboOutput) writeTurboPerformanceToCSV();
+            if (monitorPointsActive) writeMonitorPointsToCSV();
+            break;
+        }
+
+        // write volume output file
         if (it%solutionOutputFreq == 0 || it == nIterMax) {
             _output->writeSolution(it);
         } 
 
+        // write additional text files
         if (it%monitorOutputFreq == 0) {
             writeLogResidualsToCSV();
             if (turboOutput) writeTurboPerformanceToCSV();
@@ -860,4 +879,18 @@ void CEulerSolver::updateMonitorPoints(const FlowSolution &solution){
         _monitorPoints[i][MonitorOutputFields::VELOCITY_Z].push_back(primitive[3]);
         _monitorPoints[i][MonitorOutputFields::TIME].push_back(_time.back());
     }
+}
+
+void CEulerSolver::checkConvergence(bool &exitLoop) const {
+    StateVector current = _logResiduals.back();
+    StateVector initial = _logResiduals.front();
+
+    if (current[0] < initial[0] - _residualsDropConvergence &&
+        current[1] < initial[1] - _residualsDropConvergence &&
+        current[2] < initial[2] - _residualsDropConvergence &&
+        // std::log10(current[3]) < std::log10(initial[3]) - _residualsDropConvergence &&
+        current[4] < initial[4] - _residualsDropConvergence) {
+        std::cout << "Convergence reached at iteration " << _logResiduals.size() << std::endl;
+        exitLoop = true;
+    } 
 }

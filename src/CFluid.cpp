@@ -76,7 +76,10 @@ FloatType CFluid::computeStaticTemperature_Tt_M(FloatType Tt, FloatType M) const
 
 FloatType CFluid::computeEntropy_rho_u_et(FloatType rho, const Vector3D& u, FloatType et) const {
     FloatType p = computePressure_rho_u_et(rho, u, et);
-    FloatType s = computeEntropy_p_rho(p, rho);
+    // FloatType s = computeEntropy_p_rho(p, rho);
+
+    FloatType T = computeTemperature_rho_u_et(rho, u, et);
+    FloatType s = computeEntropy_p_T(p, T);
     return s;
 }
 
@@ -119,4 +122,9 @@ FloatType CFluid::computePressure_primitive(StateVector primitive) const {
 FloatType CFluid::computeTotalEfficiency_PRtt_TRt(FloatType pressureRatio, FloatType temperatureRatio) const{
     FloatType eta = (std::pow(pressureRatio, (_gamma - 1) / _gamma) - 1.0) / (temperatureRatio - 1.0);
     return eta;
+}
+
+FloatType CFluid::computeEntropy_p_T(FloatType pressure, FloatType temperature) const{
+    FloatType entropy = _cp*log(temperature/288.15) - _R*log(pressure/101325);
+    return entropy;
 }

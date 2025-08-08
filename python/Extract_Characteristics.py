@@ -18,7 +18,7 @@ def read_solutions(inputFolder):
     # KT = throttle valve BC, 
     # PREQ = pressure outlet with radial equilibrium
     # P = pressure outlet
-    possibleNames = ['KT', 'PREQ', 'P']
+    possibleNames = ['KT', 'PREQ', 'P', 'MF']
     
     folders = os.listdir(inputFolder)
     runFolders = [folder for folder in folders if folder.split('_')[0] in possibleNames]

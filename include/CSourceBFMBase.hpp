@@ -5,6 +5,7 @@
 #include "Config.hpp"
 #include "CFluid.hpp"
 #include "commonFunctions.hpp"
+#include "CInputTable.hpp"
 
 // Base class handling BFM source terms computation
 class CSourceBFMBase {

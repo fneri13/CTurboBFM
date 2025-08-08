@@ -173,6 +173,8 @@ BFM_Model Config::getBFMModel() const {
         model = BFM_Model::CHIMA;
     } else if (value == "None") {
         model = BFM_Model::NONE;
+    } else if (value == "Blockage") {
+        model = BFM_Model::ONLY_BLOCKAGE;
     } 
     else {
         throw std::runtime_error("Invalid value for key \"BFM_MODEL\" in configuration.");

@@ -21,7 +21,7 @@ class COutputBase {
 
         virtual void writeSolution(size_t iterationCounter) = 0;
 
-        void getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>& scalarsMap);
+        void getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>& scalarsMap) const;
 
     protected:
         const Config& _config;

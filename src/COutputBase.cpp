@@ -13,7 +13,7 @@ COutputBase::COutputBase(const Config &config, const CMesh &mesh, const FlowSolu
 
 
 
-void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>& scalarsMap) {
+void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>& scalarsMap) const {
     size_t ni = _mesh.getNumberPointsI();
     size_t nj = _mesh.getNumberPointsJ();
     size_t nk = _mesh.getNumberPointsK();
@@ -25,75 +25,114 @@ void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>&
     scalarsMap["Velocity Z"] = _solution.getVelocityZ();
     scalarsMap["Total Energy"] = _solution.getTotalEnergy();
     
-    // auxillary solution variables
-    scalarsMap["Pressure"] = Matrix3D<FloatType>(ni, nj, nk);
-    scalarsMap["Temperature"] = Matrix3D<FloatType>(ni, nj, nk);
-    scalarsMap["Mach"] = Matrix3D<FloatType>(ni, nj, nk);
-    scalarsMap["Total Pressure"] = Matrix3D<FloatType>(ni, nj, nk);
-    scalarsMap["Total Temperature"] = Matrix3D<FloatType>(ni, nj, nk);
-    scalarsMap["Entropy"] = Matrix3D<FloatType>(ni, nj, nk);
+    // Auxiliary solution variables
+    scalarsMap.emplace("Pressure",          Matrix3D<FloatType>(ni, nj, nk));
+    scalarsMap.emplace("Temperature",       Matrix3D<FloatType>(ni, nj, nk));
+    scalarsMap.emplace("Mach",              Matrix3D<FloatType>(ni, nj, nk));
+    scalarsMap.emplace("Total Pressure",    Matrix3D<FloatType>(ni, nj, nk));
+    scalarsMap.emplace("Total Temperature", Matrix3D<FloatType>(ni, nj, nk));
+    scalarsMap.emplace("Entropy",           Matrix3D<FloatType>(ni, nj, nk));
+
+    // Cache references for speed
+    auto& density     = scalarsMap["Density"];
+    auto& velX        = scalarsMap["Velocity X"];
+    auto& velY        = scalarsMap["Velocity Y"];
+    auto& velZ        = scalarsMap["Velocity Z"];
+    auto& etot        = scalarsMap["Total Energy"];
+    auto& pressure    = scalarsMap["Pressure"];
+    auto& temperature = scalarsMap["Temperature"];
+    auto& mach        = scalarsMap["Mach"];
+    auto& pTotal      = scalarsMap["Total Pressure"];
+    auto& tTotal      = scalarsMap["Total Temperature"];
+    auto& entropy     = scalarsMap["Entropy"];
 
     // BFM simulation additional variables
-    bool isBFMActive = _config.isBFMActive();
+    const bool isBFMActive = _config.isBFMActive();
     if (isBFMActive){
         scalarsMap["Blockage"] = _mesh.getInputFields(FieldNames::BLOCKAGE);
-        scalarsMap["Relative Mach"] = Matrix3D<FloatType>(ni, nj, nk);
-        scalarsMap["Grid Velocity X"] = Matrix3D<FloatType>(ni, nj, nk);
-        scalarsMap["Grid Velocity Y"] = Matrix3D<FloatType>(ni, nj, nk);
-        scalarsMap["Grid Velocity Z"] = Matrix3D<FloatType>(ni, nj, nk);
-        scalarsMap["Relative Velocity X"] = Matrix3D<FloatType>(ni, nj, nk);
-        scalarsMap["Relative Velocity Y"] = Matrix3D<FloatType>(ni, nj, nk);
-        scalarsMap["Relative Velocity Z"] = Matrix3D<FloatType>(ni, nj, nk);
-        scalarsMap["Viscous Body Force X"] = Matrix3D<FloatType>(ni, nj, nk);
-        scalarsMap["Viscous Body Force Y"] = Matrix3D<FloatType>(ni, nj, nk);
-        scalarsMap["Viscous Body Force Z"] = Matrix3D<FloatType>(ni, nj, nk);
-        scalarsMap["Inviscid Body Force X"] = Matrix3D<FloatType>(ni, nj, nk);
-        scalarsMap["Inviscid Body Force Y"] = Matrix3D<FloatType>(ni, nj, nk);
-        scalarsMap["Inviscid Body Force Z"] = Matrix3D<FloatType>(ni, nj, nk);
-        scalarsMap["Deviation Angle"] = Matrix3D<FloatType>(ni, nj, nk);
+        scalarsMap.emplace("Relative Mach",          Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Grid Velocity X",        Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Grid Velocity Y",        Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Grid Velocity Z",        Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Relative Velocity X",    Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Relative Velocity Y",    Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Relative Velocity Z",    Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Viscous Body Force X",   Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Viscous Body Force Y",   Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Viscous Body Force Z",   Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Inviscid Body Force X",  Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Inviscid Body Force Y",  Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Inviscid Body Force Z",  Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Deviation Angle",        Matrix3D<FloatType>(ni, nj, nk));
+
     }
 
-    FloatType rho, ux, uy, uz, et;
+    
+
+    // Reusable temporaries
+    Vector3D vel;
+    FloatType rho, et;
+
     for (size_t i = 0; i < ni; ++i) {
         for (size_t j = 0; j < nj; ++j) {
             for (size_t k = 0; k < nk; ++k) {
-                rho = scalarsMap["Density"](i, j, k);
-                ux = scalarsMap["Velocity X"](i, j, k);
-                uy = scalarsMap["Velocity Y"](i, j, k);
-                uz = scalarsMap["Velocity Z"](i, j, k);
-                et = scalarsMap["Total Energy"](i, j, k);
+                rho = density(i, j, k);
+                vel.x() = velX(i, j, k);
+                vel.y() = velY(i, j, k);
+                vel.z() = velZ(i, j, k);
+                et  = etot(i, j, k);
 
-                scalarsMap["Pressure"](i, j, k) = _fluid.computePressure_rho_u_et(rho, {ux, uy, uz}, et);
-                scalarsMap["Temperature"](i, j, k) = _fluid.computeTemperature_rho_u_et(rho, {ux, uy, uz}, et);
-                scalarsMap["Mach"](i, j, k) = _fluid.computeMachNumber_rho_u_et(rho, {ux, uy, uz}, et);
-                scalarsMap["Total Pressure"](i, j, k) = _fluid.computeTotalPressure_rho_u_et(rho, {ux, uy, uz}, et);
-                scalarsMap["Total Temperature"](i, j, k) = _fluid.computeTotalTemperature_rho_u_et(rho, {ux, uy, uz}, et);
-                scalarsMap["Entropy"](i, j, k) = _fluid.computeEntropy_rho_u_et(rho, {ux, uy, uz}, et);
+                pressure(i, j, k)    = _fluid.computePressure_rho_u_et(rho, vel, et);
+                temperature(i, j, k) = _fluid.computeTemperature_rho_u_et(rho, vel, et);
+                mach(i, j, k)        = _fluid.computeMachNumber_rho_u_et(rho, vel, et);
+                pTotal(i, j, k)      = _fluid.computeTotalPressure_rho_u_et(rho, vel, et);
+                tTotal(i, j, k)      = _fluid.computeTotalTemperature_rho_u_et(rho, vel, et);
+                entropy(i, j, k)     = _fluid.computeEntropy_rho_u_et(rho, vel, et);
 
                 if (isBFMActive){
+                    auto& gvx = scalarsMap["Grid Velocity X"];
+                    auto& gvy = scalarsMap["Grid Velocity Y"];
+                    auto& gvz = scalarsMap["Grid Velocity Z"];
+                    auto& rvx = scalarsMap["Relative Velocity X"];
+                    auto& rvy = scalarsMap["Relative Velocity Y"];
+                    auto& rvz = scalarsMap["Relative Velocity Z"];
+                    auto& rmach = scalarsMap["Relative Mach"];
+                    auto& vbfX = scalarsMap["Viscous Body Force X"];
+                    auto& vbfY = scalarsMap["Viscous Body Force Y"];
+                    auto& vbfZ = scalarsMap["Viscous Body Force Z"];
+                    auto& ibfX = scalarsMap["Inviscid Body Force X"];
+                    auto& ibfY = scalarsMap["Inviscid Body Force Y"];
+                    auto& ibfZ = scalarsMap["Inviscid Body Force Z"];
+                    auto& devAng = scalarsMap["Deviation Angle"];
+
                     FloatType omega = _mesh.getInputFields(FieldNames::RPM)(i, j, k) * 2.0 * M_PI / 60.0;
-                    FloatType radius = std::sqrt(_mesh.getVertex(i, j, k).z() * _mesh.getVertex(i, j, k).z() + _mesh.getVertex(i, j, k).y() * _mesh.getVertex(i, j, k).y());
+                    FloatType radius = std::sqrt(_mesh.getVertex(i, j, k).z() * _mesh.getVertex(i, j, k).z() +
+                                                 _mesh.getVertex(i, j, k).y() * _mesh.getVertex(i, j, k).y());
                     FloatType theta = std::atan2(_mesh.getVertex(i, j, k).z(), _mesh.getVertex(i, j, k).y());
-                    Vector3D gridVelocityCylindrical = {0.0, 0.0, omega * radius};
-                    Vector3D gridVelocityCartesian = computeCartesianVectorFromCylindrical(gridVelocityCylindrical, theta);
+                    Vector3D gridVelCyl = {0.0, 0.0, omega * radius};
+                    Vector3D gridVelCart = computeCartesianVectorFromCylindrical(gridVelCyl, theta);
 
-                    scalarsMap["Grid Velocity X"](i, j, k) = gridVelocityCartesian.x();
-                    scalarsMap["Grid Velocity Y"](i, j, k) = gridVelocityCartesian.y();
-                    scalarsMap["Grid Velocity Z"](i, j, k) = gridVelocityCartesian.z();
+                    gvx(i, j, k) = gridVelCart.x();
+                    gvy(i, j, k) = gridVelCart.y();
+                    gvz(i, j, k) = gridVelCart.z();
 
-                    scalarsMap["Relative Velocity X"](i, j, k) = scalarsMap["Velocity X"](i, j, k) - gridVelocityCartesian.x();
-                    scalarsMap["Relative Velocity Y"](i, j, k) = scalarsMap["Velocity Y"](i, j, k) - gridVelocityCartesian.y();
-                    scalarsMap["Relative Velocity Z"](i, j, k) = scalarsMap["Velocity Z"](i, j, k) - gridVelocityCartesian.z();
+                    rvx(i, j, k) = velX(i, j, k) - gridVelCart.x();
+                    rvy(i, j, k) = velY(i, j, k) - gridVelCart.y();
+                    rvz(i, j, k) = velZ(i, j, k) - gridVelCart.z();
 
-                    scalarsMap["Relative Mach"](i, j, k) = _fluid.computeMachNumber_rho_u_et(rho, {scalarsMap["Relative Velocity X"](i, j, k), scalarsMap["Relative Velocity Y"](i, j, k), scalarsMap["Relative Velocity Z"](i, j, k)}, et);
-                    scalarsMap["Viscous Body Force X"](i, j, k) = _viscousForce(i, j, k).x();
-                    scalarsMap["Viscous Body Force Y"](i, j, k) = _viscousForce(i, j, k).y();
-                    scalarsMap["Viscous Body Force Z"](i, j, k) = _viscousForce(i, j, k).z();
-                    scalarsMap["Inviscid Body Force X"](i, j, k) = _inviscidForce(i, j, k).x();
-                    scalarsMap["Inviscid Body Force Y"](i, j, k) = _inviscidForce(i, j, k).y();
-                    scalarsMap["Inviscid Body Force Z"](i, j, k) = _inviscidForce(i, j, k).z();
+                    vel.x() = rvx(i, j, k);
+                    vel.y() = rvy(i, j, k);
+                    vel.z() = rvz(i, j, k);
+                    rmach(i, j, k) = _fluid.computeMachNumber_rho_u_et(rho, vel, et);
 
-                    scalarsMap["Deviation Angle"](i, j, k) = _deviationAngle(i, j, k);
+                    vbfX(i, j, k) = _viscousForce(i, j, k).x();
+                    vbfY(i, j, k) = _viscousForce(i, j, k).y();
+                    vbfZ(i, j, k) = _viscousForce(i, j, k).z();
+                    ibfX(i, j, k) = _inviscidForce(i, j, k).x();
+                    ibfY(i, j, k) = _inviscidForce(i, j, k).y();
+                    ibfZ(i, j, k) = _inviscidForce(i, j, k).z();
+
+                    devAng(i, j, k) = _deviationAngle(i, j, k);
                 }
 
             }

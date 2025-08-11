@@ -265,7 +265,7 @@ void CSolverEuler::solve(){
     size_t nIterMax = _config.getMaxIterations();
     Matrix3D<FloatType> timestep(_nPointsI, _nPointsJ, _nPointsK);                          // place holder for time step array
     std::vector<FloatType> timeIntegrationCoeffs = _config.getTimeIntegrationCoeffs();      // time integration coefficients (runge kutta)
-    FlowSolution fluxResiduals(_nPointsI, _nPointsJ, _nPointsK);                            // place holder for flux residuals
+    FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK);                            // place holder for flux residuals
     size_t updateMassFlowsFreq = 250;                                                       // frequency to update the mass flows at the boundaries
     size_t monitorOutputFreq = 250;
     size_t solutionOutputFreq = _config.getSolutionOutputFrequency();                       // frequency to output the solution
@@ -274,7 +274,6 @@ void CSolverEuler::solve(){
     bool exitLoop = false;                                                                  // flag to exit the loop if convergence is reached
     bool saveUnsteady = _config.saveUnsteadySolution();                                     // flag to save the unsteady solution
     if (monitorPointsActive) initializeMonitorPoints();                                     // initialize the monitor points
-    FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK);                                // place holder for residuals
 
     // time integration
     for (size_t it=1; it<=nIterMax; it++){        
@@ -291,8 +290,8 @@ void CSolverEuler::solve(){
         FlowSolution solTmp = solutionOld;                                                  // place holder for the solution at the runge-kutta step
         for (const auto &integrationCoeff: timeIntegrationCoeffs){
             updateRadialProfiles(solTmp);
-            fluxResiduals = computeResiduals(solTmp, it, _time.back(), residuals);
-            updateSolution(solutionOld, solTmp, fluxResiduals, integrationCoeff, timestep);
+            computeResiduals(solTmp, it, _time.back(), residuals);
+            updateSolution(solutionOld, solTmp, residuals, integrationCoeff, timestep);
         }
         
         // update the physical time
@@ -302,7 +301,7 @@ void CSolverEuler::solve(){
         _conservativeVars = solTmp;
         
         // print info on terminal
-        printInfoResiduals(fluxResiduals, it);
+        printInfoResiduals(residuals, it);
         if (it%updateMassFlowsFreq == 0) {
             printInfoMassFlows(it);
             if (turboOutput) printInfoTurboPerformance(it);
@@ -558,7 +557,7 @@ void CSolverEuler::updateTurboPerformance(const FlowSolution&solution){
     
 }
 
-FlowSolution CSolverEuler::computeResiduals(const FlowSolution& solution, const size_t it, const FloatType timePhysical, FlowSolution &residuals) {
+void CSolverEuler::computeResiduals(const FlowSolution& solution, const size_t it, const FloatType timePhysical, FlowSolution &residuals) {
     residuals.setToZero(); // clear the residuals array
 
     // compute residuals contribution from advection
@@ -571,7 +570,6 @@ FlowSolution CSolverEuler::computeResiduals(const FlowSolution& solution, const 
     // compute residuals contribution from sources
     computeSourceTerms(solution, it, residuals, _inviscidForce, _viscousForce, _deviationAngle, timePhysical);
 
-    return residuals;
 }
 
 

@@ -6,6 +6,7 @@
 #include <cmath>
 #include <map>
 #include <cassert>
+#include <array>
 
 using FloatType = double;
 

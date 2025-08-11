@@ -50,5 +50,4 @@ void COutputCSV::writeSolution(size_t iterationCounter){
 
     std::cout << std::endl;
     std::cout << "Solution written to file: " << filename << std::endl;
-    std::cout << std::endl;
-}
+    std::cout << std::endl;}

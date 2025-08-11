@@ -11,6 +11,11 @@
 #include "CSourceBFMFrozenGradient.hpp"
 #include "CSourceBFMNeri.hpp"
 #include "CSourceBFMChima.hpp"
+#include <unordered_map>
+
+#ifdef _OPENMP 
+    #include <omp.h>
+#endif
 
 /**
  * \brief     Solver for the Euler equations.

@@ -5,12 +5,12 @@ OBJ_DIR := build
 BIN_DIR := bin
 
 # Compiler and flags
-CXX := g++
+CXX := g++-14
 CXXFLAGS := -std=c++20 -Wall -g -I$(INC_DIR) -I$(SRC_DIR)
 
 # Debug and Release specific flags
 DEBUG_FLAGS := -g -O0
-RELEASE_FLAGS := -O3 -DNDEBUG
+RELEASE_FLAGS := -O3 -DNDEBUG -fopenmp -march=native
 
 # Default build type
 BUILD_TYPE := debug
@@ -36,7 +36,7 @@ release: $(TARGET)
 # Link object files into final binary
 $(TARGET): $(OBJECTS)
 	@mkdir -p $(BIN_DIR)
-	$(CXX) $(OBJECTS) -o $(TARGET)
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $(TARGET)
 
 # Compile source files to object files in build/
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp

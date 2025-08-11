@@ -18,6 +18,8 @@
 #include "CBoundaryConditionPeriodic.hpp"
 #include "CBoundaryConditionThrottle.hpp"
 #include <memory>
+#include <vector>
+#include <array>
 
 
 /** 

@@ -890,7 +890,8 @@ void CSolverEuler::checkConvergence(bool &exitLoop) const {
         current[2] < initial[2] - _residualsDropConvergence &&
         // std::log10(current[3]) < std::log10(initial[3]) - _residualsDropConvergence &&
         current[4] < initial[4] - _residualsDropConvergence) {
-        std::cout << "Convergence reached at iteration " << _logResiduals.size() << std::endl;
+        std::cout << "\nConvergence reached at iteration " << _logResiduals.size() << std::endl;
+        std::cout << std::endl;
         exitLoop = true;
     } 
 }

@@ -120,7 +120,7 @@ FloatType CFluid::computePressure_primitive(StateVector primitive) const {
 }
 
 FloatType CFluid::computeTotalEfficiency_PRtt_TRt(FloatType pressureRatio, FloatType temperatureRatio) const{
-    FloatType eta = (std::pow(pressureRatio, (_gamma - 1) / _gamma) - 1.0) / (temperatureRatio - 1.0);
+    FloatType eta = (std::pow(pressureRatio, (_gamma - 1.0) / _gamma) - 1.0) / (temperatureRatio - 1.0);
     return eta;
 }
 

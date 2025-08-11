@@ -75,9 +75,9 @@ class CSolverBase {
 
         FloatType _hubStaticPressure;
 
-        std::vector<FloatType> _radialProfilePressure;
+        std::vector<FloatType> _radialProfilePressure; // to be used from BC with radial equilibrium
         
-        std::vector<FloatType> _radialProfileCoords;
+        std::vector<FloatType> _radialProfileCoords; // to be used from BC with radial equilibrium
 
         std::map<TurboPerformance, std::vector<FloatType>> _turboPerformance; // map of turbo performance>
 

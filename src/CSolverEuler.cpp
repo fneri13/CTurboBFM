@@ -288,18 +288,18 @@ void CSolverEuler::solve(){
         computeTimestepArray(solutionOld, timestep);                                        // compute the physical time step
         
         // runge-kutta steps
-        FlowSolution tmpSol = solutionOld;                                                  // place holder for the solution at the runge-kutta step
+        FlowSolution solTmp = solutionOld;                                                  // place holder for the solution at the runge-kutta step
         for (const auto &integrationCoeff: timeIntegrationCoeffs){
-            updateRadialProfiles(tmpSol);
-            fluxResiduals = computeFluxResiduals(tmpSol, it, _time.back());
-            updateSolution(solutionOld, tmpSol, fluxResiduals, integrationCoeff, timestep);
+            updateRadialProfiles(solTmp);
+            fluxResiduals = computeResiduals(solTmp, it, _time.back());
+            updateSolution(solutionOld, solTmp, fluxResiduals, integrationCoeff, timestep);
         }
         
         // update the physical time
         _time.push_back(_time.back() + timestep.min());
         
         // update the solution
-        _conservativeVars = tmpSol;
+        _conservativeVars = solTmp;
         
         // print info on terminal
         printInfoResiduals(fluxResiduals, it);
@@ -558,25 +558,25 @@ void CSolverEuler::updateTurboPerformance(const FlowSolution&solution){
     
 }
 
-FlowSolution CSolverEuler::computeFluxResiduals(const FlowSolution& solution, size_t it, FloatType timePhysical) {
+FlowSolution CSolverEuler::computeResiduals(const FlowSolution& solution, size_t it, FloatType timePhysical) {
     FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK); // residuals place-holder, passed by reference to below functions
 
     // compute residuals contribution from advection
-    computeAdvectionResiduals(FluxDirection::I, solution, it, residuals);
-    computeAdvectionResiduals(FluxDirection::J, solution, it, residuals);
+    computeAdvectionFlux(FluxDirection::I, solution, it, residuals);
+    computeAdvectionFlux(FluxDirection::J, solution, it, residuals);
     if (_topology==Topology::THREE_DIMENSIONAL || _topology==Topology::AXISYMMETRIC){
-        computeAdvectionResiduals(FluxDirection::K, solution, it, residuals);
+        computeAdvectionFlux(FluxDirection::K, solution, it, residuals);
     }
 
     // compute residuals contribution from sources
-    computeSourceResiduals(solution, it, residuals, _inviscidForce, _viscousForce, _deviationAngle, timePhysical);
+    computeSourceTerms(solution, it, residuals, _inviscidForce, _viscousForce, _deviationAngle, timePhysical);
 
     return residuals;
 }
 
 
 
-void CSolverEuler::computeAdvectionResiduals(FluxDirection direction, const FlowSolution& solution, size_t itCounter, FlowSolution &residuals) const {
+void CSolverEuler::computeAdvectionFlux(FluxDirection direction, const FlowSolution& solution, size_t itCounter, FlowSolution &residuals) const {
     const auto stepMask = getStepMask(direction);
     const Matrix3D<Vector3D>& surfaces = _mesh.getSurfaces(direction);
     const Matrix3D<Vector3D>& midPoints = _mesh.getMidPoints(direction);
@@ -803,7 +803,7 @@ void CSolverEuler::updateRadialProfiles(FlowSolution &solution){
 }
 
 
-void CSolverEuler::computeSourceResiduals(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType timePhysical) {
+void CSolverEuler::computeSourceTerms(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType timePhysical) {
     if (!_config.isBFMActive()){
         return ;
     }

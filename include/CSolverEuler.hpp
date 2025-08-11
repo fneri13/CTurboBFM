@@ -17,7 +17,7 @@
  * \details   Implements the specific logic for solving the compressible Euler equations using a finite volume method.
  * \author    Francesco Neri
  */
-class CEulerSolver : public CSolverBase {
+class CSolverEuler : public CSolverBase {
 public:
 
     /**
@@ -25,9 +25,9 @@ public:
      * @param config The configuration object.
      * @param mesh The mesh object.
      */
-    CEulerSolver(Config& config, CMesh& mesh);
+    CSolverEuler(Config& config, CMesh& mesh);
 
-    ~CEulerSolver() override = default;
+    ~CSolverEuler() override = default;
 
     /** @brief Solves the Euler equations with explicit time integration.*/
     void solve() override;

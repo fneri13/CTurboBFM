@@ -1,4 +1,4 @@
-#include "CEulerSolver.hpp"
+#include "CSolverEuler.hpp"
 #include "commonFunctions.hpp"
 #include "types.hpp"
 #include <iostream> // Optional, for logging/debugging
@@ -8,7 +8,7 @@
 #include <fstream>
 #include <string>
 
-CEulerSolver::CEulerSolver(Config& config, CMesh& mesh)
+CSolverEuler::CSolverEuler(Config& config, CMesh& mesh)
     : CSolverBase(config, mesh)  // Call base class constructor
 {
     
@@ -51,7 +51,7 @@ CEulerSolver::CEulerSolver(Config& config, CMesh& mesh)
 }
 
 
-void CEulerSolver::initializeSolutionArrays(){
+void CSolverEuler::initializeSolutionArrays(){
     _conservativeVars.resize(_nPointsI, _nPointsJ, _nPointsK);
     _radialProfilePressure.resize(_nPointsJ);
     _radialProfileCoords.resize(_nPointsJ);
@@ -76,7 +76,7 @@ void CEulerSolver::initializeSolutionArrays(){
 }
 
 
-void CEulerSolver::initializeSolutionFromScratch(){
+void CSolverEuler::initializeSolutionFromScratch(){
     FloatType initMach = _config.getInitMachNumber();
     FloatType initTemperature = _config.getInitTemperature();
     FloatType initPressure = _config.getInitPressure();
@@ -108,7 +108,7 @@ void CEulerSolver::initializeSolutionFromScratch(){
     }
 }
 
-void CEulerSolver::initializeSolutionFromRestart(){
+void CSolverEuler::initializeSolutionFromRestart(){
     std::string restartFileName = _config.getRestartFilepath();
     
     size_t NI=0, NJ=0, NK=0;
@@ -142,7 +142,7 @@ void CEulerSolver::initializeSolutionFromRestart(){
 }
 
 
-void CEulerSolver::standardRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature) {
+void CSolverEuler::standardRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature) {
     for (size_t i=0; i<_nPointsI; i++) {
         for (size_t j=0; j<_nPointsJ; j++){
             for (size_t k=0; k<_nPointsK; k++){
@@ -162,7 +162,7 @@ void CEulerSolver::standardRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<F
 }
 
 
-void CEulerSolver::axisymmetricRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature) {
+void CSolverEuler::axisymmetricRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature) {
     FloatType thetaInitial, thetaPoint, thetaRotation;
     Vector3D velocityInitial, velocityPoint;
     for (size_t i=0; i<_nPointsI; i++) {
@@ -191,7 +191,7 @@ void CEulerSolver::axisymmetricRestart(Matrix3D<FloatType> &inputDensity, Matrix
 }
 
 
-void CEulerSolver::readRestartFile(const std::string &restartFileName, size_t &NI, size_t &NJ, size_t &NK,
+void CSolverEuler::readRestartFile(const std::string &restartFileName, size_t &NI, size_t &NJ, size_t &NK,
                                    Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature) {
 
     std::ifstream file(restartFileName);
@@ -261,7 +261,7 @@ void CEulerSolver::readRestartFile(const std::string &restartFileName, size_t &N
 }
 
 
-void CEulerSolver::solve(){
+void CSolverEuler::solve(){
     size_t nIterMax = _config.getMaxIterations();
     Matrix3D<FloatType> timestep(_nPointsI, _nPointsJ, _nPointsK);                          // place holder for time step array
     std::vector<FloatType> timeIntegrationCoeffs = _config.getTimeIntegrationCoeffs();      // time integration coefficients (runge kutta)
@@ -333,7 +333,7 @@ void CEulerSolver::solve(){
     }
 }
 
-void CEulerSolver::printInfoResiduals(FlowSolution &residuals, size_t it) {
+void CSolverEuler::printInfoResiduals(FlowSolution &residuals, size_t it) {
     if (it == 1) {printHeader();}
     auto logRes = computeLogResidualNorm(residuals);
     printLogResiduals(logRes, it);
@@ -341,7 +341,7 @@ void CEulerSolver::printInfoResiduals(FlowSolution &residuals, size_t it) {
 }
 
 
-void CEulerSolver::printInfoMassFlows(size_t it) const {
+void CSolverEuler::printInfoMassFlows(size_t it) const {
     std::cout << "\nMASS FLOWS CHECK [kg/s]:\n";
     std::cout << "I_START: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::I_START) << std::endl;
     std::cout << "I_END: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::I_END) << std::endl;
@@ -351,7 +351,7 @@ void CEulerSolver::printInfoMassFlows(size_t it) const {
     std::cout << "K_END: " << std::setprecision(6) << _massFlows.at(BoundaryIndices::K_END) << std::endl << std::endl;
 }
 
-void CEulerSolver::printInfoTurboPerformance(size_t it) const {
+void CSolverEuler::printInfoTurboPerformance(size_t it) const {
     std::cout << "\nTURBOMACHINERY PERFORMANCE:\n";
     std::cout << "Mass Flow [kg/s]: " << std::setprecision(6) << _turboPerformance.at(TurboPerformance::MASS_FLOW).back() << std::endl;
     std::cout << "Total Pressure Ratio [-]: " << std::setprecision(6) << _turboPerformance.at(TurboPerformance::TOTAL_PRESSURE_RATIO).back() << std::endl;
@@ -359,7 +359,7 @@ void CEulerSolver::printInfoTurboPerformance(size_t it) const {
     std::cout << "Total Efficiency [-]: " << std::setprecision(6) << _turboPerformance.at(TurboPerformance::TOTAL_EFFICIENCY).back() << std::endl << std::endl;
 }
 
-void CEulerSolver::printLogResiduals(const StateVector &logRes, unsigned long int it) const {
+void CSolverEuler::printLogResiduals(const StateVector &logRes, unsigned long int it) const {
     int col_width = 14;
     std::cout << std::fixed << std::setprecision(6);
     std::cout << "|" << std::setw(col_width) << std::setfill(' ') << std::left << it << "|"
@@ -374,7 +374,7 @@ void CEulerSolver::printLogResiduals(const StateVector &logRes, unsigned long in
 
 
 
-StateVector CEulerSolver::computeLogResidualNorm(const FlowSolution &residuals) const {
+StateVector CSolverEuler::computeLogResidualNorm(const FlowSolution &residuals) const {
     StateVector logResidualNorm{};
     constexpr double minDouble = std::numeric_limits<FloatType>::min();
 
@@ -389,7 +389,7 @@ StateVector CEulerSolver::computeLogResidualNorm(const FlowSolution &residuals) 
     return logResidualNorm;
 }
 
-void CEulerSolver::printHeader() const {
+void CSolverEuler::printHeader() const {
     int col_width = 14;
     
     // Print the first separator (top border)
@@ -410,7 +410,7 @@ void CEulerSolver::printHeader() const {
     std::cout << "|" << std::setw(col_width * 7 + 6) << std::setfill('-') << "" << "|" << std::endl;
 }
 
-void CEulerSolver::computeTimestepArray(const FlowSolution &solution, Matrix3D<FloatType> &timestep){
+void CSolverEuler::computeTimestepArray(const FlowSolution &solution, Matrix3D<FloatType> &timestep){
     FloatType cflMax = _config.getCFL();
     Vector3D iEdge, jEdge, kEdge;
     Vector3D iDir, jDir, kDir;
@@ -470,7 +470,7 @@ void CEulerSolver::computeTimestepArray(const FlowSolution &solution, Matrix3D<F
 }
 
 
-void CEulerSolver::updateMassFlows(const FlowSolution&solution){
+void CSolverEuler::updateMassFlows(const FlowSolution&solution){
     std::array<BoundaryIndices, 6> bcIndices {BoundaryIndices::I_START,
                                               BoundaryIndices::I_END,
                                               BoundaryIndices::J_START,
@@ -489,7 +489,7 @@ void CEulerSolver::updateMassFlows(const FlowSolution&solution){
 }
 
 
-void CEulerSolver::updateTurboPerformance(const FlowSolution&solution){
+void CSolverEuler::updateTurboPerformance(const FlowSolution&solution){
     
     // mass flow
     FloatType massFlow = 0.5 * (_massFlows[BoundaryIndices::I_START] + _massFlows[BoundaryIndices::I_END]);
@@ -558,7 +558,7 @@ void CEulerSolver::updateTurboPerformance(const FlowSolution&solution){
     
 }
 
-FlowSolution CEulerSolver::computeFluxResiduals(const FlowSolution& solution, size_t it, FloatType timePhysical) {
+FlowSolution CSolverEuler::computeFluxResiduals(const FlowSolution& solution, size_t it, FloatType timePhysical) {
     FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK); // residuals place-holder, passed by reference to below functions
 
     // compute residuals contribution from advection
@@ -576,7 +576,7 @@ FlowSolution CEulerSolver::computeFluxResiduals(const FlowSolution& solution, si
 
 
 
-void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const FlowSolution& solution, size_t itCounter, FlowSolution &residuals) const {
+void CSolverEuler::computeAdvectionResiduals(FluxDirection direction, const FlowSolution& solution, size_t itCounter, FlowSolution &residuals) const {
     const auto stepMask = getStepMask(direction);
     const Matrix3D<Vector3D>& surfaces = _mesh.getSurfaces(direction);
     const Matrix3D<Vector3D>& midPoints = _mesh.getMidPoints(direction);
@@ -669,7 +669,7 @@ void CEulerSolver::computeAdvectionResiduals(FluxDirection direction, const Flow
     
 }
 
-void CEulerSolver::updateSolution(const FlowSolution &solOld, FlowSolution &solNew, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt){
+void CSolverEuler::updateSolution(const FlowSolution &solOld, FlowSolution &solNew, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt){
     for (size_t i = 0; i < _nPointsI; i++) {
         for (size_t j = 0; j < _nPointsJ; j++) {
             for (size_t k = 0; k < _nPointsK; k++) {
@@ -680,7 +680,7 @@ void CEulerSolver::updateSolution(const FlowSolution &solOld, FlowSolution &solN
 }
 
 
-void CEulerSolver::writeLogResidualsToCSV() const {
+void CSolverEuler::writeLogResidualsToCSV() const {
 
     std::string filename = "residuals.csv";
     std::ofstream file(filename); // open in truncate (default) mode
@@ -711,7 +711,7 @@ void CEulerSolver::writeLogResidualsToCSV() const {
     std::cout << std::endl;
 }
 
-void CEulerSolver::writeTurboPerformanceToCSV() const {
+void CSolverEuler::writeTurboPerformanceToCSV() const {
 
     std::string filename = "turbo.csv";
     std::ofstream file(filename); // open in truncate (default) mode
@@ -739,7 +739,7 @@ void CEulerSolver::writeTurboPerformanceToCSV() const {
     std::cout << std::endl;
 }
 
-void CEulerSolver::writeMonitorPointsToCSV() const {
+void CSolverEuler::writeMonitorPointsToCSV() const {
 
     std::string folder = "monitorPoints";
     std::filesystem::create_directories(folder); // Ensure the folder exists
@@ -776,7 +776,7 @@ void CEulerSolver::writeMonitorPointsToCSV() const {
 }
 
 
-void CEulerSolver::updateRadialProfiles(FlowSolution &solution){
+void CSolverEuler::updateRadialProfiles(FlowSolution &solution){
     size_t nj = _mesh.getNumberPointsJ();
     StateVector conservative, primitive;
     Vector3D velocityCart, velocityCyl;
@@ -803,7 +803,7 @@ void CEulerSolver::updateRadialProfiles(FlowSolution &solution){
 }
 
 
-void CEulerSolver::computeSourceResiduals(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType timePhysical) {
+void CSolverEuler::computeSourceResiduals(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType timePhysical) {
     if (!_config.isBFMActive()){
         return ;
     }
@@ -823,7 +823,7 @@ void CEulerSolver::computeSourceResiduals(const FlowSolution& solution, size_t i
     }
 }
 
-void CEulerSolver::initializeMonitorPoints(){
+void CSolverEuler::initializeMonitorPoints(){
     // monitor points seed
     unsigned int seedI = _config.getMonitorPointsCoordsI();
     unsigned int seedJ = _config.getMonitorPointsCoordsJ();
@@ -864,7 +864,7 @@ void CEulerSolver::initializeMonitorPoints(){
 
 }
 
-void CEulerSolver::updateMonitorPoints(const FlowSolution &solution){
+void CSolverEuler::updateMonitorPoints(const FlowSolution &solution){
     for (unsigned int i = 0; i < _numberMonitorPoints; i++){
         size_t idxI = _monitorPoints_idxI[i];
         size_t idxJ = _monitorPoints_idxJ[i];
@@ -881,7 +881,7 @@ void CEulerSolver::updateMonitorPoints(const FlowSolution &solution){
     }
 }
 
-void CEulerSolver::checkConvergence(bool &exitLoop) const {
+void CSolverEuler::checkConvergence(bool &exitLoop) const {
     StateVector current = _logResiduals.back();
     StateVector initial = _logResiduals.front();
 

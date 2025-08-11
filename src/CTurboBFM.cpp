@@ -2,7 +2,7 @@
 #include "CMesh.hpp"
 #include "Config.hpp"
 #include "CSolverBase.hpp"
-#include "CEulerSolver.hpp"
+#include "CSolverEuler.hpp"
 
 
 int main(int argc, char* argv[]) {
@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
     std::unique_ptr<CSolverBase> solver;
     
     if (kindSolver == KindSolver::EULER) {
-       solver = std::make_unique<CEulerSolver>(config, mesh);
+       solver = std::make_unique<CSolverEuler>(config, mesh);
     }
     else {
         std::cerr << "Unsupported solver kind: " << static_cast<int>(kindSolver) << std::endl;

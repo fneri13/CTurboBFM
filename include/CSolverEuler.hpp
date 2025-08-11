@@ -94,7 +94,7 @@ private:
      * @param[in] itCounter The iteration counter
      * @return The global residual 3D matrix
     */
-    FlowSolution computeResiduals(const FlowSolution& solution, size_t itCounter, FloatType timePhysical);
+    FlowSolution computeResiduals(const FlowSolution& solution, const size_t itCounter, const FloatType timePhysical, FlowSolution &residuals);
 
 
     /** @brief compute the residuals contribution from advection fluxes

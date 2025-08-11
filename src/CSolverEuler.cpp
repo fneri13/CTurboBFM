@@ -273,8 +273,8 @@ void CSolverEuler::solve(){
     bool monitorPointsActive = _config.isMonitorPointsActive();                             // flag to activate the monitor points
     bool exitLoop = false;                                                                  // flag to exit the loop if convergence is reached
     bool saveUnsteady = _config.saveUnsteadySolution();                                     // flag to save the unsteady solution
-
     if (monitorPointsActive) initializeMonitorPoints();                                     // initialize the monitor points
+    FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK);                                // place holder for residuals
 
     // time integration
     for (size_t it=1; it<=nIterMax; it++){        
@@ -291,7 +291,7 @@ void CSolverEuler::solve(){
         FlowSolution solTmp = solutionOld;                                                  // place holder for the solution at the runge-kutta step
         for (const auto &integrationCoeff: timeIntegrationCoeffs){
             updateRadialProfiles(solTmp);
-            fluxResiduals = computeResiduals(solTmp, it, _time.back());
+            fluxResiduals = computeResiduals(solTmp, it, _time.back(), residuals);
             updateSolution(solutionOld, solTmp, fluxResiduals, integrationCoeff, timestep);
         }
         
@@ -558,8 +558,8 @@ void CSolverEuler::updateTurboPerformance(const FlowSolution&solution){
     
 }
 
-FlowSolution CSolverEuler::computeResiduals(const FlowSolution& solution, size_t it, FloatType timePhysical) {
-    FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK); // residuals place-holder, passed by reference to below functions
+FlowSolution CSolverEuler::computeResiduals(const FlowSolution& solution, const size_t it, const FloatType timePhysical, FlowSolution &residuals) {
+    residuals.setToZero(); // clear the residuals array
 
     // compute residuals contribution from advection
     computeAdvectionFlux(FluxDirection::I, solution, it, residuals);

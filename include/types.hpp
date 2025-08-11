@@ -345,6 +345,13 @@ class Matrix3D {
             return *this;
         }
 
+        void setToZero() {
+            size_t n = _data.size();
+            for (size_t idx = 0; idx < n; ++idx) {
+                _data[idx] = T(0);
+            }
+        }
+
         // In-place multiplication
         Matrix3D& operator*=(const Matrix3D& other) {
             assert(_ni == other._ni && "Matrix3D::operator+= dimension mismatch on ni");
@@ -634,6 +641,14 @@ struct FlowSolution {
         default:
             throw std::out_of_range("Index out of range for norm calculation");
         }
+    }
+
+    void setToZero() {
+        _rho.setToZero();
+        _rhoU.setToZero();
+        _rhoV.setToZero();
+        _rhoW.setToZero();
+        _rhoE.setToZero();
     }
 
     Matrix3D<FloatType> getSolution(size_t iVar) const {

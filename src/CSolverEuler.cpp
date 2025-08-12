@@ -275,30 +275,30 @@ void CSolverEuler::solve(){
     bool saveUnsteady = _config.saveUnsteadySolution();                                     // flag to save the unsteady solution
     if (monitorPointsActive) initializeMonitorPoints();                                     // initialize the monitor points
 
+    FlowSolution solutionOld(_nPointsI, _nPointsJ, _nPointsK);                              // place holder for the solution at the previous timestep
+    FlowSolution solutionTmp(_nPointsI, _nPointsJ, _nPointsK);                              // place holder for the solution at the next iteration
+    solutionTmp.copyFrom(_conservativeVars);                                            // copy the solution to the temporary solution
+    
     // time integration
     for (size_t it=1; it<=nIterMax; it++){        
-        FlowSolution solutionOld = _conservativeVars;                                       // place holder for the solution at the previous timestep
-        
+        solutionOld.copyFrom(_conservativeVars);                                            // copy the solution to the old solution
         updateMassFlows(solutionOld);
-        
         if (turboOutput) updateTurboPerformance(solutionOld);                               // extract the turbo performance
         if (monitorPointsActive) updateMonitorPoints(solutionOld);                          // extract the monitor points data
-        
         computeTimestepArray(solutionOld, timestep);                                        // compute the physical time step
         
         // runge-kutta steps
-        FlowSolution solTmp = solutionOld;                                                  // place holder for the solution at the runge-kutta step
         for (const auto &integrationCoeff: timeIntegrationCoeffs){
-            updateRadialProfiles(solTmp);
-            computeResiduals(solTmp, it, _time.back(), residuals);
-            updateSolution(solutionOld, solTmp, residuals, integrationCoeff, timestep);
+            updateRadialProfiles(solutionTmp);
+            computeResiduals(solutionTmp, it, _time.back(), residuals);
+            updateSolution(solutionOld, solutionTmp, residuals, integrationCoeff, timestep);
         }
         
         // update the physical time
         _time.push_back(_time.back() + timestep.min());
         
         // update the solution
-        _conservativeVars = solTmp;
+        _conservativeVars.copyFrom(solutionTmp);
         
         // print info on terminal
         printInfoResiduals(residuals, it);
@@ -309,7 +309,7 @@ void CSolverEuler::solve(){
 
         // check the convergence process
         checkConvergence(exitLoop); 
-        if (exitLoop && saveUnsteady==false) {
+        if (exitLoop && !saveUnsteady) {
             _output->writeSolution(it);
             writeLogResidualsToCSV();
             if (turboOutput) writeTurboPerformanceToCSV();

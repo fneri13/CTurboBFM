@@ -7,6 +7,7 @@
 #include <map>
 #include <cassert>
 #include <array>
+#include <cstring>
 
 using FloatType = double;
 
@@ -303,6 +304,14 @@ class Matrix3D {
             _nj = nj;
             _nk = nk;
             _data.resize(ni * nj * nk);
+        }
+
+        void copyFrom(const Matrix3D<T>& other) {
+            // Dimensions must match; otherwise this would reallocate, which is costly.
+            assert(_data.size() == other._data.size() && "Matrix3D::copyFrom data size mismatch");
+
+            // Copy the raw data (fast path)
+            std::memcpy(_data.data(), other._data.data(), _data.size() * sizeof(T));
         }
 
         // Access and modify using operator() with bounds checking
@@ -649,6 +658,14 @@ struct FlowSolution {
         _rhoV.setToZero();
         _rhoW.setToZero();
         _rhoE.setToZero();
+    }
+
+    void copyFrom(const FlowSolution& other) {
+        _rho = other._rho;
+        _rhoU = other._rhoU;
+        _rhoV = other._rhoV;
+        _rhoW = other._rhoW;
+        _rhoE = other._rhoE;
     }
 
     Matrix3D<FloatType> getSolution(size_t iVar) const {

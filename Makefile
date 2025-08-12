@@ -10,7 +10,7 @@ CXXFLAGS := -std=c++20 -Wall -g -I$(INC_DIR) -I$(SRC_DIR)
 
 # Debug and Release specific flags
 DEBUG_FLAGS := -g -O0
-RELEASE_FLAGS := -O3 -DNDEBUG -fopenmp -march=native
+RELEASE_FLAGS := -O3 -DNDEBUG -march=native
 
 # Default build type
 BUILD_TYPE := debug

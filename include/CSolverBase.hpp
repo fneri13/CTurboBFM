@@ -46,7 +46,7 @@ class CSolverBase {
 
         FloatType getHubStaticPressure() const { return _hubStaticPressure; }
 
-        virtual void checkConvergence(bool &exitLoop) const = 0;
+        virtual void checkConvergence(bool &exitLoop, bool &skip) const = 0;
 
     protected:
         const Config& _config;

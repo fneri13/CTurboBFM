@@ -26,9 +26,11 @@ private:
     
     FloatType parseFloat(const std::string& value) const;
 
+    FloatType parseFloat(const std::string& value, FloatType defaultValue) const;
+
     int parseInt(const std::string& value) const;
 
-    FloatType parseFloat(const std::string& value, FloatType defaultValue) const;
+    int parseInt(const std::string& value, int defaultValue) const;
 
     template <typename T>
     std::vector<T> parseVector(const std::string& key) const {
@@ -113,6 +115,8 @@ public:
 
     bool saveUnsteadySolution() const {return parseBool("SAVE_UNSTEADY", true);}
 
+    bool isSimulationSteady() const {return parseBool("SIMULATION_IS_STEADY", true);}
+
     int getSaveIterationsInterval() const {return static_cast<int>(parseFloat("SAVE_ITERATIONS_INTERVAL"));}
 
     std::string getSolutionName() const {return parseString("SOLUTION_NAME");}
@@ -129,7 +133,7 @@ public:
 
     bool isMonitorPointsActive() const {return parseBool("MONITOR_POINTS_ACTIVE", false);}
 
-    size_t getResidualsDropConvergence() const {return static_cast<size_t>(parseInt("RESIDUALS_DROP_CONVERGENCE"));}
+    size_t getResidualsDropConvergence() const {return static_cast<size_t>(parseInt("RESIDUALS_DROP_CONVERGENCE", 16));}
 
     TimeIntegration getTimeIntegration() const;
 

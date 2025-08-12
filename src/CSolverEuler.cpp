@@ -265,19 +265,19 @@ void CSolverEuler::solve(){
     size_t nIterMax = _config.getMaxIterations();
     Matrix3D<FloatType> timestep(_nPointsI, _nPointsJ, _nPointsK);                          // place holder for time step array
     std::vector<FloatType> timeIntegrationCoeffs = _config.getTimeIntegrationCoeffs();      // time integration coefficients (runge kutta)
-    FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK);                            // place holder for flux residuals
+    FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK);                                // place holder for flux residuals
     size_t updateMassFlowsFreq = 250;                                                       // frequency to update the mass flows at the boundaries
     size_t monitorOutputFreq = 250;
     size_t solutionOutputFreq = _config.getSolutionOutputFrequency();                       // frequency to output the solution
     bool turboOutput = _config.saveTurboOutput();                                           // flag to save the solution in turbo format
     bool monitorPointsActive = _config.isMonitorPointsActive();                             // flag to activate the monitor points
     bool exitLoop = false;                                                                  // flag to exit the loop if convergence is reached
-    bool saveUnsteady = _config.saveUnsteadySolution();                                     // flag to save the unsteady solution
+    bool steadySimulation = _config.isSimulationSteady();                                   // flag to check if the simulation is steady
     if (monitorPointsActive) initializeMonitorPoints();                                     // initialize the monitor points
 
     FlowSolution solutionOld(_nPointsI, _nPointsJ, _nPointsK);                              // place holder for the solution at the previous timestep
     FlowSolution solutionTmp(_nPointsI, _nPointsJ, _nPointsK);                              // place holder for the solution at the next iteration
-    solutionTmp.copyFrom(_conservativeVars);                                            // copy the solution to the temporary solution
+    solutionTmp.copyFrom(_conservativeVars);                                                // copy the solution to the temporary solution
     
     // time integration
     for (size_t it=1; it<=nIterMax; it++){        
@@ -308,8 +308,8 @@ void CSolverEuler::solve(){
         }
 
         // check the convergence process
-        checkConvergence(exitLoop); 
-        if (exitLoop && !saveUnsteady) {
+        checkConvergence(exitLoop, steadySimulation); 
+        if (exitLoop && steadySimulation) {
             _output->writeSolution(it);
             writeLogResidualsToCSV();
             if (turboOutput) writeTurboPerformanceToCSV();
@@ -879,7 +879,9 @@ void CSolverEuler::updateMonitorPoints(const FlowSolution &solution){
     }
 }
 
-void CSolverEuler::checkConvergence(bool &exitLoop) const {
+void CSolverEuler::checkConvergence(bool &exitLoop, bool &isSteady) const {
+    if (!isSteady) return;
+
     StateVector current = _logResiduals.back();
     StateVector initial = _logResiduals.front();
 

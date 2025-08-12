@@ -37,7 +37,7 @@ public:
     /** @brief Solves the Euler equations with explicit time integration.*/
     void solve() override;
 
-    virtual void checkConvergence(bool &exitLoop) const override;
+    virtual void checkConvergence(bool &exitLoop, bool &isSteady) const override;
     
 
 private:

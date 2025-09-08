@@ -860,6 +860,10 @@ enum class FieldNames {
     CHIMA_MASS_FLOW=39,
     CHIMA_SCALING_TURNING=40,
     CHIMA_SCALING_LOSS=41,
+    BLADE_METAL_ANGLE=42,
+    BLADE_GAS_PATH_ANGLE=43,
+    BLADE_LEAN_ANGLE=44,
+    D_BLADE_METAL_ANGLE_DM=45,
 };
 
 
@@ -910,7 +914,10 @@ public:
             {"MassFlow", FieldNames::CHIMA_MASS_FLOW},
             {"PhiTurn", FieldNames::CHIMA_SCALING_TURNING},
             {"PhiLoss", FieldNames::CHIMA_SCALING_LOSS},
-
+            {"bladeMetalAngle", FieldNames::BLADE_METAL_ANGLE},
+            {"bladeGasPathAngle", FieldNames::BLADE_GAS_PATH_ANGLE},
+            {"bladeLeanAngle", FieldNames::BLADE_LEAN_ANGLE},
+            {"dbladeMetalAngle_dm", FieldNames::D_BLADE_METAL_ANGLE_DM}
         };
         return map;
     }
@@ -959,6 +966,10 @@ public:
             {FieldNames::CHIMA_MASS_FLOW, "MassFlow"},
             {FieldNames::CHIMA_SCALING_TURNING, "PhiTurn"},
             {FieldNames::CHIMA_SCALING_LOSS, "PhiLoss"},
+            {FieldNames::BLADE_METAL_ANGLE, "bladeMetalAngle"},
+            {FieldNames::BLADE_GAS_PATH_ANGLE, "bladeGasPathAngle"},
+            {FieldNames::BLADE_LEAN_ANGLE, "bladeLeanAngle"},
+            {FieldNames::D_BLADE_METAL_ANGLE_DM, "dbladeMetalAngle_dm"}
         };
         return map;
     }

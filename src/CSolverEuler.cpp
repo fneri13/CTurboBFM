@@ -38,6 +38,9 @@ CSolverEuler::CSolverEuler(Config& config, CMesh& mesh)
     else if (bfmModel == BFM_Model::CHIMA) {
         _bfmSource = std::make_unique<CSourceBFMChima>(_config, *_fluid, _mesh, _turboPerformance);
     }
+    else if (bfmModel == BFM_Model::LAMPRAKIS) {
+        _bfmSource = std::make_unique<CSourceBFMLamprakis>(_config, *_fluid, _mesh, _turboPerformance);
+    }
     else if (bfmModel == BFM_Model::ONLY_BLOCKAGE) {
         _bfmSource = std::make_unique<CSourceBFMBase>(_config, *_fluid, _mesh);
     }

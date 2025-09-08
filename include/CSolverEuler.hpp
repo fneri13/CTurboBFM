@@ -11,6 +11,7 @@
 #include "CSourceBFMFrozenGradient.hpp"
 #include "CSourceBFMNeri.hpp"
 #include "CSourceBFMChima.hpp"
+#include "CSourceBFMLamprakis.hpp"
 #include <unordered_map>
 
 #ifdef _OPENMP 

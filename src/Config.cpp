@@ -185,6 +185,8 @@ BFM_Model Config::getBFMModel() const {
         model = BFM_Model::NERI;
     } else if (value == "Chima") {
         model = BFM_Model::CHIMA;
+    } else if (value == "Lamprakis") {
+        model = BFM_Model::LAMPRAKIS;
     } else if (value == "None") {
         model = BFM_Model::NONE;
     } else if (value == "Blockage") {

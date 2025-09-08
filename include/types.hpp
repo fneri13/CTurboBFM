@@ -134,7 +134,8 @@ enum class BFM_Model {
     GONG = 6,
     NERI = 7,
     CHIMA = 8,
-    ONLY_BLOCKAGE = 9
+    ONLY_BLOCKAGE = 9,
+    LAMPRAKIS = 10
 };
 
 

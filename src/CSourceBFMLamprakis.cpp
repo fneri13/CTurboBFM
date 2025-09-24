@@ -55,9 +55,9 @@ void CSourceBFMLamprakis::computeFlowState(size_t i, size_t j, size_t k, const S
 Vector3D CSourceBFMLamprakis::computeLoadingVersor(const FloatType& metalAngle, const FloatType& leanAngle, const FloatType& gasPathAngle) const {
     // Later the metal angle needs to be corrected with the deviation (or slip)
     Vector3D versor {0,0,0};
-    versor.x() = -std::sin(metalAngle) * std::cos(gasPathAngle);
-    versor.y() = std::sin(metalAngle) * std::sin(gasPathAngle);
-    versor.z() = std::cos(metalAngle);
+    versor.x() = -std::sin(-metalAngle) * std::cos(gasPathAngle);
+    versor.y() = std::sin(-metalAngle) * std::sin(gasPathAngle);
+    versor.z() = std::cos(-metalAngle);
     return versor;
 }
 
@@ -90,7 +90,7 @@ FloatType CSourceBFMLamprakis::computeLoadingForceIntensity(const StateVector& p
     FloatType phi = _gasPathAngle;
 
     FloatType term1, term2, term3, term4;
-
+    beta *= -1;
     term1 = w*w * (std::cos(beta) * ((2.0*gmma-1.0)*Mrel*Mrel - std::tan(beta)*std::tan(beta) + 1.0) * dbdm / ((2*gmma-1.0)*Mrel*Mrel + 1.0) + 
                 (Mom*Mom/Mrel/Mrel + (2.0*gmma-1.0)*Mrel*Mrel + 2.0) * std::sin(phi)*std::sin(beta) / _radius / ((2*gmma-1.0)*Mrel*Mrel + 1.0));
     

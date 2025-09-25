@@ -4,9 +4,13 @@ StateVector CSourceBFMHall::computeBodyForceSource(size_t i, size_t j, size_t k,
     computeFlowState(i, j, k, primitive);
     
     FloatType volume = _mesh.getVolume(i, j, k);
+
+    // when the deviation becomes negative, the force mag becomes negative the pull the flow back into place aligned with the camber
     FloatType forceMagnitude = _relativeVelocityCylindric.dot(_relativeVelocityCylindric) * M_PI * _deviationAngle / _pitch / std::abs(_normalCamberTangential);
+    
     Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceMagnitude;
     Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
+    
     inviscidForce(i, j, k) = forceCartesian;
     viscousForce(i, j, k) = Vector3D(0,0,0);
     

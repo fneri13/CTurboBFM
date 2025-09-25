@@ -81,7 +81,9 @@ void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateV
     _dragVelocityCylindrical = {0, 0, _omega * _radius};
     _relativeVelocityCylindric = _velocityCylindrical - _dragVelocityCylindrical;
     _relativeVelocityCartesian = computeCartesianVectorFromCylindrical(_relativeVelocityCylindric, _theta);
-    
+    _velMeridional = std::sqrt(_velocityCylindrical.x() * _velocityCylindrical.x() + 
+                                _velocityCylindrical.y() * _velocityCylindrical.y());
+
     // blade properties
     _numberBlades = _mesh.getInputFields(FieldNames::NUMBER_BLADES, i, j, k);
     _pitch = 2.0 * M_PI * _radius / _numberBlades;
@@ -92,9 +94,19 @@ void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateV
     _blockage = _mesh.getInputFields(FieldNames::BLOCKAGE, i, j, k);
     _bladeIsPresent = _mesh.getInputFields(FieldNames::BLADE_PRESENT, i, j, k);
     
-    // force directions 
+    // flow directions 
+    
+    _leanAngle = _mesh.getInputFields(FieldNames::BLADE_LEAN_ANGLE, i, j, k);
+    _gaspathAngle = _mesh.getInputFields(FieldNames::BLADE_GAS_PATH_ANGLE, i, j, k);
+    _metalAngle = _mesh.getInputFields(FieldNames::BLADE_METAL_ANGLE, i, j, k);
+    _flowAngle = std::atan2(_relativeVelocityCylindric.z(), _velMeridional);
     _deviationAngle = computeDeviationAngle(_relativeVelocityCylindric, _normalCamberCylindric);
+    // _deviationAngle = _flowAngle - _metalAngle;
+
+    // compute inviscid force directions with the two methods
     _inviscidForceDirectionCylindrical = computeInviscidForceDirection(_relativeVelocityCylindric, _normalCamberCylindric);
+    // _inviscidForceDirectionCylindrical = computeInviscidForceDirection(_relativeVelocityCylindric, _gaspathAngle, _flowAngle, _leanAngle);
+
     _inviscidForceDirectionCartesian = computeCartesianVectorFromCylindrical(_inviscidForceDirectionCylindrical, _theta);
     _viscousForceDirectionCylindrical = - _relativeVelocityCylindric.normalized();
     _viscousForceDirectionCartesian = - _relativeVelocityCartesian.normalized();
@@ -111,39 +123,69 @@ FloatType CSourceBFMBase::computeDeviationAngle(Vector3D relativeVelocity, Vecto
 }
 
 Vector3D CSourceBFMBase::computeInviscidForceDirection(const Vector3D& relativeVelocity, const Vector3D& normalCamber){
-    Vector3D relativeVelocityPlus = {relativeVelocity.x() + 1E-6, relativeVelocity.y() + 1E-6, relativeVelocity.z() + 1E-6};
+    Vector3D relativeVelocityPlus = {relativeVelocity.x(), relativeVelocity.y(), relativeVelocity.z()};
     Vector3D wDir = relativeVelocityPlus.normalized();
     Vector3D normal = normalCamber.normalized();
     
-    FloatType A, B, C, Delta;
-    A = wDir.z()*wDir.z() + wDir.x()*wDir.x();
-    B = 2 * wDir.y() * wDir.x() * normal.y();
-    C = (wDir.z()*wDir.z() * normal.y()*normal.y()) + (wDir.y()*wDir.y() * normal.y()*normal.y()) - wDir.z()*wDir.z();
-    Delta = B*B - 4*A*C;
+    // method based on versor construction, used as a first version
+    // Vector3D relativeVelocityPlus = {relativeVelocity.x() + 1E-6, relativeVelocity.y() + 1E-6, relativeVelocity.z() + 1E-6};
+    // FloatType A, B, C, Delta;
+    // A = wDir.z()*wDir.z() + wDir.x()*wDir.x();
+    // B = 2 * wDir.y() * wDir.x() * normal.y();
+    // C = (wDir.z()*wDir.z() * normal.y()*normal.y()) + (wDir.y()*wDir.y() * normal.y()*normal.y()) - wDir.z()*wDir.z();
+    // Delta = B*B - 4*A*C;
 
-    if (Delta < 0) {
-        std::cout << "Inviscid force direction computation found no real result. Radial component set to zero." << std::endl;
-        Vector3D versor = {-wDir.z(), 0, wDir.x()};
-        return versor.normalized();
+    // if (Delta < 0) {
+    //     std::cout << "Inviscid force direction computation found no real result. Radial component set to zero." << std::endl;
+    //     Vector3D versor = {-wDir.z(), 0, wDir.x()};
+    //     return versor.normalized();
+    // }
+
+    // FloatType fAxial1 = (-B + std::sqrt(Delta)) / (2 * A);
+    // FloatType fAxial2 = (-B - std::sqrt(Delta)) / (2 * A);
+
+    // FloatType fTangential1 = computeTangentialComponent(fAxial1, wDir, normal);
+    // FloatType fTangential2 = computeTangentialComponent(fAxial2, wDir, normal);
+
+    // FloatType fRadial1 = normal.y();
+    // FloatType fRadial2 = normal.y();
+
+    // Vector3D versor1 = {fAxial1, fRadial1, fTangential1};
+    // Vector3D versor2 = {fAxial2, fRadial2, fTangential2};
+
+    // if (versor1.dot(normal) > 0) {
+    //     return versor1;
+    // } else {
+    //     return versor2;
+    // }
+
+    // method based on versor projection
+    // the idea is that the loading versor is found be subtracting from the normal camber versor its projection on the relative velocity versor
+    Vector3D versor = normal - wDir * normal.dot(wDir);
+    versor = versor.normalized();
+
+    return versor;
+
+}
+
+
+Vector3D CSourceBFMBase::computeInviscidForceDirection(const Vector3D& relativeVelocity, const FloatType& gaspathAngle, const FloatType& flowAngle, FloatType& leanAngle){
+    // overwrite lean to zero for now
+    // leanAngle = 0.0;
+    
+    // the minus are there because the derivation considers opposite signs for the rotations of the ref frames
+    FloatType nAxial = -std::sin(flowAngle) * std::cos(leanAngle) * std::cos(gaspathAngle) - std::sin(leanAngle) * std::sin(gaspathAngle);
+    FloatType nRadial = -std::sin(flowAngle) * std::sin(gaspathAngle) * std::cos(leanAngle) + std::sin(leanAngle) * std::cos(gaspathAngle);
+    FloatType nTan = std::cos(flowAngle) * std::cos(leanAngle);
+
+    Vector3D versor =   {nAxial, nRadial, nTan};
+
+    // convention on the sign for a positive pushing force
+    if (_flowAngle > 0){
+        versor = -versor;
     }
 
-    FloatType fAxial1 = (-B + std::sqrt(Delta)) / (2 * A);
-    FloatType fAxial2 = (-B - std::sqrt(Delta)) / (2 * A);
-
-    FloatType fTangential1 = computeTangentialComponent(fAxial1, wDir, normal);
-    FloatType fTangential2 = computeTangentialComponent(fAxial2, wDir, normal);
-
-    FloatType fRadial1 = normal.y();
-    FloatType fRadial2 = normal.y();
-
-    Vector3D versor1 = {fAxial1, fRadial1, fTangential1};
-    Vector3D versor2 = {fAxial2, fRadial2, fTangential2};
-
-    if (versor1.dot(normal) > 0) {
-        return versor1;
-    } else {
-        return versor2;
-    }
+    return versor;
 }
 
 

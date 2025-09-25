@@ -35,11 +35,13 @@ protected:
     FloatType _omega;
     FloatType _numberBlades;
     FloatType _pitch;
+    FloatType _velMeridional;
     Vector3D _velocityCartesian, _velocityCylindrical;
     Vector3D _relativeVelocityCartesian, _dragVelocityCylindrical, _relativeVelocityCylindric;
     FloatType _normalCamberAxial, _normalCamberRadial, _normalCamberTangential;
     Vector3D _normalCamberCylindric;
     FloatType _deviationAngle;
+    FloatType _gaspathAngle, _flowAngle, _leanAngle, _metalAngle;
     Vector3D _inviscidForceDirectionCylindrical, _inviscidForceDirectionCartesian;
     Vector3D _viscousForceDirectionCylindrical, _viscousForceDirectionCartesian;
     bool _perturbationBodyForceActive = false;
@@ -74,6 +76,13 @@ protected:
      * @param normalCamber normal camber
      */
     Vector3D computeInviscidForceDirection(const Vector3D& relativeVelocity, const Vector3D& normalCamber);
+
+    /** Compute the inviscid force direction, using the relative velocity in cylindrical reference and the blade characteristic angles
+     * 
+     * @param relativeVelocity relative velocity
+     * @param normalCamber normal camber
+     */
+    Vector3D computeInviscidForceDirection(const Vector3D& relativeVelocity, const FloatType& gaspathAngle, const FloatType& flowAngle, FloatType& leanAngle);
 
     /** Compute the tangential component of the inviscid force direction. Function used from the other method */
     FloatType computeTangentialComponent(FloatType fAxial, const Vector3D& relativeVelocityDirection, const Vector3D& normalCamber);

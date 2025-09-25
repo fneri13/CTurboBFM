@@ -18,14 +18,30 @@ def read_residuals(input_filename):
 def shift_to_zero(res):
     return res - res[0]
 
+
+def get_math_label(str_label):
+    if str_label == "Rho":
+        return r"$\rho$"
+    elif str_label == "RhoU":
+        return r"$\rho u$"
+    elif str_label == "RhoV":
+        return r"$\rho v$"
+    elif str_label == "RhoW":
+        return r"$\rho w$"
+    elif str_label == "RhoE":
+        return r"$\rho e_t$"
+    else:
+        return str_label
+
+
 def plot_residuals(data):
     plt.figure()
     for key in data:
-        plt.plot(shift_to_zero(data[key]), label=key)
+        plt.plot(shift_to_zero(data[key]), label=get_math_label(key))
     plt.legend()
     plt.grid(alpha=0.3)
     plt.xlabel("Iteration [-]")
-    plt.ylabel("Residuals Drop [-]")
+    plt.ylabel("Residuals [-]")
     plt.savefig("pictures/residuals.pdf", bbox_inches='tight')
     plt.show()
     

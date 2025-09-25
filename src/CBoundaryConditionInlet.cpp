@@ -25,6 +25,10 @@ StateVector CBoundaryConditionInlet::computeBoundaryFlux(StateVector internalCon
     // reconstruct the boundary state                                     
     FloatType velocityBoundMag = 2.0*soundSpeedBound / (_fluid.getGamma() - 1.0) - Jm;
     Vector3D flowDirection = {_boundaryValues[2], _boundaryValues[3], _boundaryValues[4]};
+    if (flowDirection.x() == 1.0 && flowDirection.y() == 1.0 && flowDirection.z() == 1.0) {
+        // in this case the direction is normal to the surface
+        flowDirection = -surface;
+    }
     flowDirection /= flowDirection.magnitude();
     FloatType normalMachBound = velocityBoundMag / soundSpeedBound;
     FloatType pressureBound = _fluid.computeStaticPressure_pt_M(_boundaryValues[0], normalMachBound);

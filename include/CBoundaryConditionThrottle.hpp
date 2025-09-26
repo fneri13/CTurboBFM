@@ -20,7 +20,7 @@ class CBoundaryConditionThrottle : public CBoundaryConditionBase {
          * @param radialProfile reference to the radial profile of pressure used in the boundary condition flux evaluation.
          * @param bcValues The outlet values (throttle coefficient [Pa/(kgs)^2]).
          */
-        CBoundaryConditionThrottle(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> bcValues, std::map<TurboPerformance, std::vector<FloatType>>& turboPerformance);
+        CBoundaryConditionThrottle(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType>& radialProfile);
             
         virtual ~CBoundaryConditionThrottle() {}
         
@@ -36,7 +36,6 @@ class CBoundaryConditionThrottle : public CBoundaryConditionBase {
         virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution, const size_t iterCounter) override;
         
     protected:
-        FloatType _throttleCoefficient;
-        FloatType _inletPressure;
-        std::map<TurboPerformance, std::vector<FloatType>>& _turboPerformance;
+        std::vector<FloatType>& _radialPressureProfile; // Reference to the radial profile of the static pressure (which is updated at every iteration)
+
 };

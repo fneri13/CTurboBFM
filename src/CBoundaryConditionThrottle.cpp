@@ -1,10 +1,8 @@
 #include "CBoundaryConditionThrottle.hpp"
 #include "commonFunctions.hpp"
 
-CBoundaryConditionThrottle::CBoundaryConditionThrottle(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> bcValues, std::map<TurboPerformance, std::vector<FloatType>>& turboPerformance)
-    : CBoundaryConditionBase(config, mesh, fluid, boundIndex), _throttleCoefficient(bcValues.at(0)), _turboPerformance(turboPerformance){
-        _inletPressure = _config.getInletBCValues().at(0);
-    }
+CBoundaryConditionThrottle::CBoundaryConditionThrottle(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType>& pressure)
+    : CBoundaryConditionBase(config, mesh, fluid, boundIndex), _radialPressureProfile(pressure){}
 
 
 StateVector CBoundaryConditionThrottle::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution, const size_t iterCounter) {
@@ -19,8 +17,8 @@ StateVector CBoundaryConditionThrottle::computeBoundaryFlux(StateVector internal
         return flux;
     }
     else {
-        FloatType lastMassFlow = _turboPerformance.at(TurboPerformance::MASS_FLOW).back();
-        FloatType pressureBoundary = _inletPressure + _throttleCoefficient * lastMassFlow*lastMassFlow;
+        FloatType outletPressure = _radialPressureProfile[indices[1]];
+        FloatType pressureBoundary = _config.computeRampedOutletPressure(iterCounter, outletPressure);
         FloatType densityBoundary = pressureBoundary * density / pressure;
         Vector3D velocityBoundary = velocity;
         FloatType energyBoundary = _fluid.computeStaticEnergy_p_rho(pressureBoundary, densityBoundary);

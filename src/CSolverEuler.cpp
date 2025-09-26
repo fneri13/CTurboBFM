@@ -799,6 +799,14 @@ void CSolverEuler::updateRadialProfiles(FlowSolution &solution){
         velTangProfile[j] = std::abs(velocityCyl.z());
     }
 
+    // if the outlet is a throttle boundary condition the hub static pressure needs to be modified accordingly
+    if (_boundaryTypes[BoundaryIndices::I_END] == BoundaryType::THROTTLE){
+        FloatType ptin = _config.getInletBCValues().at(0);
+        FloatType kt = _config.getOutletBCValues()[0];
+        FloatType mdot = _turboPerformance[TurboPerformance::MASS_FLOW].back();
+        _hubStaticPressure = ptin + kt * mdot*mdot;
+    }
+
     integrateRadialEquilibrium(densityProfile, velTangProfile, _radialProfileCoords, _hubStaticPressure, _radialProfilePressure);
 
 }

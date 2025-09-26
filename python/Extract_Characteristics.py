@@ -15,6 +15,7 @@ def read_file(input_filename):
 
 
 def read_solutions(inputFolder):
+    # Legend used for the simulations with different boundary conditions is
     # KT = throttle valve BC, 
     # PREQ = pressure outlet with radial equilibrium
     # P = pressure outlet
@@ -22,7 +23,8 @@ def read_solutions(inputFolder):
     
     folders = os.listdir(inputFolder)
     runFolders = [folder for folder in folders if folder.split('_')[0] in possibleNames]
-    runFolders.sort()
+    # sort by the integer after the underscore
+    runFolders.sort(key=lambda f: float(f.split('_')[1]))
     print("Run folders found: ", runFolders)
     
     massflow = []

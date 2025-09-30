@@ -26,9 +26,9 @@ StateVector CSourceBFMChima::computeBodyForceSource(size_t i, size_t j, size_t k
 
 
 StateVector CSourceBFMChima::computeInviscidComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce) {
+    _tangentialForce *= _scalingTurning;
     FloatType fnTan = _tangentialForce - _viscousForceCylindrical.z();
-    fnTan *= _scalingTurning;
-    FloatType fnMag = fnTan / std::abs(_inviscidForceDirectionCylindrical.z());
+    FloatType fnMag = std::abs(fnTan / _inviscidForceDirectionCylindrical.z());
     // fnMag *= _bladeIsPresent;
 
     Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * fnMag;
@@ -48,8 +48,12 @@ StateVector CSourceBFMChima::computeInviscidComponent(size_t i, size_t j, size_t
 
 
 void CSourceBFMChima::computeGlobalTangentialForce(size_t i, size_t j, size_t k, const StateVector& primitive) {
-    FloatType deltaAngularMomentum_dm = _mesh.getInputFields(FieldNames::DELTA_ANGULAR_MOMENTUM_DM, i, j, k);
-    _tangentialForce = deltaAngularMomentum_dm * primitive[0] * _velMeridional / _radius;
+    FloatType deltaTotEnthalpy_dm = _mesh.getInputFields(FieldNames::DELTA_TOT_ENTHALPY_DM, i, j, k);
+
+    // _tangentialForce = deltaAngularMomentum_dm * primitive[0] * _velMeridional / _radius;
+
+    _tangentialForce = deltaTotEnthalpy_dm * _velMeridional / _radius / _omega;
+
 }
 
 

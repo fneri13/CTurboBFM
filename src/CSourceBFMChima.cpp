@@ -26,12 +26,10 @@ StateVector CSourceBFMChima::computeBodyForceSource(size_t i, size_t j, size_t k
 
 
 StateVector CSourceBFMChima::computeInviscidComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce) {
-    _tangentialForce *= _scalingTurning;
-    FloatType fnTan = _tangentialForce - _viscousForceCylindrical.z();
-    FloatType fnMag = std::abs(fnTan / _inviscidForceDirectionCylindrical.z());
-    // fnMag *= _bladeIsPresent;
+    FloatType forceInviscidTangential = _tangentialForce - _viscousForceCylindrical.z();
+    FloatType forceInviscidMagnitude = forceInviscidTangential / _inviscidForceDirectionCylindrical.z();
 
-    Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * fnMag;
+    Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceInviscidMagnitude;
     Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
     inviscidForce(i, j, k) = forceCartesian;
     
@@ -49,30 +47,21 @@ StateVector CSourceBFMChima::computeInviscidComponent(size_t i, size_t j, size_t
 
 void CSourceBFMChima::computeGlobalTangentialForce(size_t i, size_t j, size_t k, const StateVector& primitive) {
     FloatType deltaTotEnthalpy_dm = _mesh.getInputFields(FieldNames::DELTA_TOT_ENTHALPY_DM, i, j, k);
-
-    // _tangentialForce = deltaAngularMomentum_dm * primitive[0] * _velMeridional / _radius;
-
-    _tangentialForce = deltaTotEnthalpy_dm * _velMeridional / _radius / _omega;
-
+    deltaTotEnthalpy_dm *= _scalingTurning;
+    _tangentialForce = deltaTotEnthalpy_dm * _velMeridional /( _radius * _omega);
 }
 
 
 StateVector CSourceBFMChima::computeViscousComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &viscousForce) {
 
     FloatType deltaS_deltaM = _mesh.getInputFields(FieldNames::DELTA_ENTROPY_DM, i, j, k);
+    deltaS_deltaM *= _scalingLoss;
     
     FloatType relVelMag = _relativeVelocityCylindric.magnitude();
-    
-    _velMeridional = std::sqrt(_relativeVelocityCylindric.x() * _relativeVelocityCylindric.x() + 
-                               _relativeVelocityCylindric.y() * _relativeVelocityCylindric.y());
 
     FloatType temperature = _fluid.computeTemperature_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
     
     FloatType forceMag = temperature * _velMeridional / relVelMag * deltaS_deltaM;
-
-    // forceMag *= _bladeIsPresent;
-    forceMag *= _scalingLoss;
-    
     Vector3D forceCylindrical = _viscousForceDirectionCylindrical * forceMag;
     _viscousForceCylindrical = forceCylindrical;
 

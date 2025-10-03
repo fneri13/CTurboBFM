@@ -67,16 +67,16 @@ StateVector CSourceBFMBase::computeBodyForceSource(size_t i, size_t j, size_t k,
 }
 
 void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateVector& primitive){
-    // geometrical considerations
+    // element location
     _point = _mesh.getVertex(i, j, k);
     _radius = std::sqrt(_point.z() * _point.z() + _point.y() * _point.y());
     _theta = std::atan2(_point.z(), _point.y());
     
-    // velocity vector in both reference frame
+    // flow kinematics
     _velocityCartesian = {primitive[1], primitive[2], primitive[3]};
     _velocityCylindrical = computeCylindricalVectorFromCartesian(_velocityCartesian, _theta);
     
-    // relative velocity vector in both reference frame
+    // relative flow kinematics
     _omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
     _dragVelocityCylindrical = {0, 0, _omega * _radius};
     _relativeVelocityCylindric = _velocityCylindrical - _dragVelocityCylindrical;
@@ -94,8 +94,7 @@ void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateV
     _blockage = _mesh.getInputFields(FieldNames::BLOCKAGE, i, j, k);
     _bladeIsPresent = _mesh.getInputFields(FieldNames::BLADE_PRESENT, i, j, k);
     
-    // flow directions 
-    
+    // characteristic angles
     _leanAngle = _mesh.getInputFields(FieldNames::BLADE_LEAN_ANGLE, i, j, k);
     _gaspathAngle = _mesh.getInputFields(FieldNames::BLADE_GAS_PATH_ANGLE, i, j, k);
     _metalAngle = _mesh.getInputFields(FieldNames::BLADE_METAL_ANGLE, i, j, k);
@@ -103,10 +102,8 @@ void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateV
     _deviationAngle = computeDeviationAngle(_relativeVelocityCylindric, _normalCamberCylindric);
     // _deviationAngle = _flowAngle - _metalAngle;
 
-    // compute inviscid force directions with the two methods
+    // Directions of the force components (the inviscid one is considered positive from suction to pressure side, when the blade is pushing the flow)
     _inviscidForceDirectionCylindrical = computeInviscidForceDirection(_relativeVelocityCylindric, _normalCamberCylindric);
-    // _inviscidForceDirectionCylindrical = computeInviscidForceDirection(_relativeVelocityCylindric, _gaspathAngle, _flowAngle, _leanAngle);
-
     _inviscidForceDirectionCartesian = computeCartesianVectorFromCylindrical(_inviscidForceDirectionCylindrical, _theta);
     _viscousForceDirectionCylindrical = - _relativeVelocityCylindric.normalized();
     _viscousForceDirectionCartesian = - _relativeVelocityCartesian.normalized();

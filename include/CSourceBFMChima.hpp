@@ -23,7 +23,7 @@ protected:
 private:
 
     Vector3D _viscousForceCylindrical = {0, 0, 0};
-    FloatType _tangentialForce = 0.0, _velMeridional = 0.0;
+    FloatType _tangentialForce;
     CInputTable _inputTable;
     std::map<TurboPerformance, std::vector<FloatType>> &_turboPerformance;
     FloatType _scalingTurning=1.0, _scalingLoss = 1.0;

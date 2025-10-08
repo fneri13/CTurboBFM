@@ -95,9 +95,9 @@ void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateV
     _bladeIsPresent = _mesh.getInputFields(FieldNames::BLADE_PRESENT, i, j, k);
     
     // characteristic angles
-    _leanAngle = _mesh.getInputFields(FieldNames::BLADE_LEAN_ANGLE, i, j, k);
-    _gaspathAngle = _mesh.getInputFields(FieldNames::BLADE_GAS_PATH_ANGLE, i, j, k);
-    _metalAngle = _mesh.getInputFields(FieldNames::BLADE_METAL_ANGLE, i, j, k);
+    // _leanAngle = _mesh.getInputFields(FieldNames::BLADE_LEAN_ANGLE, i, j, k);
+    // _gaspathAngle = _mesh.getInputFields(FieldNames::BLADE_GAS_PATH_ANGLE, i, j, k);
+    // _metalAngle = _mesh.getInputFields(FieldNames::BLADE_METAL_ANGLE, i, j, k);
     _flowAngle = std::atan2(_relativeVelocityCylindric.z(), _velMeridional);
     _deviationAngle = computeDeviationAngle(_relativeVelocityCylindric, _normalCamberCylindric);
     // _deviationAngle = _flowAngle - _metalAngle;

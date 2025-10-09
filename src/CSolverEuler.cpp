@@ -12,10 +12,13 @@ CSolverEuler::CSolverEuler(Config& config, CMesh& mesh)
     : CSolverBase(config, mesh)  // Call base class constructor
 {
     
+    // Allocate the memory for all the variables needed
     initializeSolutionArrays();
     
+    // Initialize csv output handler
     _output = std::make_unique<COutputCSV>(_config, _mesh, _conservativeVars, *_fluid, _inviscidForce, _viscousForce, _deviationAngle);
 
+    // Initialize BFM source term if needed
     BFM_Model bfmModel = _config.getBFMModel();
     if (bfmModel == BFM_Model::HALL) {
         _bfmSource = std::make_unique<CSourceBFMHall>(_config, *_fluid, _mesh);
@@ -56,12 +59,15 @@ CSolverEuler::CSolverEuler(Config& config, CMesh& mesh)
 
 void CSolverEuler::initializeSolutionArrays(){
     _conservativeVars.resize(_nPointsI, _nPointsJ, _nPointsK);
+    
     _radialProfilePressure.resize(_nPointsJ);
     _radialProfileCoords.resize(_nPointsJ);
+    
     _inviscidForce.resize(_nPointsI, _nPointsJ, _nPointsK);
     _viscousForce.resize(_nPointsI, _nPointsJ, _nPointsK);
     _deviationAngle.resize(_nPointsI, _nPointsJ, _nPointsK);
 
+    // Initialize the solution either from scratch or from a restart file
     bool restartSolution = _config.restartSolution();
     if (restartSolution) {
         initializeSolutionFromRestart();
@@ -70,10 +76,12 @@ void CSolverEuler::initializeSolutionArrays(){
         initializeSolutionFromScratch();
     }
 
+    // Compute the radial coordinate of the radial profile points at exit (station ni-1)
     size_t ni = _mesh.getNumberPointsI();
     size_t nj = _mesh.getNumberPointsJ();
     for (size_t j = 0; j < nj; j++) {
-        _radialProfileCoords[j] = std::sqrt(_mesh.getVertex(ni-1,j,0).y()*_mesh.getVertex(ni-1,j,0).y() + _mesh.getVertex(ni-1,j,0).z()*_mesh.getVertex(ni-1,j,0).z());
+        _radialProfileCoords[j] = std::sqrt(_mesh.getVertex(ni-1,j,0).y() * _mesh.getVertex(ni-1,j,0).y() + 
+                                            _mesh.getVertex(ni-1,j,0).z() * _mesh.getVertex(ni-1,j,0).z());
     }
 
 }

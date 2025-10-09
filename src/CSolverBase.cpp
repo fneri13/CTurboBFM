@@ -27,7 +27,6 @@ CSolverBase::CSolverBase(Config& config, CMesh& mesh)
     case ConvectionScheme::ROE:
         _advectionScheme = std::make_unique<CAdvectionSchemeROE>(_config, *_fluid);
         break;
-
     default:
         throw std::runtime_error("Unsupported convection scheme selected.");
     }

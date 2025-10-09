@@ -20,43 +20,64 @@ def shift_to_zero(res):
 
 def plot_turbo(data):
     
-    # mass flow plot
-    plt.figure()
-    plt.plot(data["Massflow[kg/s]"])
-    plt.grid(alpha=0.3)
-    plt.xlabel("Iteration [-]")
-    plt.ylabel(r"$\dot{m}$ [kg/s]")
-    plt.savefig("pictures/massflow.pdf", bbox_inches='tight')
+    # beta-m
+    fig, ax1 = plt.subplots()
+    ax1.plot(data["Massflow[kg/s]"], color='C0')
+    ax1.set_xlabel("Iteration [-]")
+    ax1.set_ylabel(r"$\dot{m}$ [kg/s]", color='C0')
+    ax1.tick_params(axis='y', labelcolor='C0')
+    ax1.grid(alpha=0.2)
+    ax2 = ax1.twinx()
+    ax2.plot(data["PRtt"], color='C1')
+    ax2.set_ylabel(r"$\beta_{tt}$ [-]", color='C1')
+    ax2.tick_params(axis='y', labelcolor='C1')
+    plt.savefig("pictures/massflow_betatt.pdf", bbox_inches='tight')
     
-    # beta plot
-    plt.figure()
-    plt.plot(data["PRtt"], label=r"$\beta_{tt}$")
-    plt.plot(data["TRtt"], label=r"$\tau_{tt}$")
-    plt.plot(data["ETAtt"], label=r"$\eta_{tt}$")
-    plt.grid(alpha=0.3)
-    plt.xlabel("Iteration [-]")
-    plt.legend()
-    plt.savefig("pictures/performance.pdf", bbox_inches='tight')
+    # eta-m plot
+    fig, ax1 = plt.subplots()
+    ax1.plot(data["Massflow[kg/s]"], color='C0')
+    ax1.set_xlabel("Iteration [-]")
+    ax1.set_ylabel(r"$\dot{m}$ [kg/s]", color='C0')
+    ax1.tick_params(axis='y', labelcolor='C0')
+    ax1.grid(alpha=0.2)
+    ax2 = ax1.twinx()
+    ax2.plot(data["ETAtt"], color='C2')
+    ax2.set_ylabel(r"$\eta_{tt}$ [-]", color='C2')
+    ax2.tick_params(axis='y', labelcolor='C2')
+    plt.savefig("pictures/massflow_etatt.pdf", bbox_inches='tight')
+    
+    # beta-eta plot
+    fig, ax1 = plt.subplots()
+    ax1.plot(data["PRtt"], color='C1')
+    ax1.set_xlabel("Iteration [-]")
+    ax1.set_ylabel(r"$\beta_{tt}$ [-]", color='C1')
+    ax1.tick_params(axis='y', labelcolor='C1')
+    ax1.grid(alpha=0.2)
+    ax2 = ax1.twinx()
+    ax2.plot(data["ETAtt"], color='C2')
+    ax2.set_ylabel(r"$\eta_{tt}$ [-]", color='C2')
+    ax2.tick_params(axis='y', labelcolor='C2')
+    plt.savefig("pictures/betatt_etatt.pdf", bbox_inches='tight')
     
     # beta evolution plot
     plt.figure()
     plt.plot(data["Massflow[kg/s]"], data["PRtt"], '-k', lw=0.5)
-    plt.scatter(data["Massflow[kg/s]"], data["PRtt"], c=np.linspace(1, len(data["Massflow[kg/s]"]), len(data["Massflow[kg/s]"])))
-    plt.grid(alpha=0.3)
+    plt.scatter(data["Massflow[kg/s]"], data["PRtt"], c=np.linspace(1, len(data["Massflow[kg/s]"]), len(data["Massflow[kg/s]"])), s=5, cmap='turbo')
+    plt.grid(alpha=0.2)
     plt.xlabel(r"$\dot{m}$ [kg/s]")
     plt.ylabel(r"$\beta_{tt}$ [-]")
     plt.colorbar()
-    plt.savefig("pictures/betaEvolution.pdf", bbox_inches='tight')
+    plt.savefig("pictures/betaTrajectory.pdf", bbox_inches='tight')
     
     # eta evolution plot
     plt.figure()
     plt.plot(data["Massflow[kg/s]"], data["ETAtt"], '-k', lw=0.5)
-    plt.scatter(data["Massflow[kg/s]"], data["ETAtt"], c=np.linspace(1, len(data["Massflow[kg/s]"]), len(data["Massflow[kg/s]"])))
-    plt.grid(alpha=0.3)
+    plt.scatter(data["Massflow[kg/s]"], data["ETAtt"], c=np.linspace(1, len(data["Massflow[kg/s]"]), len(data["Massflow[kg/s]"])), s=5, cmap='turbo')
+    plt.grid(alpha=0.2)
     plt.xlabel(r"$\dot{m}$ [kg/s]")
     plt.ylabel(r"$\eta_{tt}$ [-]")
     plt.colorbar()
-    plt.savefig("pictures/etaEvolution.pdf", bbox_inches='tight')
+    plt.savefig("pictures/etaTrajectory.pdf", bbox_inches='tight')
         
     plt.show()
     

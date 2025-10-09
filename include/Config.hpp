@@ -139,6 +139,8 @@ public:
 
     TimeStepMethod getTimeStepMethod() const;
 
+    FluidModel getFluidModel() const;
+
     ConvectionScheme getConvectionScheme() const;
 
     // get the coefficients for the Runge-Kutta time integration, taken from Simon thesis (page 64)

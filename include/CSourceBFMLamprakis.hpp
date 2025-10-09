@@ -6,7 +6,7 @@
 class CSourceBFMLamprakis : public CSourceBFMBase {
 public:
 
-    CSourceBFMLamprakis(const Config &config, const CFluid &fluid, const CMesh &mesh, std::map<TurboPerformance, std::vector<FloatType>> &turboPerformance);
+    CSourceBFMLamprakis(const Config &config, const CFluidBase &fluid, const CMesh &mesh, std::map<TurboPerformance, std::vector<FloatType>> &turboPerformance);
 
     virtual ~CSourceBFMLamprakis() = default;  
 

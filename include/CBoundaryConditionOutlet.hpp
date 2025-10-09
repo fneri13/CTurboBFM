@@ -19,7 +19,7 @@ class CBoundaryConditionOutlet : public CBoundaryConditionBase {
          * @param boundIndex The boundary index.
          * @param bcValues The outlet values (static pressure).
          */
-        CBoundaryConditionOutlet(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> bcValues);
+        CBoundaryConditionOutlet(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex, std::vector<FloatType> bcValues);
             
         virtual ~CBoundaryConditionOutlet() {}
 

@@ -1,6 +1,6 @@
 #include "CAdvectionSchemeBase.hpp"
 
-CAdvectionSchemeBase::CAdvectionSchemeBase(const Config &config, const CFluid &fluid)
+CAdvectionSchemeBase::CAdvectionSchemeBase(const Config &config, const CFluidBase &fluid)
     : _fluid(fluid), _config(config) 
 {
     _MUSCL = _config.getMUSCLreconstruction();

@@ -6,7 +6,7 @@
 class CSourceBFMThollet : public CSourceBFMBase {
 public:
 
-    CSourceBFMThollet(const Config &config, const CFluid &fluid, const CMesh &mesh) 
+    CSourceBFMThollet(const Config &config, const CFluidBase &fluid, const CMesh &mesh) 
         : CSourceBFMBase(config, fluid, mesh) {}
 
     virtual ~CSourceBFMThollet() = default;  

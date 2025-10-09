@@ -19,7 +19,7 @@ class CBoundaryConditionRadialEquilibrium : public CBoundaryConditionBase {
          * @param boundIndex The boundary index.
          * @param radialProfile reference to the radial profile of pressure used in the boundary condition flux evaluation.
          */
-        CBoundaryConditionRadialEquilibrium(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType>& radialProfile);
+        CBoundaryConditionRadialEquilibrium(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex, std::vector<FloatType>& radialProfile);
             
         virtual ~CBoundaryConditionRadialEquilibrium() {}
         

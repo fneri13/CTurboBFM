@@ -1,6 +1,6 @@
 #include "CSourceBFMChima.hpp"
 
-CSourceBFMChima::CSourceBFMChima(const Config &config, const CFluid &fluid, const CMesh &mesh,
+CSourceBFMChima::CSourceBFMChima(const Config &config, const CFluidBase &fluid, const CMesh &mesh,
                                   std::map<TurboPerformance, std::vector<FloatType>> &turboPerformance) 
     : CSourceBFMBase(config, fluid, mesh),
       _inputTable(config.getChimaScalingFunctionsFile()), _turboPerformance(turboPerformance)

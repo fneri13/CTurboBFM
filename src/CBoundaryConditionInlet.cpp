@@ -1,7 +1,7 @@
 #include "CBoundaryConditionInlet.hpp"
 #include "commonFunctions.hpp"
 
-CBoundaryConditionInlet::CBoundaryConditionInlet(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues)
+CBoundaryConditionInlet::CBoundaryConditionInlet(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues)
     : CBoundaryConditionBase(config, mesh, fluid, boundIndex) {
         _boundaryValues = inletValues;
     }

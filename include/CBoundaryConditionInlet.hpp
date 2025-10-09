@@ -18,7 +18,7 @@ class CBoundaryConditionInlet : public CBoundaryConditionBase {
          * @param boundIndex The boundary index.
          * @param inletValues The inlet values (total pressure, total temperature, flow direction).
          */
-        CBoundaryConditionInlet(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues);
+        CBoundaryConditionInlet(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues);
             
         virtual ~CBoundaryConditionInlet() {}
 

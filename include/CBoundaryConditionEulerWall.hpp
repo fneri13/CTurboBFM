@@ -16,7 +16,7 @@ class CBoundaryConditionEulerWall : public CBoundaryConditionBase {
          * @param fluid The fluid object.
          * @param boundIndex The boundary index.
          */
-        CBoundaryConditionEulerWall(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex);
+        CBoundaryConditionEulerWall(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex);
             
         virtual ~CBoundaryConditionEulerWall() {}
 

@@ -2,7 +2,7 @@
 #include "commonFunctions.hpp"
 
 
-COutputBase::COutputBase(const Config &config, const CMesh &mesh, const FlowSolution &solution, const CFluid &fluid, 
+COutputBase::COutputBase(const Config &config, const CMesh &mesh, const FlowSolution &solution, const CFluidBase &fluid, 
                         const Matrix3D<Vector3D> &inviscidForce, const Matrix3D<Vector3D> &viscousForce,
                         const Matrix3D<FloatType> &deviationAngle)
 

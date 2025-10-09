@@ -6,7 +6,7 @@
 class CSourceBFMNeri : public CSourceBFMBase {
 public:
 
-    CSourceBFMNeri(const Config &config, const CFluid &fluid, const CMesh &mesh) 
+    CSourceBFMNeri(const Config &config, const CFluidBase &fluid, const CMesh &mesh) 
         : CSourceBFMBase(config, fluid, mesh) {}
 
     virtual ~CSourceBFMNeri() = default;  

@@ -1,7 +1,7 @@
 #include "CBoundaryConditionPeriodic.hpp"
 #include "commonFunctions.hpp"
 
-CBoundaryConditionPeriodic::CBoundaryConditionPeriodic(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues)
+CBoundaryConditionPeriodic::CBoundaryConditionPeriodic(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues)
     : CBoundaryConditionBase(config, mesh, fluid, boundIndex) {
         _boundaryValues = inletValues;
         _periodicityAngle = _boundaryValues.at(0); // just an alias for it

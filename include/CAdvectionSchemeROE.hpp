@@ -12,7 +12,7 @@ class CAdvectionSchemeROE : public CAdvectionSchemeBase {
          * @brief Constructs the Roe scheme with a given fluid reference. Original Roe formulation, taken from Toro.
          * @param fluid The fluid object.
          */
-        CAdvectionSchemeROE(const Config &config, const CFluid& fluid)  : CAdvectionSchemeBase(config, fluid) {}
+        CAdvectionSchemeROE(const Config &config, CFluidBase& fluid)  : CAdvectionSchemeBase(config, fluid) {}
 
 
         /**

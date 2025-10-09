@@ -1,7 +1,8 @@
 #pragma once
 
 #include "types.hpp"
-#include "CFluid.hpp"
+#include "CFluidBase.hpp"
+#include "CFluidIdeal.hpp"
 #include "Config.hpp"
 
 /**
@@ -16,7 +17,7 @@ class CAdvectionSchemeBase {
          * @brief Constructs the advection scheme with a given fluid reference.
          * @param fluid The fluid object.
          */
-        CAdvectionSchemeBase(const Config &config, const CFluid &fluid);
+        CAdvectionSchemeBase(const Config &config, const CFluidBase &fluid);
 
         virtual ~CAdvectionSchemeBase() = default;  
 
@@ -44,7 +45,7 @@ class CAdvectionSchemeBase {
         StateVector computeLimiter(const StateVector& smoothness, FluxLimiter fluxLimiter) const;
 
     protected:
-        const CFluid& _fluid;  // fluid object used to compute the thermodynamic properties
+        const CFluidBase& _fluid;  // fluid object used to compute the thermodynamic properties
         const Config& _config; // configuration object for accessing simulation parameters
         bool _MUSCL = false; // flag for MUSCL scheme, default is false
         FluxLimiter _fluxLimiter = FluxLimiter::NONE; // flag for flux limiter

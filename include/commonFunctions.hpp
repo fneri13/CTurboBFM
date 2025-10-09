@@ -1,7 +1,8 @@
 #pragma once
 
 #include "types.hpp"
-#include "CFluid.hpp"
+#include "CFluidBase.hpp"
+#include "CFluidIdeal.hpp"
 #include <vector>
 #include <stdexcept>
 #include <algorithm>
@@ -19,9 +20,9 @@ StateVector getEulerPrimitiveFromConservative(StateVector conservative);
 
 StateVector getEulerConservativeFromPrimitive(StateVector primitive);
 
-StateVector computeEulerFluxFromPrimitive(StateVector primitive, Vector3D surface, CFluid fluid);
+StateVector computeEulerFluxFromPrimitive(StateVector primitive, Vector3D surface, const CFluidBase& fluid);
 
-StateVector computeEulerFluxFromConservative(StateVector conservative, Vector3D surface, CFluid fluid);
+StateVector computeEulerFluxFromConservative(StateVector conservative, Vector3D surface, const CFluidBase& fluid);
 
 FloatType computeAngleBetweenVectors(const Vector3D& v1, const Vector3D& v2);
 

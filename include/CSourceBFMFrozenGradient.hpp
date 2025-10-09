@@ -6,7 +6,7 @@
 class CSourceBFMFrozenGradient : public CSourceBFMBase {
 public:
 
-    CSourceBFMFrozenGradient(const Config &config, const CFluid &fluid, const CMesh &mesh) 
+    CSourceBFMFrozenGradient(const Config &config, const CFluidBase &fluid, const CMesh &mesh) 
         : CSourceBFMBase(config, fluid, mesh) {}
 
     virtual ~CSourceBFMFrozenGradient() = default;  

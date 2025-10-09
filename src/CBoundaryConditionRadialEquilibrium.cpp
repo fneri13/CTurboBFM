@@ -1,7 +1,7 @@
 #include "CBoundaryConditionRadialEquilibrium.hpp"
 #include "commonFunctions.hpp"
 
-CBoundaryConditionRadialEquilibrium::CBoundaryConditionRadialEquilibrium(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType>& pressure)
+CBoundaryConditionRadialEquilibrium::CBoundaryConditionRadialEquilibrium(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex, std::vector<FloatType>& pressure)
     : CBoundaryConditionBase(config, mesh, fluid, boundIndex), _radialPressureProfile(pressure){}
 
 

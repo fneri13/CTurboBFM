@@ -1056,3 +1056,8 @@ enum class Direction3D {
     BOTTOM=4,
     TOP=5
 };
+
+enum class FluidModel {
+    IDEAL = 0,
+    REAL = 1
+};

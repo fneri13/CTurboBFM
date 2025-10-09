@@ -17,7 +17,7 @@ class CBoundaryConditionPeriodic : public CBoundaryConditionBase {
          * @param boundIndex The boundary index.
          * @param inletValues The inlet values (total pressure, total temperature, flow direction).
          */
-        CBoundaryConditionPeriodic(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues);
+        CBoundaryConditionPeriodic(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues);
             
         virtual ~CBoundaryConditionPeriodic() {}
 

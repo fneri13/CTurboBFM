@@ -6,7 +6,7 @@
 class CSourceBFMLiftDrag : public CSourceBFMBase {
 public:
 
-    CSourceBFMLiftDrag(const Config &config, const CFluid &fluid, const CMesh &mesh) 
+    CSourceBFMLiftDrag(const Config &config, const CFluidBase &fluid, const CMesh &mesh) 
         : CSourceBFMBase(config, fluid, mesh) {}
 
     virtual ~CSourceBFMLiftDrag() = default;  

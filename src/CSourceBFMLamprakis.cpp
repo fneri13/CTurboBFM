@@ -1,6 +1,6 @@
 #include "CSourceBFMLamprakis.hpp"
 
-CSourceBFMLamprakis::CSourceBFMLamprakis(const Config &config, const CFluid &fluid, const CMesh &mesh,
+CSourceBFMLamprakis::CSourceBFMLamprakis(const Config &config, const CFluidBase &fluid, const CMesh &mesh,
                                   std::map<TurboPerformance, std::vector<FloatType>> &turboPerformance) 
     : CSourceBFMBase(config, fluid, mesh), _turboPerformance(turboPerformance)
 {}

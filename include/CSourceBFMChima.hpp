@@ -6,7 +6,7 @@
 class CSourceBFMChima : public CSourceBFMBase {
 public:
 
-    CSourceBFMChima(const Config &config, const CFluid &fluid, const CMesh &mesh, std::map<TurboPerformance, std::vector<FloatType>> &turboPerformance);
+    CSourceBFMChima(const Config &config, const CFluidBase &fluid, const CMesh &mesh, std::map<TurboPerformance, std::vector<FloatType>> &turboPerformance);
 
     virtual ~CSourceBFMChima() = default;  
 

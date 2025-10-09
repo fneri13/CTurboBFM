@@ -16,10 +16,6 @@ StateVector CAdvectionSchemeROE::computeFlux(
     StateVector Wrr = getEulerPrimitiveFromConservative(Urr);
     StateVector Wll = getEulerPrimitiveFromConservative(Ull);
 
-    // if (std::abs(Wl[0]-Wr[0])>1e-3) {
-    //     std::cout<<"flag";
-    // }
-
     if (_MUSCL){
         reconstructMUSCL(Wll, Wl, Wr, Wrr, _fluxLimiter);
     }

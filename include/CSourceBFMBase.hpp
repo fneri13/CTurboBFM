@@ -3,7 +3,8 @@
 #include "types.hpp"
 #include "CMesh.hpp"
 #include "Config.hpp"
-#include "CFluid.hpp"
+#include "CFluidBase.hpp"
+#include "CFluidIdeal.hpp"
 #include "commonFunctions.hpp"
 #include "CInputTable.hpp"
 
@@ -11,7 +12,7 @@
 class CSourceBFMBase {
 public:
 
-    CSourceBFMBase(const Config &config, const CFluid &fluid, const CMesh &mesh);
+    CSourceBFMBase(const Config &config, const CFluidBase &fluid, const CMesh &mesh);
 
     virtual ~CSourceBFMBase() = default;  
 
@@ -20,7 +21,7 @@ public:
 protected:
     const Config& _config;
     
-    const CFluid& _fluid;
+    const CFluidBase& _fluid;
     
     const CMesh& _mesh;
 

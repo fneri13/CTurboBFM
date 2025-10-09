@@ -12,7 +12,7 @@ class CAdvectionSchemeJST : public CAdvectionSchemeBase {
          * @brief Constructs the JST scheme with a given fluid reference. Original Jameson formulation.
          * @param fluid The fluid object.
          */
-        CAdvectionSchemeJST(const Config &config, const CFluid& fluid) : CAdvectionSchemeBase(config, fluid) {}
+        CAdvectionSchemeJST(const Config &config, const CFluidBase& fluid) : CAdvectionSchemeBase(config, fluid) {}
 
 
         /**

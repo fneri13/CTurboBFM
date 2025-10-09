@@ -1,7 +1,7 @@
 #include "CBoundaryConditionWedge.hpp"
 #include "commonFunctions.hpp"
 
-CBoundaryConditionWedge::CBoundaryConditionWedge(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex)
+CBoundaryConditionWedge::CBoundaryConditionWedge(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex)
     : CBoundaryConditionBase(config, mesh, fluid, boundIndex) {
     }
 

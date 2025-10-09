@@ -20,7 +20,7 @@ class CBoundaryConditionThrottle : public CBoundaryConditionBase {
          * @param radialProfile reference to the radial profile of pressure used in the boundary condition flux evaluation.
          * @param bcValues The outlet values (throttle coefficient [Pa/(kgs)^2]).
          */
-        CBoundaryConditionThrottle(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType>& radialProfile);
+        CBoundaryConditionThrottle(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex, std::vector<FloatType>& radialProfile);
             
         virtual ~CBoundaryConditionThrottle() {}
         

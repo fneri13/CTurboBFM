@@ -408,3 +408,18 @@ FluxLimiter Config::getFluxLimiter() const {
             throw std::runtime_error("Invalid value for key \"FLUX_LIMITER\" in configuration.");
         }
     }
+
+    FluidModel Config::getFluidModel() const {
+    std::string value = parseString("FLUID_MODEL", true);
+    FluidModel model = FluidModel::IDEAL;
+    if (value == "None" || value == "Ideal" || value == "ideal" || value == "IDEAL") {
+        model = FluidModel::IDEAL;
+    } 
+    else if (value == "real" || value == "Real" || value == "REAL") {
+        model = FluidModel::REAL;
+    }
+    else {
+        throw std::runtime_error("Invalid value for key \"FLUID_MODEL\" in configuration.");
+    }
+    return model;
+}

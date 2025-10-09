@@ -1,7 +1,7 @@
 #include "CBoundaryConditionInletSupersonic.hpp"
 #include "commonFunctions.hpp"
 
-CBoundaryConditionInletSupersonic::CBoundaryConditionInletSupersonic(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues)
+CBoundaryConditionInletSupersonic::CBoundaryConditionInletSupersonic(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues)
     : CBoundaryConditionBase(config, mesh, fluid, boundIndex) {
         _boundaryValues = inletValues;
     }

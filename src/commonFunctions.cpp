@@ -65,7 +65,7 @@ StateVector getEulerConservativeFromPrimitive(StateVector primitive){
 }
 
 
-StateVector computeEulerFluxFromPrimitive(StateVector primitive, Vector3D surface, CFluid fluid){
+StateVector computeEulerFluxFromPrimitive(StateVector primitive, Vector3D surface, const CFluidBase& fluid){
     Vector3D normal = surface / surface.magnitude();
     Vector3D velocity = {primitive[1], primitive[2], primitive[3]};
     FloatType normalVelocity = velocity.dot(normal);
@@ -83,7 +83,7 @@ StateVector computeEulerFluxFromPrimitive(StateVector primitive, Vector3D surfac
 }
 
 
-StateVector computeEulerFluxFromConservative(StateVector conservative, Vector3D surface, CFluid fluid){
+StateVector computeEulerFluxFromConservative(StateVector conservative, Vector3D surface, const CFluidBase& fluid){
     StateVector primitive = getEulerPrimitiveFromConservative(conservative);
     StateVector flux = computeEulerFluxFromPrimitive(primitive, surface, fluid);
     return flux;

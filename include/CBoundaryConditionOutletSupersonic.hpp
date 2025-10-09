@@ -19,7 +19,7 @@ class CBoundaryConditionOutletSupersonic : public CBoundaryConditionBase {
          * @param boundIndex The boundary index.
          * @param bcValues The outlet values (static pressure, even if not needed here).
          */
-        CBoundaryConditionOutletSupersonic(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> bcValues);
+        CBoundaryConditionOutletSupersonic(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex, std::vector<FloatType> bcValues);
             
         virtual ~CBoundaryConditionOutletSupersonic() {}
 

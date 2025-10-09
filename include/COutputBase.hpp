@@ -13,7 +13,7 @@
 class COutputBase {
     
     public:
-        COutputBase(const Config &config, const CMesh &mesh, const FlowSolution &solution, const CFluid &fluid, 
+        COutputBase(const Config &config, const CMesh &mesh, const FlowSolution &solution, const CFluidBase &fluid, 
                     const Matrix3D<Vector3D> &inviscidForce, const Matrix3D<Vector3D> &viscousForce, 
                     const Matrix3D<FloatType> &deviationAngle);
         
@@ -27,7 +27,7 @@ class COutputBase {
         const Config& _config;
         const CMesh& _mesh;
         const FlowSolution& _solution;
-        const CFluid& _fluid;
+        const CFluidBase& _fluid;
         const Matrix3D<Vector3D>& _inviscidForce;
         const Matrix3D<Vector3D>& _viscousForce;
         const Matrix3D<FloatType>& _deviationAngle;

@@ -18,7 +18,7 @@ class CBoundaryConditionWedge : public CBoundaryConditionBase {
          * @param fluid The fluid object.
          * @param boundIndex The boundary index.
          */
-        CBoundaryConditionWedge(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex);
+        CBoundaryConditionWedge(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex);
             
         virtual ~CBoundaryConditionWedge() {}
 

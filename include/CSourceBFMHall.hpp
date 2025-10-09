@@ -6,7 +6,7 @@
 class CSourceBFMHall : public CSourceBFMBase {
 public:
 
-    CSourceBFMHall(const Config &config, const CFluid &fluid, const CMesh &mesh) 
+    CSourceBFMHall(const Config &config, const CFluidBase &fluid, const CMesh &mesh) 
         : CSourceBFMBase(config, fluid, mesh) {}
 
     virtual ~CSourceBFMHall() = default;  

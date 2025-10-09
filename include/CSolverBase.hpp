@@ -3,7 +3,8 @@
 #include "types.hpp"
 #include "Config.hpp"
 #include "CMesh.hpp"
-#include "CFluid.hpp"
+#include "CFluidBase.hpp"
+#include "CFluidIdeal.hpp"
 #include "CAdvectionSchemeBase.hpp"
 #include "CAdvectionSchemeJST.hpp"
 #include "CAdvectionSchemeROE.hpp"
@@ -59,7 +60,7 @@ class CSolverBase {
 
         std::vector<FloatType> _time;
         
-        std::unique_ptr<CFluid> _fluid;
+        std::unique_ptr<CFluidBase> _fluid;
 
         std::unique_ptr<CAdvectionSchemeBase> _advectionScheme;
         
@@ -84,6 +85,8 @@ class CSolverBase {
         std::vector<std::map<MonitorOutputFields, std::vector<FloatType>>> _monitorPoints; // vector of maps of monitor points data
 
         size_t _residualsDropConvergence = 16;
+
+        FluidModel _fluidModel = FluidModel::IDEAL;
 
         
 

@@ -1,7 +1,7 @@
 #include "CBoundaryConditionThrottle.hpp"
 #include "commonFunctions.hpp"
 
-CBoundaryConditionThrottle::CBoundaryConditionThrottle(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType>& pressure)
+CBoundaryConditionThrottle::CBoundaryConditionThrottle(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex, std::vector<FloatType>& pressure)
     : CBoundaryConditionBase(config, mesh, fluid, boundIndex), _radialPressureProfile(pressure){}
 
 

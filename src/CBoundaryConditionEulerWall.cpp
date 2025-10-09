@@ -1,7 +1,7 @@
 #include "CBoundaryConditionEulerWall.hpp"
 #include "commonFunctions.hpp"
 
-CBoundaryConditionEulerWall::CBoundaryConditionEulerWall(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex)
+CBoundaryConditionEulerWall::CBoundaryConditionEulerWall(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex)
     : CBoundaryConditionBase(config, mesh, fluid, boundIndex) {}
 
 

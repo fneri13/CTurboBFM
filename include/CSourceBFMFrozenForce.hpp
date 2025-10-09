@@ -6,7 +6,7 @@
 class CSourceBFMFrozenForce : public CSourceBFMBase {
 public:
 
-    CSourceBFMFrozenForce(const Config &config, const CFluid &fluid, const CMesh &mesh) 
+    CSourceBFMFrozenForce(const Config &config, const CFluidBase &fluid, const CMesh &mesh) 
         : CSourceBFMBase(config, fluid, mesh) {}
 
     virtual ~CSourceBFMFrozenForce() = default;  

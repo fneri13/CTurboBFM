@@ -1,7 +1,7 @@
 #include "CSourceBFMBase.hpp"
 
 
-CSourceBFMBase::CSourceBFMBase(const Config &config, const CFluid &fluid, const CMesh &mesh) 
+CSourceBFMBase::CSourceBFMBase(const Config &config, const CFluidBase &fluid, const CMesh &mesh) 
         : _config(config), _fluid(fluid), _mesh(mesh) {
 
             // read data associated to body force perturbation

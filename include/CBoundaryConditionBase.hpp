@@ -3,7 +3,8 @@
 #include "types.hpp"
 #include "Config.hpp"
 #include "CMesh.hpp"
-#include "CFluid.hpp"
+#include "CFluidBase.hpp"
+#include "CFluidIdeal.hpp"
 
 /**
  * @brief Abstract base class for boundary condition flux calculation.
@@ -20,7 +21,7 @@ class CBoundaryConditionBase {
          * @param fluid The fluid object.
          * @param boundIndex The boundary index.
          */
-        CBoundaryConditionBase(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex) 
+        CBoundaryConditionBase(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex) 
             : _config(config), _mesh(mesh), _fluid(fluid), _boundaryIndex(boundIndex){};
             
         virtual ~CBoundaryConditionBase() {}
@@ -39,7 +40,7 @@ class CBoundaryConditionBase {
     protected:
         const Config& _config;
         const CMesh& _mesh;
-        const CFluid& _fluid;
+        const CFluidBase& _fluid;
         const BoundaryIndices _boundaryIndex;
         
 };

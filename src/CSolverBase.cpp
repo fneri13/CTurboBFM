@@ -15,7 +15,17 @@ CSolverBase::CSolverBase(Config& config, CMesh& mesh)
 
     _residualsDropConvergence = _config.getResidualsDropConvergence();  
 
-    _fluid = std::make_unique<CFluid>(_config.getFluidGamma(), _config.getFluidGasConstant());
+    _fluidModel = _config.getFluidModel();
+    if (_fluidModel == FluidModel::IDEAL){
+        _fluid = std::make_unique<CFluidIdeal>(_config.getFluidGamma(), _config.getFluidGasConstant());
+    }
+    else if (_fluidModel == FluidModel::REAL){
+        throw std::runtime_error("Real fluid model not implemented yet.");
+        // _fluid = std::make_unique<CFluidReal>(_config.getFluidRealDataFile());
+    }
+    else{
+        throw std::runtime_error("Unsupported fluid model selected.");
+    }
 
     ConvectionScheme advScheme = _config.getConvectionScheme();
 

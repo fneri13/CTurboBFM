@@ -10,7 +10,7 @@
 class CBoundaryConditionInletSupersonic : public CBoundaryConditionBase {
     
     public:
-        CBoundaryConditionInletSupersonic(const Config &config, const CMesh &mesh, CFluid &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues);
+        CBoundaryConditionInletSupersonic(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues);
             
         virtual ~CBoundaryConditionInletSupersonic() {}
 

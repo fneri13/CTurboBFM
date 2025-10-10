@@ -23,23 +23,14 @@ FloatType CFluidIdeal::computeSoundSpeed_p_rho(FloatType p, FloatType rho) const
     return std::sqrt(_gamma * p / rho);
 }
 
-FloatType CFluidIdeal::computeStaticEnergy_u_et(const Vector3D& vel, FloatType et) const {
-    FloatType velMag2 = std::pow(vel.magnitude(), 2);
-    return et - 0.5 * velMag2;
-}
-
-FloatType CFluidIdeal::computeStaticEnergy_u_et(FloatType velMag, FloatType et) const {
-    return et - 0.5 * velMag * velMag;
-}
-
 FloatType CFluidIdeal::computeSoundSpeed_rho_u_et(FloatType rho, const Vector3D& u, FloatType et) const {
-    FloatType e = computeStaticEnergy_u_et(u, et);
+    FloatType e = computeStaticEnergy_u_et(u.magnitude(), et);
     FloatType p = computePressure_rho_e(rho, e);
     return computeSoundSpeed_p_rho(p, rho);
 }
 
 FloatType CFluidIdeal::computePressure_rho_u_et(FloatType rho, const Vector3D& u, FloatType et) const {
-    FloatType e = computeStaticEnergy_u_et(u, et);
+    FloatType e = computeStaticEnergy_u_et(u.magnitude(), et);
     return computePressure_rho_e(rho, e);
 }
 
@@ -61,7 +52,7 @@ FloatType CFluidIdeal::computeTemperature_rho_u_et(FloatType rho, const Vector3D
 }
 
 FloatType CFluidIdeal::computeTotalEnthalpy_rho_u_et(FloatType rho, const Vector3D& u, FloatType et) const {
-    FloatType e = computeStaticEnergy_u_et(u, et);
+    FloatType e = computeStaticEnergy_u_et(u.magnitude(), et);
     FloatType p = computePressure_rho_e(rho, e);
     return et + p / rho;
 }

@@ -5,6 +5,7 @@
 #include "CMesh.hpp"
 #include "CFluidBase.hpp"
 #include "CFluidIdeal.hpp"
+#include "CFluidReal.hpp"
 #include "CAdvectionSchemeBase.hpp"
 #include "CAdvectionSchemeJST.hpp"
 #include "CAdvectionSchemeROE.hpp"
@@ -21,6 +22,7 @@
 #include <memory>
 #include <vector>
 #include <array>
+#include "CoolProp.h"
 
 
 /** 

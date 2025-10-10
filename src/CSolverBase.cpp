@@ -20,8 +20,7 @@ CSolverBase::CSolverBase(Config& config, CMesh& mesh)
         _fluid = std::make_unique<CFluidIdeal>(_config.getFluidGamma(), _config.getFluidGasConstant());
     }
     else if (_fluidModel == FluidModel::REAL){
-        throw std::runtime_error("Real fluid model not implemented yet.");
-        // _fluid = std::make_unique<CFluidReal>(_config.getFluidRealDataFile());
+        _fluid = std::make_unique<CFluidReal>(_config.getFluidName());
     }
     else{
         throw std::runtime_error("Unsupported fluid model selected.");

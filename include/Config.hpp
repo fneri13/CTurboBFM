@@ -91,6 +91,8 @@ public:
 
     FloatType getFluidGamma() const {return parseFloat("FLUID_GAMMA");} 
 
+    std::string getFluidName() const {return parseString("FLUID_NAME");} 
+
     FloatType getFluidGasConstant() const {return parseFloat("FLUID_R_CONSTANT");} 
     
     FloatType getFluidKinematicViscosity() const {return parseFloat("FLUID_KINEMATIC_VISCOSITY");} 

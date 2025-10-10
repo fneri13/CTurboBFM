@@ -1,5 +1,6 @@
 #pragma once
 #include "types.hpp"
+#include "CoolProp.h"
 
 // Class for ideal gases
 class CFluidBase {
@@ -38,20 +39,15 @@ public:
      * @return Speed of sound [m/s]
     */
     virtual FloatType computeSoundSpeed_p_rho(FloatType p, FloatType rho) const = 0;
-
-    /** Compute static energy from velocity vector and total energy
-     * @param vel Velocity vector [m/s]
-     * @param et Total energy [J/kg]
-     * @return Static energy [J/kg]
-    */
-    virtual FloatType computeStaticEnergy_u_et(const Vector3D& vel, FloatType et) const = 0;
     
     /** Compute static energy from velocity magnitude and total energy
      * @param velMag Velocity magnitude [m/s]
      * @param et Total energy [J/kg]
      * @return Static energy [J/kg]
     */
-    virtual FloatType computeStaticEnergy_u_et(FloatType velMag, FloatType et) const = 0;
+    inline FloatType computeStaticEnergy_u_et(FloatType velMag, FloatType et) const {
+        return et - 0.5 * velMag * velMag;
+    };
 
     /** Compute speed of sound from density, velocity vector, and total energy
      * @param rho Density [kg/m³]
@@ -193,7 +189,7 @@ public:
     /** Get specific heat ratio gamma
      * @return Gamma [-]
     */
-    virtual FloatType getGamma() const = 0;
+    virtual FloatType getGamma() const { return 1.4; };
 
 private:
     

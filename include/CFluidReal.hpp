@@ -1,16 +1,20 @@
 #pragma once
 #include "types.hpp"
 #include "CFluidBase.hpp"
+#include "CoolProp.h"
+#include "AbstractState.h"
+#include <memory>
+#include <iostream>
+
 
 // Class for ideal gases
-class CFluidIdeal : public CFluidBase {
+class CFluidReal : public CFluidBase {
 public:
 
-    /** Constructor for ideal gas
-     * @param gamma Specific heat ratio cp/cv [-]
-     * @param R Gas constant [J/kgK]
+    /** Constructor for real gas
+     * @param fluidName Name of the fluid according to CoolProp
     */
-    CFluidIdeal(FloatType gamma, FloatType R);
+    CFluidReal(std::string fluidName);
 
     /** Compute static energy from pressure and density
      * @param p Pressure [Pa]
@@ -170,11 +174,6 @@ public:
     */
     FloatType computePressure_primitive(StateVector primitive) const override;
 
-    /** Get specific heat ratio gamma
-     * @return Gamma [-]
-    */
-    FloatType getGamma() const { return _gamma; }
-
     /** Compute total efficiency from total pressure and temperature ratios
      * @param pressureRatio Total pressure ratio P0_exit / P0_inlet [-]
      * @param temperatureRatio Total temperature ratio T0_exit / T0_inlet [-]
@@ -183,8 +182,5 @@ public:
     FloatType computeTotalEfficiency_PRtt_TRt(FloatType pressureRatio, FloatType temperatureRatio) const override;
 
 private:
-    FloatType _gamma;  ///< Specific heat ratio
-    FloatType _R;      ///< Specific gas constant [J/kgK]
-    FloatType _cp;     ///< Specific heat at constant pressure [J/kgK]
-    FloatType _cv;     ///< Specific heat at constant volume [J/kgK]
+    std::string _fluidName; ///< Name of the fluid according to CoolProp
 };

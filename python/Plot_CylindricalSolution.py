@@ -7,7 +7,7 @@ import pandas as pd
 import argparse
 import os
 import matplotlib.pyplot as plt
-from styles import *
+# from styles import *
 
 
 
@@ -36,6 +36,9 @@ def GetDataDict(input_filename, field):
     new_dict['x'] = data_dict['x']
     new_dict['y'] = data_dict['y']
     new_dict['z'] = data_dict['z']
+    new_dict['axial'] = data_dict['x']
+    new_dict['radial'] = np.sqrt(data_dict['y']**2 + data_dict['z']**2)
+    new_dict['theta'] = np.arctan2(data_dict['z'], data_dict['y'])
     new_dict[field] = data_dict[fieldName]
     return new_dict
 
@@ -68,69 +71,65 @@ def Plot1D(data, iSlice, jSlice, kSlice, fieldName):
     if iSlice ==':':
         j = int(jSlice)
         k = int(kSlice)
-        x = data['x'][:,j,k]
+        xlabel = r'i'
         values = data[fieldName][:,j,k]
-        xlabel = 'X [m]'
-        title = f'alongI_j:{j}_k:{k}'
+        title = f"j-{j}_k-{k}"
     elif jSlice ==':':
         i = int(iSlice)
         k = int(kSlice)
-        x = data['y'][i,:,k]
+        xlabel = r'j'
         values = data[fieldName][i,:,k]
-        xlabel = 'Y [m]'
-        title = f'alongJ_i:{i}_k:{k}'
+        title = f"i-{i}_k-{k}"
     elif kSlice ==':':
         i = int(iSlice)
         j = int(jSlice)
-        x = data['z'][i,j,:]*180/np.pi
+        xlabel = r'k'
         values = data[fieldName][i,j,:]
-        xlabel = 'Z [m]'
-        title = f'alongK_i:{i}_j:{j}'
+        title = f"i-{i}_j-{j}"
     
     plt.figure()
-    plt.plot(x, values, '-o', mfc='none')
+    plt.plot(values, '-o', mfc='none')
     plt.xlabel(xlabel)
     plt.ylabel(fieldName)
     plt.grid(alpha=0.2)
-    # plt.title(title)
+    plt.title(f"{title}")
     plt.savefig(f"pictures/{fieldName}_1D_plot_{title}.pdf", bbox_inches='tight')
 
 
 
 
 def Plot2D(data, iSlice, jSlice, kSlice, fieldName):
-    if iSlice ==':':
-        if jSlice ==':':
-            k = int(kSlice)
-            x = data['x'][:,:,k]
-            xlabel = 'X [m]'
-            y = data['y'][:,:,k]
-            ylabel = 'Y [m]'
-            values = data[fieldName][:,:,k]
-            title = 'kPlane:'+str(k)
-        elif kSlice ==':':
-            j = int(jSlice)
-            x = data['x'][:,j,:]
-            xlabel = 'X [m]'
-            y = data['z'][:,j,:]
-            ylabel = 'Z [m]'
-            values = data[fieldName][:,j,:]
-            title = 'jPlane:'+str(j)
-    elif jSlice ==':':
+    if iSlice == ':' and jSlice == ':':
+        k = int(kSlice)
+        x = data['axial'][:, :, k]
+        y = data['radial'][:, :, k]
+        values = data[fieldName][:, :, k]
+        xlabel, ylabel = r'$x$ [m]', r'$r$ [m]'
+        title = f"kPlane-{k}"
+
+    elif iSlice == ':' and kSlice == ':':
+        j = int(jSlice)
+        x = data['axial'][:, j, :]
+        y = data['radial'][:, j, :] * data['theta'][:, j, :]
+        values = data[fieldName][:, j, :]
+        xlabel, ylabel = r'$x$ [m]', r'$r\theta$ [m]'
+        title = f"jPlane-{j}"
+
+    elif jSlice == ':' and kSlice == ':':
         i = int(iSlice)
-        x = data['y'][i,:,:]
-        xlabel = 'Y [m]'
-        y = data['z'][i,:,:]
-        ylabel = 'Z [m]'
-        values = data[fieldName][i,:,:]
-        title = 'iPlane:'+str(i)
+        x = data['axial'][i, :, :]
+        y = data['radial'][i, :, :] * data['theta'][i, :, :]
+        values = data[fieldName][i, :, :]
+        xlabel, ylabel = r'$x$ [m]', r'$r\theta$ [m]'
+        title = f"iPlane-{i}"
+
     else:
-        raise ValueError("Something wrong in the selection process of the 2D contour")
+        raise ValueError("Exactly one slice index should be numeric, others ':'")
     
     plt.figure()
     plt.contourf(x, y, values, cmap = 'turbo', levels=30)
     plt.colorbar()
-    plt.title(fieldName)
+    plt.title(f"{fieldName} at {title}")
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.gca().set_aspect('equal', adjustable='box')

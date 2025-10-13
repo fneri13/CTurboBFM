@@ -21,6 +21,8 @@ protected:
 
     void computeStreamwiseCoefficient(size_t i, size_t j, size_t k);
 
+    FloatType computeCompressibilityCorrection(const Vector3D& relativeVelocityCylindric, const StateVector& primitive);
+
 
 private:
 

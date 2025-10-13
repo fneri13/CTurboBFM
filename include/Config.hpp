@@ -135,6 +135,8 @@ public:
 
     size_t getResidualsDropConvergence() const {return static_cast<size_t>(parseInt("RESIDUALS_DROP_CONVERGENCE", 16));}
 
+    size_t getTrailingEdgeIndex() const {return static_cast<size_t>(parseInt("TRAILING_EDGE_INDEX"));}
+
     TimeIntegration getTimeIntegration() const;
 
     TimeStepMethod getTimeStepMethod() const;

@@ -199,7 +199,8 @@ private:
      * @param[out] inputTemperature The temperature matrix
     */
     void readRestartFile(const std::string &restartFileName, size_t &NI, size_t &NJ, size_t &NK,
-                        Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature);
+                        Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, 
+                        Matrix3D<FloatType> &inputTemperature, Matrix3D<Vector3D> &inputForceViscous, Matrix3D<Vector3D> &inputForceInviscid);
     
 
     /** @brief initialize the solution from restart file in axysymmetric mode (NI and NJ must be equal to input file)
@@ -219,6 +220,8 @@ private:
      * @param[out] inputVelZ The z velocity matrix
      * @param[out] inputTemperature The temperature matrix
     */
-    void standardRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature);
+    void standardRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, 
+                         Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature, Matrix3D<Vector3D> &inputForceViscous, 
+                         Matrix3D<Vector3D> &inputForceInviscid);
 
 };

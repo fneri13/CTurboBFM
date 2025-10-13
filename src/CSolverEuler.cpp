@@ -130,8 +130,10 @@ void CSolverEuler::initializeSolutionFromRestart(){
     Matrix3D<FloatType> inputVelY;
     Matrix3D<FloatType> inputVelZ;
     Matrix3D<FloatType> inputTemperature;
+    Matrix3D<Vector3D> inputForceViscous;
+    Matrix3D<Vector3D> inputForceInviscid;
     
-    readRestartFile(restartFileName, NI, NJ, NK, inputDensity, inputVelX, inputVelY, inputVelZ, inputTemperature);
+    readRestartFile(restartFileName, NI, NJ, NK, inputDensity, inputVelX, inputVelY, inputVelZ, inputTemperature, inputForceViscous, inputForceInviscid);
 
     if (NI != _nPointsI || NJ != _nPointsJ || NK != _nPointsK) {
         if (NI == _nPointsI && NJ == _nPointsJ && _config.getRestartType()=="axisymmetric") {
@@ -147,13 +149,15 @@ void CSolverEuler::initializeSolutionFromRestart(){
         }
     }
     else {
-        standardRestart(inputDensity, inputVelX, inputVelY, inputVelZ, inputTemperature);
+        standardRestart(inputDensity, inputVelX, inputVelY, inputVelZ, inputTemperature, inputForceViscous, inputForceInviscid);
     }
     
 }
 
 
-void CSolverEuler::standardRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature) {
+void CSolverEuler::standardRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, 
+                                   Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature, Matrix3D<Vector3D> &inputForceViscous, 
+                                   Matrix3D<Vector3D> &inputForceInviscid) {
     for (size_t i=0; i<_nPointsI; i++) {
         for (size_t j=0; j<_nPointsJ; j++){
             for (size_t k=0; k<_nPointsK; k++){
@@ -170,6 +174,10 @@ void CSolverEuler::standardRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<F
         }
     }
     std::cout << "Standard initialization done.\n";
+
+    _viscousForce = inputForceViscous;
+    _inviscidForce = inputForceInviscid;
+
 }
 
 
@@ -203,7 +211,8 @@ void CSolverEuler::axisymmetricRestart(Matrix3D<FloatType> &inputDensity, Matrix
 
 
 void CSolverEuler::readRestartFile(const std::string &restartFileName, size_t &NI, size_t &NJ, size_t &NK,
-                                   Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature) {
+                                   Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, 
+                                   Matrix3D<FloatType> &inputTemperature, Matrix3D<Vector3D> &inputForceViscous, Matrix3D<Vector3D> &inputForceInviscid) {
 
     std::ifstream file(restartFileName);
     if (!file.is_open()) {
@@ -223,6 +232,13 @@ void CSolverEuler::readRestartFile(const std::string &restartFileName, size_t &N
     inputVelZ.resize(NI, NJ, NK);
     inputTemperature.resize(NI, NJ, NK);
 
+    bool chimaInputActive = _config.isBFMActive() && _config.getBFMModel()==BFM_Model::CHIMA;
+
+    if (chimaInputActive){
+        inputForceViscous.resize(NI, NJ, NK);
+        inputForceInviscid.resize(NI, NJ, NK);
+    }
+
     // Read header
     std::getline(file, line);
     std::istringstream headerStream(line);
@@ -240,6 +256,21 @@ void CSolverEuler::readRestartFile(const std::string &restartFileName, size_t &N
     size_t iVelZ        = columnIndex["Velocity Z"];
     size_t iTemperature = columnIndex["Temperature"];
 
+    size_t iForceInviscidX{0};
+    size_t iForceInviscidY{0};
+    size_t iForceInviscidZ{0};
+    size_t iForceViscousX{0};
+    size_t iForceViscousY{0};
+    size_t iForceViscousZ{0};
+    if (chimaInputActive){
+        iForceInviscidX    = columnIndex["Inviscid Body Force X"];
+        iForceInviscidY    = columnIndex["Inviscid Body Force Y"];
+        iForceInviscidZ    = columnIndex["Inviscid Body Force Z"];
+        iForceViscousX     = columnIndex["Viscous Body Force X"];
+        iForceViscousY     = columnIndex["Viscous Body Force Y"];
+        iForceViscousZ     = columnIndex["Viscous Body Force Z"];
+    }
+
     // Read data
     size_t i = 0, j = 0, k = 0;
     while (std::getline(file, line)) {
@@ -256,6 +287,15 @@ void CSolverEuler::readRestartFile(const std::string &restartFileName, size_t &N
         inputVelY(i,j,k)        = row[iVelY];
         inputVelZ(i,j,k)        = row[iVelZ];
         inputTemperature(i,j,k) = row[iTemperature];
+
+        if (chimaInputActive){
+            inputForceInviscid(i,j,k).x() = row[iForceInviscidX];
+            inputForceInviscid(i,j,k).y() = row[iForceInviscidY];
+            inputForceInviscid(i,j,k).z() = row[iForceInviscidZ];
+            inputForceViscous(i,j,k).x()  = row[iForceViscousX];
+            inputForceViscous(i,j,k).y()  = row[iForceViscousY];
+            inputForceViscous(i,j,k).z()  = row[iForceViscousZ];
+        }
 
         // Update indices: k fastest, then j, then i
         if (++k == NK) {

@@ -36,7 +36,7 @@ CSolverEuler::CSolverEuler(Config& config, CMesh& mesh)
         _bfmSource = std::make_unique<CSourceBFMFrozenGradient>(_config, *_fluid, _mesh);
     }
     else if (bfmModel == BFM_Model::NERI) {
-        _bfmSource = std::make_unique<CSourceBFMNeri>(_config, *_fluid, _mesh);
+        _bfmSource = std::make_unique<CSourceBFMNeri>(_config, *_fluid, _mesh, _conservativeVars, _turboPerformance);
     }
     else if (bfmModel == BFM_Model::CHIMA) {
         _bfmSource = std::make_unique<CSourceBFMChima>(_config, *_fluid, _mesh, _turboPerformance);
@@ -175,7 +175,9 @@ void CSolverEuler::standardRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<F
     }
     std::cout << "Standard initialization done.\n";
 
+    // needed to update force fields if they were present in the solution file
     _viscousForce = inputForceViscous;
+    
     _inviscidForce = inputForceInviscid;
 
 }
@@ -232,9 +234,9 @@ void CSolverEuler::readRestartFile(const std::string &restartFileName, size_t &N
     inputVelZ.resize(NI, NJ, NK);
     inputTemperature.resize(NI, NJ, NK);
 
-    bool chimaInputActive = _config.isBFMActive() && _config.getBFMModel()==BFM_Model::CHIMA;
+    bool neriInputActive = _config.isBFMActive() && _config.getBFMModel()==BFM_Model::NERI;
 
-    if (chimaInputActive){
+    if (neriInputActive){
         inputForceViscous.resize(NI, NJ, NK);
         inputForceInviscid.resize(NI, NJ, NK);
     }
@@ -262,7 +264,7 @@ void CSolverEuler::readRestartFile(const std::string &restartFileName, size_t &N
     size_t iForceViscousX{0};
     size_t iForceViscousY{0};
     size_t iForceViscousZ{0};
-    if (chimaInputActive){
+    if (neriInputActive){
         iForceInviscidX    = columnIndex["Inviscid Body Force X"];
         iForceInviscidY    = columnIndex["Inviscid Body Force Y"];
         iForceInviscidZ    = columnIndex["Inviscid Body Force Z"];
@@ -288,7 +290,7 @@ void CSolverEuler::readRestartFile(const std::string &restartFileName, size_t &N
         inputVelZ(i,j,k)        = row[iVelZ];
         inputTemperature(i,j,k) = row[iTemperature];
 
-        if (chimaInputActive){
+        if (neriInputActive){
             inputForceInviscid(i,j,k).x() = row[iForceInviscidX];
             inputForceInviscid(i,j,k).y() = row[iForceInviscidY];
             inputForceInviscid(i,j,k).z() = row[iForceInviscidZ];

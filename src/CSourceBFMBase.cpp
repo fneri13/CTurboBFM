@@ -124,42 +124,23 @@ Vector3D CSourceBFMBase::computeInviscidForceDirection(const Vector3D& relativeV
     Vector3D wDir = relativeVelocityPlus.normalized();
     Vector3D normal = normalCamber.normalized();
     
-    // method based on versor construction, used as a first version
-    // Vector3D relativeVelocityPlus = {relativeVelocity.x() + 1E-6, relativeVelocity.y() + 1E-6, relativeVelocity.z() + 1E-6};
-    // FloatType A, B, C, Delta;
-    // A = wDir.z()*wDir.z() + wDir.x()*wDir.x();
-    // B = 2 * wDir.y() * wDir.x() * normal.y();
-    // C = (wDir.z()*wDir.z() * normal.y()*normal.y()) + (wDir.y()*wDir.y() * normal.y()*normal.y()) - wDir.z()*wDir.z();
-    // Delta = B*B - 4*A*C;
-
-    // if (Delta < 0) {
-    //     std::cout << "Inviscid force direction computation found no real result. Radial component set to zero." << std::endl;
-    //     Vector3D versor = {-wDir.z(), 0, wDir.x()};
-    //     return versor.normalized();
-    // }
-
-    // FloatType fAxial1 = (-B + std::sqrt(Delta)) / (2 * A);
-    // FloatType fAxial2 = (-B - std::sqrt(Delta)) / (2 * A);
-
-    // FloatType fTangential1 = computeTangentialComponent(fAxial1, wDir, normal);
-    // FloatType fTangential2 = computeTangentialComponent(fAxial2, wDir, normal);
-
-    // FloatType fRadial1 = normal.y();
-    // FloatType fRadial2 = normal.y();
-
-    // Vector3D versor1 = {fAxial1, fRadial1, fTangential1};
-    // Vector3D versor2 = {fAxial2, fRadial2, fTangential2};
-
-    // if (versor1.dot(normal) > 0) {
-    //     return versor1;
-    // } else {
-    //     return versor2;
-    // }
-
     // method based on versor projection
     // the idea is that the loading versor is found be subtracting from the normal camber versor its projection on the relative velocity versor
     Vector3D versor = normal - wDir * normal.dot(wDir);
+    
     versor = versor.normalized();
+
+
+    // ADDITIONAL NOTE: if we want to remove every effect in the spanwise direction, we can also remove the projection in the direction of orthogonal meridional velocity
+    // Vector3D velMeridional{relativeVelocity.x(), relativeVelocity.y(), .0};
+    
+    // Vector3D spanDirection = {velMeridional.y(), -velMeridional.x(), .0};
+
+    // spanDirection = spanDirection.normalized();
+    
+    // versor = versor - spanDirection * versor.dot(spanDirection);
+    
+    // versor = versor.normalized();
 
     return versor;
 

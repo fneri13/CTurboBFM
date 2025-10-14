@@ -132,15 +132,15 @@ Vector3D CSourceBFMBase::computeInviscidForceDirection(const Vector3D& relativeV
 
 
     // ADDITIONAL NOTE: if we want to remove every effect in the spanwise direction, we can also remove the projection in the direction of orthogonal meridional velocity
-    // Vector3D velMeridional{relativeVelocity.x(), relativeVelocity.y(), .0};
+    Vector3D velMeridional{relativeVelocity.x(), relativeVelocity.y(), .0};
     
-    // Vector3D spanDirection = {velMeridional.y(), -velMeridional.x(), .0};
+    Vector3D spanDirection = {velMeridional.y(), -velMeridional.x(), .0};
 
-    // spanDirection = spanDirection.normalized();
+    spanDirection = spanDirection.normalized();
     
-    // versor = versor - spanDirection * versor.dot(spanDirection);
+    versor = versor - spanDirection * versor.dot(spanDirection);
     
-    // versor = versor.normalized();
+    versor = versor.normalized();
 
     return versor;
 

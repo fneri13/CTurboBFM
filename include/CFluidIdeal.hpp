@@ -187,7 +187,7 @@ public:
     /** Get specific heat ratio gamma
      * @return Gamma [-]
     */
-    FloatType getGamma() const { return _gamma; }
+    FloatType getGamma() const override { return _gamma; }
 
     /** Compute total efficiency from total pressure and temperature ratios
      * @param pressureRatio Total pressure ratio P0_exit / P0_inlet [-]

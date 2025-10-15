@@ -33,7 +33,7 @@ protected:
 
 private:
 
-    std::map<TurboPerformance, std::vector<FloatType>> &_turboPerformance;
+    // std::map<TurboPerformance, std::vector<FloatType>> &_turboPerformance;
     FloatType _metalAngle, _leanAngle, _gasPathAngle, _d_metalAngle_dm;
     FloatType _velMeridionalMag, _betaFlow, _relativeVelocityMag;
     Vector3D _loadingVersor_cyl, _loadingVersor_cart;

@@ -8,7 +8,7 @@ PROFILE_LIB_PATH := /opt/homebrew/opt/gperftools/lib
 PROFILE_INCLUDE_PATH := /opt/homebrew/opt/gperftools/include
 
 # Compiler and flags
-CXX := g++-13
+CXX := g++
 CXXFLAGS := -std=c++20 -Wall -I$(INC_DIR) -I$(SRC_DIR)
 
 # Debug and Release specific flags

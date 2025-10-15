@@ -2,7 +2,7 @@
 
 CSourceBFMLamprakis::CSourceBFMLamprakis(const Config &config, const CFluidBase &fluid, const CMesh &mesh,
                                   std::map<TurboPerformance, std::vector<FloatType>> &turboPerformance) 
-    : CSourceBFMBase(config, fluid, mesh), _turboPerformance(turboPerformance)
+    : CSourceBFMBase(config, fluid, mesh)
 {}
 
 

@@ -28,9 +28,6 @@ for inputFile in inputFiles:
 
 # --- Fields to Plot ---
 fieldList = [
-    'Velocity_X[m/s]',
-    'Velocity_Y[m/s]',
-    'Velocity_Z[m/s]',
     'Pressure[Pa]',
     'Velocity_Magnitude[m/s]',
 ]

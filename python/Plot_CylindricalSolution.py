@@ -38,7 +38,7 @@ def GetDataDict(input_filename, field):
     new_dict['z'] = data_dict['z']
     new_dict['axial'] = data_dict['x']
     new_dict['radial'] = np.sqrt(data_dict['y']**2 + data_dict['z']**2)
-    new_dict['theta'] = np.arctan2(data_dict['z'], data_dict['y'])
+    new_dict['theta'] = np.mod(np.arctan2(data_dict['z'], data_dict['y']), 2*np.pi)
     new_dict[field] = data_dict[fieldName]
     return new_dict
 
@@ -117,10 +117,10 @@ def Plot2D(data, iSlice, jSlice, kSlice, fieldName):
 
     elif jSlice == ':' and kSlice == ':':
         i = int(iSlice)
-        x = data['axial'][i, :, :]
-        y = data['radial'][i, :, :] * data['theta'][i, :, :]
+        x = data['y'][i, :, :]
+        y = data['z'][i, :, :]
         values = data[fieldName][i, :, :]
-        xlabel, ylabel = r'$x$ [m]', r'$r\theta$ [m]'
+        xlabel, ylabel = r'$y$ [m]', r'$z$ [m]'
         title = f"iPlane-{i}"
 
     else:

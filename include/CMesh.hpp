@@ -4,6 +4,7 @@
 #include "Config.hpp"
 #include <assert.h>
 #include "CInput.hpp"
+#include <filesystem>
 
 /** 
   *  \brief     Class handling mesh capabilities.

@@ -233,13 +233,10 @@ void CSolverEuler::readRestartFile(const std::string &restartFileName, size_t &N
     inputVelY.resize(NI, NJ, NK);
     inputVelZ.resize(NI, NJ, NK);
     inputTemperature.resize(NI, NJ, NK);
+    inputForceViscous.resize(NI, NJ, NK);
+    inputForceInviscid.resize(NI, NJ, NK);
 
-    bool neriInputActive = _config.isBFMActive() && _config.getBFMModel()==BFM_Model::NERI;
-
-    if (neriInputActive){
-        inputForceViscous.resize(NI, NJ, NK);
-        inputForceInviscid.resize(NI, NJ, NK);
-    }
+    bool isBfmSimulation = _config.isBFMActive();
 
     // Read header
     std::getline(file, line);
@@ -258,21 +255,21 @@ void CSolverEuler::readRestartFile(const std::string &restartFileName, size_t &N
     size_t iVelZ        = columnIndex["Velocity Z"];
     size_t iTemperature = columnIndex["Temperature"];
 
-    size_t iForceInviscidX{0};
-    size_t iForceInviscidY{0};
-    size_t iForceInviscidZ{0};
-    size_t iForceViscousX{0};
-    size_t iForceViscousY{0};
-    size_t iForceViscousZ{0};
-    if (neriInputActive){
-        iForceInviscidX    = columnIndex["Inviscid Body Force X"];
-        iForceInviscidY    = columnIndex["Inviscid Body Force Y"];
-        iForceInviscidZ    = columnIndex["Inviscid Body Force Z"];
-        iForceViscousX     = columnIndex["Viscous Body Force X"];
-        iForceViscousY     = columnIndex["Viscous Body Force Y"];
-        iForceViscousZ     = columnIndex["Viscous Body Force Z"];
+    size_t iForceInviscidX{1000};
+    size_t iForceInviscidY{1000};
+    size_t iForceInviscidZ{1000};
+    size_t iForceViscousX{1000};
+    size_t iForceViscousY{1000};
+    size_t iForceViscousZ{1000};
+    if (isBfmSimulation){
+        iForceInviscidX = columnIndex["Inviscid Body Force X"];
+        iForceInviscidY = columnIndex["Inviscid Body Force Y"];
+        iForceInviscidZ = columnIndex["Inviscid Body Force Z"];
+        iForceViscousX = columnIndex["Viscous Body Force X"];
+        iForceViscousY = columnIndex["Viscous Body Force Y"];
+        iForceViscousZ = columnIndex["Viscous Body Force Z"];
     }
-
+    
     // Read data
     size_t i = 0, j = 0, k = 0;
     while (std::getline(file, line)) {
@@ -290,7 +287,7 @@ void CSolverEuler::readRestartFile(const std::string &restartFileName, size_t &N
         inputVelZ(i,j,k)        = row[iVelZ];
         inputTemperature(i,j,k) = row[iTemperature];
 
-        if (neriInputActive){
+        if (isBfmSimulation){
             inputForceInviscid(i,j,k).x() = row[iForceInviscidX];
             inputForceInviscid(i,j,k).y() = row[iForceInviscidY];
             inputForceInviscid(i,j,k).z() = row[iForceInviscidZ];

@@ -329,3 +329,19 @@ FloatType interpolateLinear(const std::vector<double>& x,
     double t = (xp - x0) / (x1 - x0);
     return ((1.0 - t) * y0 + t * y1);
 }
+
+void writeDataToCSV(const std::vector<FloatType>& data, const std::string& filename)
+{
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error: cannot open file " << filename << " for writing.\n";
+        return;
+    }
+
+    for (const auto& value : data)
+        file << value << "\n";  // each value on its own line
+
+    file.close();
+
+    std::cout << "Data written to " << filename << " successfully.\n";
+}

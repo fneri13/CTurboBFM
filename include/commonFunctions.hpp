@@ -6,6 +6,9 @@
 #include <vector>
 #include <stdexcept>
 #include <algorithm>
+#include <string>
+#include <fstream>
+#include <iostream>
 
 // compute the integral flux of an array2D of vectors through an array2D of surfaces
 FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces, const Matrix2D<Vector3D> &vectors);
@@ -57,3 +60,5 @@ FloatType inverseRescalingMinMax(const FloatType& value, const FloatType& min, c
 FloatType rescaleMinMax(const FloatType& value, const FloatType& min, const FloatType& max);
 
 FloatType interpolateLinear(const std::vector<double>& x, const std::vector<double>& y, const FloatType& xp);
+
+void writeDataToCSV(const std::vector<FloatType>& data, const std::string& filename);

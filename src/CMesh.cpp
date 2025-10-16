@@ -30,6 +30,10 @@ CMesh::CMesh(Config& config) : _config(config) {
     computeInputGradients();
     
     printMeshInfo();
+
+    if (_config.saveMeshQualityStats()) {
+        writeMeshQualityStats();
+    }
 }
 
 
@@ -196,14 +200,15 @@ void CMesh::computeMeshVolumes() {
 }
 
 void CMesh::computeMeshQuality() {
-    auto aspectRatios = computeAspectRatio();
-    _aspectRatioStats = Statistics(aspectRatios);
-
-    std::vector<FloatType> skewness, orthogonality;
-    computeSkewnessAndOrthogonality(skewness, orthogonality);
-    _skewnessStats = Statistics(skewness);
-    _orthogonalityStats = Statistics(orthogonality);
+    _aspectRatio = computeAspectRatio();
     
+    _aspectRatioStats = Statistics(_aspectRatio);
+
+    computeSkewnessAndOrthogonality(_skewness, _orthogonality);
+    
+    _skewnessStats = Statistics(_skewness);
+    
+    _orthogonalityStats = Statistics(_orthogonality);
 }
 
 void CMesh::computeSkewnessAndOrthogonality(std::vector<FloatType> &skewness, std::vector<FloatType> &orthogonality){
@@ -554,4 +559,21 @@ void CMesh::computeAdaptiveFlowDirection(Matrix3D<Vector3D> &flowDirection) cons
             flowDirection(_nPointsI-1,j,k) = (pointB - pointA).normalized();
         }
     }
+}
+
+
+void CMesh::writeMeshQualityStats() const {
+    std::string _meshQualityFolderName = "Mesh_Quality";
+    // Create directory if it doesn't exist
+    try {
+        if (!std::filesystem::exists(_meshQualityFolderName))
+            std::filesystem::create_directories(_meshQualityFolderName);
+    } catch (const std::filesystem::filesystem_error& e) {
+        std::cerr << "Error creating directory: " << e.what() << std::endl;
+        return;
+    }
+
+    writeDataToCSV(_skewness, _meshQualityFolderName + "/skewness.csv");
+    writeDataToCSV(_orthogonality, _meshQualityFolderName + "/orthogonality.csv");
+    writeDataToCSV(_aspectRatio.getData(), _meshQualityFolderName + "/aspect_ratio.csv");
 }

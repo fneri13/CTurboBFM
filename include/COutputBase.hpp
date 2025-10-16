@@ -34,5 +34,5 @@ class COutputBase {
         bool _isUnsteadyOutput;
 
         std::string getOutputFilename(size_t iterationCounter);
-        std::string _outputDirectory = "volumeData";
+        std::string _outputDirectory = "Volume_CSV";
 };

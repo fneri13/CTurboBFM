@@ -85,6 +85,8 @@ class CMesh {
         */
         void computeUniformFlowDirection(Vector3D initDirection, Matrix3D<Vector3D> &flowDirection) const;
 
+        void writeMeshQualityStats() const;
+
     private:
         const Config& _config;
 
@@ -93,6 +95,9 @@ class CMesh {
         size_t _nDualPointsI, _nDualPointsJ, _nDualPointsK, _nDualPointsTotal;
         
         unsigned short int _nDimensions;
+
+        Matrix3D<FloatType> _aspectRatio;
+        std::vector<FloatType> _skewness, _orthogonality;
 
         CInput _inputFile;
 

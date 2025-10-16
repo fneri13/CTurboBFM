@@ -133,6 +133,8 @@ public:
 
     bool isMonitorPointsActive() const {return parseBool("MONITOR_POINTS_ACTIVE", false);}
 
+    bool saveMeshQualityStats() const {return parseBool("SAVE_MESH_QUALITY_STATS", false);}
+
     size_t getResidualsDropConvergence() const {return static_cast<size_t>(parseInt("RESIDUALS_DROP_CONVERGENCE", 16));}
 
     size_t getTrailingEdgeIndex() const {return static_cast<size_t>(parseInt("TRAILING_EDGE_INDEX"));}

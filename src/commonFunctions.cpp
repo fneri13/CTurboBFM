@@ -90,8 +90,16 @@ StateVector computeEulerFluxFromConservative(StateVector conservative, Vector3D 
 }
 
 
-FloatType computeAngleBetweenVectors(const Vector3D& v1, const Vector3D& v2){
-    return acos(v1.dot(v2) / (v1.magnitude() * v2.magnitude()));
+FloatType computeAngleBetweenVectors(const Vector3D& v1, const Vector3D& v2) {
+    Vector3D v1norm = v1.normalized();
+    Vector3D v2norm = v2.normalized();
+
+    FloatType dot = v1norm.dot(v2norm);
+
+    // Clamp dot product to valid range for acos()
+    dot = std::clamp(dot, static_cast<FloatType>(-1.0), static_cast<FloatType>(1.0));
+
+    return std::acos(dot);
 }
 
 

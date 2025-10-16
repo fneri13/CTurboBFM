@@ -97,7 +97,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     input_path = args.input_path
-    vts_output_dir = "vts"
+    vts_output_dir = "Volume_VTS"
     os.makedirs(vts_output_dir, exist_ok=True)
 
     if os.path.isfile(input_path) and input_path.endswith(".csv"):

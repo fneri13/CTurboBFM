@@ -7,7 +7,7 @@ import pandas as pd
 import argparse
 import os
 import matplotlib.pyplot as plt
-from styles import *
+# from styles import *
 
 def read_residuals(input_filename):
     df = pd.read_csv(input_filename)

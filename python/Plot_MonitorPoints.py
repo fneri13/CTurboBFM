@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import os
 import argparse
-from styles import *
+# from styles import *
 
 # --- Argument Parsing ---
 parser = argparse.ArgumentParser(description="Plot monitor point data with a given time per revolution. Use 1 to plot in seconds.")

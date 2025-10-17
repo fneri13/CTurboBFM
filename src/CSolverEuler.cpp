@@ -316,8 +316,8 @@ void CSolverEuler::solve(){
     Matrix3D<FloatType> timestep(_nPointsI, _nPointsJ, _nPointsK);                          // place holder for time step array
     std::vector<FloatType> timeIntegrationCoeffs = _config.getTimeIntegrationCoeffs();      // time integration coefficients (runge kutta)
     FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK);                                // place holder for flux residuals
-    size_t updateMassFlowsFreq = 250;                                                       // frequency to update the mass flows at the boundaries
-    size_t monitorOutputFreq = 250;
+    size_t updateMassFlowsFreq = _config.getSolutionOutputFrequency();                      // frequency to update the mass flows at the boundaries
+    size_t monitorOutputFreq = _config.getSolutionOutputFrequency();
     size_t solutionOutputFreq = _config.getSolutionOutputFrequency();                       // frequency to output the solution
     bool turboOutput = _config.saveTurboOutput();                                           // flag to save the solution in turbo format
     bool monitorPointsActive = _config.isMonitorPointsActive();                             // flag to activate the monitor points
@@ -800,11 +800,11 @@ void CSolverEuler::writeTurboPerformanceToCSV() const {
 
 void CSolverEuler::writeMonitorPointsToCSV() const {
 
-    std::string folder = "monitorPoints";
+    std::string folder = "Monitor_Points";
     std::filesystem::create_directories(folder); // Ensure the folder exists
 
     for (size_t iPoint = 0; iPoint < _monitorPoints.size(); iPoint++) {
-        std::string filename = folder + "/monitorPoint_" + std::to_string(iPoint) + ".csv";
+        std::string filename = folder + "/Monitor_Point_" + std::to_string(iPoint) + ".csv";
         std::ofstream file(filename); // open in truncate (default) mode
 
         if (!file.is_open()) {
@@ -828,7 +828,7 @@ void CSolverEuler::writeMonitorPointsToCSV() const {
         
     }
     std::cout << std::endl;
-    std::cout << "Written monitor points to monitorPoints/ " << std::endl;
+    std::cout << "Written monitor points to " << folder  << std::endl;
     std::cout << std::endl;
 
     

@@ -8,7 +8,7 @@ import re
 # from styles import *
 import argparse
 
-os.makedirs("pictures", exist_ok=True)
+os.makedirs("Pictures", exist_ok=True)
 
 # --- Argument Parsing ---
 parser = argparse.ArgumentParser(description="Plot mesh quality statistics.")
@@ -43,5 +43,5 @@ plot_normalized_hist(orthogonality, 'darkorange', 'Orthogonality')
 plt.subplot(1, 3, 3)
 plot_normalized_hist(aratio, 'seagreen', 'Aspect Ratio')
 
-plt.savefig("pictures/mesh_quality.pdf", bbox_inches='tight')
+plt.savefig("Pictures/mesh_quality.pdf", bbox_inches='tight')
 plt.show()

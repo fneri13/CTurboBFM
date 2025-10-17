@@ -14,10 +14,10 @@ args = parser.parse_args()
 time_per_revolution = args.time_per_revolution
 
 # --- File Setup ---
-os.makedirs("pictures", exist_ok=True)
+os.makedirs("Pictures", exist_ok=True)
 cwd = os.getcwd()
-files = os.listdir(cwd + '/monitorPoints')
-inputFiles = sorted([cwd + '/monitorPoints/' + file for file in files if file.endswith('.csv')])
+files = os.listdir(cwd + '/Monitor_Points')
+inputFiles = sorted([cwd + '/Monitor_Points/' + file for file in files if file.endswith('.csv')])
 
 # --- Read & Process Data ---
 dfs = []
@@ -50,7 +50,7 @@ for ii, field in enumerate(fieldList):
 
     # plt.legend()
     plt.grid(alpha=0.3)
-    plt.savefig(f"pictures/monitorPoint_{ii}.pdf", bbox_inches='tight')
+    plt.savefig(f"Pictures/monitorPoint_{ii}.pdf", bbox_inches='tight')
     
     
 

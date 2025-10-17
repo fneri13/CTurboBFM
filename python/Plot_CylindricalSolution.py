@@ -93,7 +93,7 @@ def Plot1D(data, iSlice, jSlice, kSlice, fieldName):
     plt.ylabel(fieldName)
     plt.grid(alpha=0.2)
     plt.title(f"{title}")
-    plt.savefig(f"pictures/{fieldName}_1D_plot_{title}.pdf", bbox_inches='tight')
+    plt.savefig(f"Pictures/{fieldName}_1D_plot_{title}.pdf", bbox_inches='tight')
 
 
 
@@ -133,7 +133,7 @@ def Plot2D(data, iSlice, jSlice, kSlice, fieldName):
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.gca().set_aspect('equal', adjustable='box')
-    plt.savefig(f"pictures/{fieldName}_2D_plot_{title}.pdf", bbox_inches='tight')
+    plt.savefig(f"Pictures/{fieldName}_2D_plot_{title}.pdf", bbox_inches='tight')
         
     
     
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     kSlice = args.kSlice
     fieldName = args.fieldName
     
-    os.makedirs("pictures", exist_ok=True)
+    os.makedirs("Pictures", exist_ok=True)
     data = GetDataDict(inputFile, fieldName)
     PlotData(data, iSlice, jSlice, kSlice, fieldName)
     plt.show()

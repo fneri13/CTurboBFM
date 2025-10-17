@@ -8,7 +8,7 @@ import re
 # from styles import *
 import argparse
 
-os.makedirs("pictures", exist_ok=True)
+os.makedirs("Pictures", exist_ok=True)
 
 # --- Argument Parsing ---
 parser = argparse.ArgumentParser(description="Plot monitor point data with a given time per revolution. Use 1 to plot in seconds.")
@@ -22,9 +22,9 @@ def extractOrder(filepath):
     return int(match.group(1)) if match else -1
 
 cwd = os.getcwd()
-files = os.listdir(cwd + '/monitorPoints')
+files = os.listdir(cwd + '/Monitor_Points')
 
-inputFiles = [cwd + '/monitorPoints/' + file for file in files if file.endswith('.csv')]
+inputFiles = [cwd + '/Monitor_Points/' + file for file in files if file.endswith('.csv')]
 inputFiles = sorted(inputFiles, key=extractOrder)
 
 dfs = []
@@ -61,8 +61,8 @@ plt.ylabel(r"$\theta$ [deg]")
 # plt.legend()
 plt.grid(alpha=.3)
 try:
-    plt.savefig("pictures/PressureSensors.pdf", bbox_inches='tight')
+    plt.savefig("Pictures/PressureSensors.pdf", bbox_inches='tight')
 except:
-    print("Could not save figure. pictures folder not existing.")
+    print("Could not save figure. Pictures folder not existing.")
 
 plt.show()

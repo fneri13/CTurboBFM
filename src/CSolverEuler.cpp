@@ -630,7 +630,6 @@ void CSolverEuler::computeAdvectionFlux(FluxDirection direction, const FlowSolut
     const auto stepMask = getStepMask(direction);
     const Matrix3D<Vector3D>& surfaces = _mesh.getSurfaces(direction);
     const Matrix3D<Vector3D>& midPoints = _mesh.getMidPoints(direction);
-    // const bool bfmActive = _config.isBFMActive();
     
     BoundaryIndices boundaryStart, boundaryEnd;
     if (direction==FluxDirection::I){
@@ -676,14 +675,6 @@ void CSolverEuler::computeAdvectionFlux(FluxDirection direction, const FlowSolut
                     throw std::runtime_error("Invalid FluxDirection.");
                 }
 
-                // // ONLY FOR BFM: escape the loop if the flux direction is K (circumferential direction) and we are in a bladed row
-                // if (direction == FluxDirection::K && bfmActive) {
-                //     FloatType bladePresent = _mesh.getInputFields(FieldNames::NUMBER_BLADES, iFace, 0, 0);
-                //     if (bladePresent > 0.1) {
-                //         continue;
-                //     }
-                // }
-                
                 // fluxes calculation here, also boundary conditions.
                 if (dirFace == 0) {
                     Uinternal = solution.at(iFace, jFace, kFace);

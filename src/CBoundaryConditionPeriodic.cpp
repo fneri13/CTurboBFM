@@ -9,6 +9,9 @@ CBoundaryConditionPeriodic::CBoundaryConditionPeriodic(const Config &config, con
 
 
 StateVector CBoundaryConditionPeriodic::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &solution, const size_t iterCounter) {
+    // the real way to do it would be to use the numerical flux schemes using internal points, and then using the logic described in blazek. This case
+    // introduces a bit of differences because the flux is computed directly from the state on the boundary, so the fluxes dont compensate exactly
+
 
     // properties of the periodic node
     size_t periodicIdx = 0;

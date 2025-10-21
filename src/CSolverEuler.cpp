@@ -674,25 +674,27 @@ void CSolverEuler::computeAdvectionFlux(FluxDirection direction, const FlowSolut
                 default:
                     throw std::runtime_error("Invalid FluxDirection.");
                 }
-
-                // fluxes calculation here, also boundary conditions.
+                
+                // starting boundary fluxes
                 if (dirFace == 0) {
                     Uinternal = solution.at(iFace, jFace, kFace);
                     surface = -surfaces(iFace, jFace, kFace);
                     midPoint = midPoints(iFace, jFace, kFace);
                     flux = _boundaryConditions.at(boundaryStart)->computeBoundaryFlux(Uinternal, surface, midPoint, {iFace, jFace, kFace}, solution, itCounter);
                     residuals.add(iFace, jFace, kFace, flux * surface.magnitude());
-                } else if (dirFace == stopFace) {
+                } 
+                // ending boundary fluxes
+                else if (dirFace == stopFace) { 
                     Uinternal = solution.at(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2]);
                     surface = surfaces(iFace, jFace, kFace);
                     midPoint = midPoints(iFace, jFace, kFace);
                     flux = _boundaryConditions.at(boundaryEnd)->computeBoundaryFlux(Uinternal, surface, midPoint, {iFace, jFace, kFace}, solution, itCounter);
                     residuals.add(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2], flux * surface.magnitude());
-                } else {
-                    // internal flux calculation
+                } 
+                // internal flux calculation
+                else {
                     Uleft = solution.at(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2]);
                     Uright = solution.at(iFace, jFace, kFace);
-
                     if (dirFace==1){
                         Uleftleft = Uleft;
                         Urightright = solution.at(iFace+1*stepMask[0], jFace+1*stepMask[1], kFace+1*stepMask[2]);
@@ -705,7 +707,6 @@ void CSolverEuler::computeAdvectionFlux(FluxDirection direction, const FlowSolut
                         Uleftleft = solution.at(iFace-2*stepMask[0], jFace-2*stepMask[1], kFace-2*stepMask[2]);
                         Urightright = solution.at(iFace+1*stepMask[0], jFace+1*stepMask[1], kFace+1*stepMask[2]);
                     }
-
                     surface = surfaces(iFace, jFace, kFace);
                     flux = _advectionScheme->computeFlux(Uleftleft, Uleft, Uright, Urightright, surface);
                     residuals.add(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2], flux * surface.magnitude());

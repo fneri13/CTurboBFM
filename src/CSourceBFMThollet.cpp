@@ -12,7 +12,14 @@ StateVector CSourceBFMThollet::computeInviscidComponent(size_t i, size_t j, size
     FloatType Kmach = computeCompressibilityCorrection(_relativeVelocityCylindric, primitive);
     FloatType forceMag = _Kn * Kmach * _relativeVelocityCylindric.dot(_relativeVelocityCylindric) * M_PI * _deviationAngle / _pitch / std::abs(_normalCamberTangential) / _blockage;
     Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceMag;
-    Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
+    Vector3D forceCartesianNew = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
+
+    FloatType relaxFactor = _config.getBfmRelaxationFactor();
+
+    // update the force according to equation 24 of Chima's paper
+    Vector3D forceCartesian = inviscidForce(i, j, k) * (1 - relaxFactor) + forceCartesianNew * relaxFactor;
+    
+    // update the force in memory
     inviscidForce(i, j, k) = forceCartesian;
     
     StateVector source({0,0,0,0,0});
@@ -62,11 +69,6 @@ StateVector CSourceBFMThollet::computeViscousComponent(size_t i, size_t j, size_
     else if (_offDesignActive == "yes"){
         FloatType deviationAnglePivot = _mesh.getInputFields(FieldNames::DEVIATION_ANGLE_PIVOT, i, j, k);
         FloatType Kmach = computeCompressibilityCorrection(_relativeVelocityCylindric, primitive);
-
-        // FloatType deltaDev = std::abs(_deviationAngle - deviationAnglePivot);
-        // FloatType term1 = _Kf * Cf;
-        // FloatType term2 = M_PI * Kmach * std::pow(std::abs(_deviationAngle - deviationAnglePivot), 2.0 * _Kd);
-
         forceMag = _relativeVelocityCylindric.dot(_relativeVelocityCylindric) / (_pitch * _blockage * std::abs(_normalCamberTangential)) * (
             _Kf * Cf + M_PI * Kmach * std::pow(std::abs(_deviationAngle - deviationAnglePivot), 2.0 * _Kd));
     }
@@ -75,7 +77,13 @@ StateVector CSourceBFMThollet::computeViscousComponent(size_t i, size_t j, size_
     }
 
     Vector3D forceCylindrical = _viscousForceDirectionCylindrical * forceMag;
-    Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
+    Vector3D forceCartesianNew = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
+
+    // update the force according to equation 24 of Chima's paper
+    FloatType relaxFactor = _config.getBfmRelaxationFactor();
+    Vector3D forceCartesian = viscousForce(i, j, k) * (1 - relaxFactor) + forceCartesianNew * relaxFactor;
+    
+    // update the force in memory
     viscousForce(i, j, k) = forceCartesian;
     
     StateVector source({0,0,0,0,0});

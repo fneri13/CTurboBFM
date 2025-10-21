@@ -423,3 +423,14 @@ FluxLimiter Config::getFluxLimiter() const {
     }
     return model;
 }
+
+
+FloatType Config::getBfmRelaxationFactor() const {
+    bool bfmLagActive = isBfmLagActive();
+    if (bfmLagActive) {
+        return parseFloat("BFM_RELAXATION_FACTOR", 0.001);
+    }
+    else {
+        return 1.0;
+    }
+}

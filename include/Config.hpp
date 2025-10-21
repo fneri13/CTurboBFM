@@ -125,11 +125,15 @@ public:
 
     FloatType getChimaReferenceMassFlow() const {return parseFloat("CHIMA_REFERENCE_MASS_FLOW");}
 
+    FloatType getBfmRelaxationFactor() const;
+
     std::string getRestartFilepath() const {return parseString("RESTART_SOLUTION_FILEPATH");}
 
     std::string getRestartType() const {return parseString("RESTART_TYPE", true);}
 
     bool saveTurboOutput() const {return parseBool("TURBO_OUTPUT", false);}
+
+    bool isBfmLagActive() const {return parseBool("BFM_LAG_ACTIVE", false);}
 
     bool isMonitorPointsActive() const {return parseBool("MONITOR_POINTS_ACTIVE", false);}
 

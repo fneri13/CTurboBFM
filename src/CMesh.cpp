@@ -12,11 +12,14 @@ CMesh::CMesh(Config& config) : _config(config) {
     readPoints();
     allocateMemory();
     auto topology = config.getTopology();
-    if (topology == Topology::TWO_DIMENSIONAL || topology == Topology::AXISYMMETRIC) {
+    if (topology == Topology::TWO_DIMENSIONAL || topology == Topology::AXISYMMETRIC_2D || topology == Topology::AXISYMMETRIC_3D) {
         computeDualGrid2D();
     } 
-    else {
+    else if (topology == Topology::THREE_DIMENSIONAL) {
         computeDualGrid3D();
+    }
+    else {
+        throw std::runtime_error("Unsupported topology.");
     }
     
     computeMeshInterfaces();
@@ -374,7 +377,7 @@ void CMesh::computeDualGrid2D() {
         nodes(_nDualPointsI-1, j) = (_vertices(_nPointsI-1, j-1, 0) + _vertices(_nPointsI-1, j, 0)) / 2.0;    
     }
 
-    if (_config.getTopology() == Topology::AXISYMMETRIC) {
+    if (_config.getTopology() == Topology::AXISYMMETRIC_3D) {
         _wedgeAngle = 1.0 * M_PI / 180.0;
         for (size_t i = 0; i < _nDualPointsI; i++) {
             for (size_t j = 0; j < _nDualPointsJ; j++) {
@@ -389,6 +392,7 @@ void CMesh::computeDualGrid2D() {
             }
         }
     }
+    // for 2D and axisymmetric 2D use a unitary thickness in the third direction
     else {
         _cellThickness = 1.0;
         for (size_t i = 0; i < _nDualPointsI; i++) {

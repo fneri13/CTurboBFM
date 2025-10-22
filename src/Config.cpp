@@ -218,8 +218,10 @@ Topology Config::getTopology() const {
         topology = Topology::TWO_DIMENSIONAL;
     } else if (value == "3D") {
         topology = Topology::THREE_DIMENSIONAL;
-    } else if (value == "axisymmetric") {
-        topology = Topology::AXISYMMETRIC;
+    } else if (value == "axisymmetric_2d") {
+        topology = Topology::AXISYMMETRIC_2D;
+    } else if (value == "axisymmetric_3d" || value == "axisymmetric") {
+        topology = Topology::AXISYMMETRIC_3D;
     } else {
         throw std::runtime_error("Invalid value for key \"TOPOLOGY\" in configuration.");
     }

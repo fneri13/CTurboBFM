@@ -540,10 +540,13 @@ void CSolverEuler::updateMassFlows(const FlowSolution&solution){
 
 void CSolverEuler::updateTurboPerformance(const FlowSolution&solution){
     
-    // mass flow
+    // mass flow (complete per machine)
     FloatType massFlow = 0.5 * (_massFlows[BoundaryIndices::I_START] + _massFlows[BoundaryIndices::I_END]);
-    if (_config.getTopology() == Topology::AXISYMMETRIC){
+    if (_config.getTopology() == Topology::AXISYMMETRIC_3D){
         massFlow *= 2.0 * M_PI / _mesh.getWedgeAngle();
+    }
+    else if (_config.getTopology() == Topology::AXISYMMETRIC_2D){
+        massFlow *= 1.0; // this is not correct. For the moment we have a massflow per unit area. It needs to be integrated over the machine area
     }
     else {
         massFlow *= 360.0 / _config.getPeriodicityAngleDeg();
@@ -615,7 +618,7 @@ void CSolverEuler::computeResiduals(const FlowSolution& solution, const size_t i
     
     computeAdvectionFlux(FluxDirection::J, solution, it, residuals);
     
-    if (_topology==Topology::THREE_DIMENSIONAL || _topology==Topology::AXISYMMETRIC){
+    if (_topology==Topology::THREE_DIMENSIONAL || _topology==Topology::AXISYMMETRIC_3D){
         computeAdvectionFlux(FluxDirection::K, solution, it, residuals);
     }
 
@@ -863,6 +866,35 @@ void CSolverEuler::updateRadialProfiles(FlowSolution &solution){
 
 
 void CSolverEuler::computeSourceTerms(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType timePhysical) {
+    
+    // source terms for axisymmetric simulations
+    if (_topology==Topology::AXISYMMETRIC_2D){
+        FloatType rho, ur, utheta, uax, ht, r, volume;
+        StateVector primitive, source;
+        for (size_t i = 0; i < _nPointsI; i++) {
+            for (size_t j = 0; j < _nPointsJ; j++) {
+                for (size_t k = 0; k < _nPointsK; k++) {
+                    primitive = getEulerPrimitiveFromConservative(solution.at(i, j, k));
+                    rho = primitive[0];
+                    uax = primitive[1];
+                    ur = primitive[2];
+                    utheta = primitive[3];
+                    ht = _fluid->computeTotalEnthalpy_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
+                    r = _mesh.getVertex(i, j, k).y();
+                    source[0] = - rho * ur / r;
+                    source[1] = - rho * ur * uax / r;
+                    source[2] = (utheta * utheta - ur * ur) * rho / r;
+                    source[3] = -2.0 * rho * ur * utheta / r;
+                    source[4] = -rho * ur * ht / r;
+
+                    volume = _mesh.getVolume(i, j, k);
+
+                    residuals.subtract(i, j, k, source * volume);
+                }
+            }
+        }
+    }
+
     if (!_config.isBFMActive()){
         return ;
     }

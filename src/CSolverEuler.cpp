@@ -882,7 +882,7 @@ void CSolverEuler::computeSourceTerms(const FlowSolution& solution, size_t itCou
                     ht = _fluid->computeTotalEnthalpy_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
                     r = _mesh.getVertex(i, j, k).y();
                     source[0] = - rho * ur / r;
-                    source[1] = - rho * ur * uax / r;
+                    source[1] = - rho * ur * uax / r; // there is a minus or a plus here??
                     source[2] = (utheta * utheta - ur * ur) * rho / r;
                     source[3] = -2.0 * rho * ur * utheta / r;
                     source[4] = -rho * ur * ht / r;

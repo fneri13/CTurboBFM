@@ -67,6 +67,14 @@ void CSolverEuler::initializeSolutionArrays(){
     _viscousForce.resize(_nPointsI, _nPointsJ, _nPointsK);
     _deviationAngle.resize(_nPointsI, _nPointsJ, _nPointsK);
 
+    // initialize arrays for gradients
+    _solutionGrad[SolutionNames::DENSITY] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
+    _solutionGrad[SolutionNames::VELOCITY_X] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
+    _solutionGrad[SolutionNames::VELOCITY_Y] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
+    _solutionGrad[SolutionNames::VELOCITY_Z] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
+    _solutionGrad[SolutionNames::TOTAL_ENERGY] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
+
+
     // Initialize the solution either from scratch or from a restart file
     bool restartSolution = _config.restartSolution();
     if (restartSolution) {
@@ -75,6 +83,13 @@ void CSolverEuler::initializeSolutionArrays(){
     else {
         initializeSolutionFromScratch();
     }
+
+    // compute the initial gradients
+    computeGradient(_conservativeVars.getDensity(), _solutionGrad[SolutionNames::DENSITY]);
+    computeGradient(_conservativeVars.getVelocityX(), _solutionGrad[SolutionNames::VELOCITY_X]);
+    computeGradient(_conservativeVars.getVelocityY(), _solutionGrad[SolutionNames::VELOCITY_Y]);
+    computeGradient(_conservativeVars.getVelocityZ(), _solutionGrad[SolutionNames::VELOCITY_Z]);
+    computeGradient(_conservativeVars.getTotalEnergy(), _solutionGrad[SolutionNames::TOTAL_ENERGY]);
 
     // Compute the radial coordinate of the radial profile points at exit (station ni-1)
     size_t ni = _mesh.getNumberPointsI();
@@ -328,6 +343,8 @@ void CSolverEuler::solve(){
     FlowSolution solutionOld(_nPointsI, _nPointsJ, _nPointsK);                              // place holder for the solution at the previous timestep
     FlowSolution solutionTmp(_nPointsI, _nPointsJ, _nPointsK);                              // place holder for the solution at the next iteration
     solutionTmp.copyFrom(_conservativeVars);                                                // copy the solution to the temporary solution
+
+    std::map<SolutionNames, Matrix3D<Vector3D>> solutionGradTmp = _solutionGrad;               // solution grad used in the iterations
     
     // time integration
     for (size_t it=1; it<=nIterMax; it++){        
@@ -340,8 +357,9 @@ void CSolverEuler::solve(){
         // runge-kutta steps
         for (const auto &integrationCoeff: timeIntegrationCoeffs){
             updateRadialProfiles(solutionTmp);
-            computeResiduals(solutionTmp, it, _time.back(), residuals);
+            computeResiduals(solutionTmp, solutionGradTmp, it, _time.back(), residuals);
             updateSolution(solutionOld, solutionTmp, residuals, integrationCoeff, timestep);
+            updateSolutionGradient(solutionTmp, solutionGradTmp);
         }
         
         // update the physical time
@@ -349,6 +367,7 @@ void CSolverEuler::solve(){
         
         // update the solution
         _conservativeVars.copyFrom(solutionTmp);
+        // _solutionGrad = solutionGradTmp;
         
         // print info on terminal
         printInfoResiduals(residuals, it);
@@ -610,20 +629,22 @@ void CSolverEuler::updateTurboPerformance(const FlowSolution&solution){
     
 }
 
-void CSolverEuler::computeResiduals(const FlowSolution& solution, const size_t it, const FloatType timePhysical, FlowSolution &residuals) {
+void CSolverEuler::computeResiduals(const FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad, 
+                                    const size_t it, const FloatType timePhysical, FlowSolution &residuals) {
+    
+    // the residual is defined on the LHS, so the fluxes must be added, and the sources must be subtracted
+    
     residuals.setToZero(); // clear the residuals array
 
     // compute residuals contribution from advection
     computeAdvectionFlux(FluxDirection::I, solution, it, residuals);
-    
     computeAdvectionFlux(FluxDirection::J, solution, it, residuals);
-    
     if (_topology==Topology::THREE_DIMENSIONAL || _topology==Topology::AXISYMMETRIC_3D){
         computeAdvectionFlux(FluxDirection::K, solution, it, residuals);
     }
 
     // compute residuals contribution from sources
-    computeSourceTerms(solution, it, residuals, _inviscidForce, _viscousForce, _deviationAngle, timePhysical);
+    computeSourceTerms(solution, solutionGrad, it, residuals, _inviscidForce, _viscousForce, _deviationAngle, timePhysical);
 
 }
 
@@ -865,7 +886,9 @@ void CSolverEuler::updateRadialProfiles(FlowSolution &solution){
 }
 
 
-void CSolverEuler::computeSourceTerms(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType timePhysical) {
+void CSolverEuler::computeSourceTerms(const FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad, 
+                                      const size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, 
+                                      Matrix3D<FloatType> &deviationAngle, FloatType timePhysical) {
     
     // source terms for axisymmetric simulations
     if (_topology==Topology::AXISYMMETRIC_2D){
@@ -899,15 +922,33 @@ void CSolverEuler::computeSourceTerms(const FlowSolution& solution, size_t itCou
         return ;
     }
 
+    StateVector primitive, conservative, bfmSource, gongSource;
+    FloatType omega, radius, theta;
+    Vector3D densityGrad, velXGrad, velYGrad, velZGrad, totEnergyGrad;
     for (size_t i = 0; i < _nPointsI; i++) {
         for (size_t j = 0; j < _nPointsJ; j++) {
             for (size_t k = 0; k < _nPointsK; k++) {
                 Vector3D blockageGradient = _mesh.getInputFieldsGradient(FieldNames::BLOCKAGE, i, j, k); 
-                if (blockageGradient.magnitude() > 1E-10){
-                    StateVector conservative = solution.at(i, j, k);
-                    StateVector primitive = getEulerPrimitiveFromConservative(conservative);
-                    StateVector source = _bfmSource->computeSource(i, j, k, primitive, inviscidForce, viscousForce, deviationAngle, timePhysical);
-                    residuals.subtract(i, j, k, source);
+                if (blockageGradient.magnitude() > 1E-10){ // only in bladed rows
+                    
+                    // compute first the bfm source, composed by blockage effects plus blade forces
+                    conservative = solution.at(i, j, k);
+                    primitive = getEulerPrimitiveFromConservative(conservative);
+                    bfmSource = _bfmSource->computeSource(i, j, k, primitive, inviscidForce, viscousForce, deviationAngle, timePhysical);
+                    residuals.subtract(i, j, k, bfmSource);
+
+                    // compute the additional terms due to Gong modeling (if they are positive, they must be subtracted from the residual vector)
+                    omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
+                    radius = _mesh.getRadius(i, j, k);
+                    theta = _mesh.getTheta(i, j, k);
+                    densityGrad = solutionGrad.at(SolutionNames::DENSITY)(i, j, k);
+                    velXGrad = solutionGrad.at(SolutionNames::VELOCITY_X)(i, j, k);
+                    velYGrad = solutionGrad.at(SolutionNames::VELOCITY_Y)(i, j, k);
+                    velZGrad = solutionGrad.at(SolutionNames::VELOCITY_Z)(i, j, k);
+                    totEnergyGrad = solutionGrad.at(SolutionNames::TOTAL_ENERGY)(i, j, k);
+                    gongSource = computeGongSource(radius, theta, omega, primitive,
+                                                   densityGrad, velXGrad, velYGrad, velZGrad, totEnergyGrad, _mesh.getVolume(i, j, k));
+                    residuals.subtract(i, j, k, gongSource);
                 }
             }
         }
@@ -987,4 +1028,77 @@ void CSolverEuler::checkConvergence(bool &exitLoop, bool &isSteady) const {
         std::cout << std::endl;
         exitLoop = true;
     } 
+}
+
+
+void CSolverEuler::computeGradient(const Matrix3D<FloatType> &var, Matrix3D<Vector3D> &grad) const {
+    computeGradientGreenGauss(  _mesh.getSurfacesI(), _mesh.getSurfacesJ(), _mesh.getSurfacesK(), 
+                                _mesh.getMidPointsI(), _mesh.getMidPointsJ(), _mesh.getMidPointsK(), 
+                                _mesh.getVertices(), _mesh.getVolumes(), var, grad);
+}
+
+
+void CSolverEuler::updateSolutionGradient(const FlowSolution &sol, std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad){
+    computeGradient(sol.getDensity(), solutionGrad[SolutionNames::DENSITY]);
+    computeGradient(sol.getVelocityX(), solutionGrad[SolutionNames::VELOCITY_X]);
+    computeGradient(sol.getVelocityY(), solutionGrad[SolutionNames::VELOCITY_Y]);
+    computeGradient(sol.getVelocityZ(), solutionGrad[SolutionNames::VELOCITY_Z]);
+    computeGradient(sol.getTotalEnergy(), solutionGrad[SolutionNames::TOTAL_ENERGY]);
+}
+
+
+StateVector CSolverEuler::computeGongSource(const FloatType& radius, const FloatType& theta, const FloatType& omega, const StateVector& primitive, 
+                            const Vector3D& densityGrad, const Vector3D& velXGrad, const Vector3D& velYGrad, const Vector3D& velZGrad, 
+                            const Vector3D& totEnergyGrad, const FloatType& volume) const{
+
+    // omega term on the diagonal 
+    Matrix2D<FloatType> omegaTerm(5, 5);
+    for (size_t i = 0; i < 5; i++) {
+        omegaTerm(i, i) = omega;
+    }
+
+    // Jacobian Term
+    Matrix2D<FloatType> dFy_dU(5, 5), dFz_dU(5, 5), jacobianTerm(5, 5);
+    Vector3D yDir = Vector3D(0, 1, 0);
+    Vector3D zDir = Vector3D(0, 0, 1);
+    dFy_dU = computeAdvectionFluxJacobian(primitive, yDir, *_fluid);
+    dFz_dU = computeAdvectionFluxJacobian(primitive, zDir, *_fluid);
+    jacobianTerm = dFy_dU * (- std::sin(theta)/radius) + dFz_dU * (std::cos(theta) / radius);
+
+    // Solution Gradient term
+    Matrix2D<FloatType> dU_dy(5, 1), dU_dz(5, 1), dU_dtheta(5, 1); // derivatives of the conservative solution
+    FloatType rho, u, v, w, et;
+    rho = primitive[0];
+    u = primitive[1];
+    v = primitive[2];
+    w = primitive[3];
+    et = primitive[4];
+
+    dU_dy(0,0) = densityGrad.y();
+    dU_dz(0,0) = densityGrad.z();
+
+    dU_dy(1,0) = densityGrad.y() * u + rho * velXGrad.y();
+    dU_dz(1,0) = densityGrad.z() * u + rho * velXGrad.z();
+
+    dU_dy(2,0) = densityGrad.y() * v + rho * velYGrad.y();
+    dU_dz(2,0) = densityGrad.z() * v + rho * velYGrad.z();
+
+    dU_dy(3,0) = densityGrad.y() * w + rho * velZGrad.y();
+    dU_dz(3,0) = densityGrad.z() * w + rho * velZGrad.z();
+
+    dU_dy(4,0) = densityGrad.y() * et + rho * totEnergyGrad.y();
+    dU_dz(4,0) = densityGrad.z() * et + rho * totEnergyGrad.z();
+
+    // project gradient in theta direction (theta_direction is = [0, -sin(theta), cos(theta)])
+    dU_dtheta = dU_dy * (-radius * std::sin(theta)) + dU_dz * (radius * std::cos(theta));
+
+    // compute the total source
+    Matrix2D<FloatType> sourceTerm = (jacobianTerm - omegaTerm) * dU_dtheta;
+    
+    StateVector source({0,0,0,0,0});
+    for (size_t i = 0; i < 5; i++) {
+        source[i] = sourceTerm(i, 0); // just convert the object
+    }
+
+    return source*volume;
 }

@@ -38,6 +38,10 @@ class CMesh {
         const Matrix3D<Vector3D> getVertices() const {return _vertices;}
 
         const Vector3D& getVertex(size_t i, size_t j, size_t k) const {return _vertices(i,j,k);}
+
+        inline FloatType getRadius(size_t i, size_t j, size_t k) const {return std::sqrt(_vertices(i,j,k).y()*_vertices(i,j,k).y() + _vertices(i,j,k).z()*_vertices(i,j,k).z());}
+
+        inline FloatType getTheta(size_t i, size_t j, size_t k) const {return std::atan2(_vertices(i,j,k).z(), _vertices(i,j,k).y());}
         
         const Matrix3D<Vector3D> getDualNodes() const {return _dualNodes;}
         

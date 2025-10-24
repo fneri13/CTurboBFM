@@ -164,7 +164,7 @@ void integrateRadialEquilibrium(const std::vector<FloatType>& density,
 void computeGradientGreenGauss(const Matrix3D<Vector3D>& surfacesI, const Matrix3D<Vector3D>& surfacesJ, const Matrix3D<Vector3D>& surfacesK, 
     const Matrix3D<Vector3D>& midPointsI, const Matrix3D<Vector3D>& midPointsJ, const Matrix3D<Vector3D>& midPointsK, 
     const Matrix3D<Vector3D>& nodes, const Matrix3D<
-    FloatType>& volumes, Matrix3D<FloatType>& field, Matrix3D<Vector3D>& gradient){
+    FloatType>& volumes, const Matrix3D<FloatType>& field, Matrix3D<Vector3D>& gradient){
 
     size_t ni = volumes.sizeI();
     size_t nj = volumes.sizeJ();
@@ -344,4 +344,61 @@ void writeDataToCSV(const std::vector<FloatType>& data, const std::string& filen
     file.close();
 
     std::cout << "Data written to " << filename << " successfully.\n";
+}
+
+
+Matrix2D<FloatType> computeAdvectionFluxJacobian(const StateVector& primitive, const Vector3D& direction, const CFluidBase& fluid){
+    // formulation taken from Blazek, there could be a typo in the element (4,0)
+
+    Matrix2D<FloatType> jacobian(5, 5);
+
+    FloatType u = primitive[1];
+    FloatType v = primitive[2];
+    FloatType w = primitive[3];
+    FloatType et = primitive[4];
+    FloatType nx = direction(0);
+    FloatType ny = direction(1);
+    FloatType nz = direction(2);
+
+    FloatType gmma = fluid.getGamma();
+    FloatType umag2 = u*u + v*v + w*w; // square of velocity magnitude
+    FloatType V = u*nx + v*ny + w*nz; // velocity along the required direction
+    
+    FloatType phi = 0.5 * (gmma - 1) * umag2;
+    FloatType a1 = gmma * et - phi;
+    FloatType a2 = gmma - 1.0;
+    FloatType a3 = gmma - 2.0;
+
+    jacobian(0, 0) = 0.0;
+    jacobian(0, 1) = nx;
+    jacobian(0, 2) = ny;
+    jacobian(0, 3) = nz;
+    jacobian(0, 4) = 0.0;
+
+    jacobian(1, 0) = nx * phi - u * V;
+    jacobian(1, 1) = V - a3 * nx * u;
+    jacobian(1, 2) = ny * u - a2 * nx * v;
+    jacobian(1, 3) = nz * u - a2 * nx * w;
+    jacobian(1, 4) = a2 * nx;
+
+    jacobian(2, 0) = ny * phi - v * V;
+    jacobian(2, 1) = nx * v - a2 * ny * u;
+    jacobian(2, 2) = V - a3 * ny * v;
+    jacobian(2, 3) = nz * v - a2 * ny * w;
+    jacobian(2, 4) = a2 * ny;
+
+    jacobian(3, 0) = nz * phi - w * V;
+    jacobian(3, 1) = nx * w - a2 * nz * u;
+    jacobian(3, 2) = ny * w - a2 * nz * v;
+    jacobian(3, 3) = V - a3 * nz * w;
+    jacobian(3, 4) = a2 * nz;
+
+    jacobian(4, 0) = V * (phi - a1); // this term maybe is negative, not super sure
+    jacobian(4, 1) = nx * a1 - a2 * u * V;
+    jacobian(4, 2) = ny * a1 - a2 * v * V;
+    jacobian(4, 3) = nz * a1 - a2 * w * V;
+    jacobian(4, 4) = gmma * V;
+
+    return jacobian;
+
 }

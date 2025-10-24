@@ -27,6 +27,8 @@ StateVector computeEulerFluxFromPrimitive(StateVector primitive, Vector3D surfac
 
 StateVector computeEulerFluxFromConservative(StateVector conservative, Vector3D surface, const CFluidBase& fluid);
 
+Matrix2D<FloatType> computeAdvectionFluxJacobian(const StateVector& primitive, const Vector3D& direction, const CFluidBase& fluid);
+
 FloatType computeAngleBetweenVectors(const Vector3D& v1, const Vector3D& v2);
 
 Vector3D rotateVectorAlongXAxis(const Vector3D& v, FloatType theta);
@@ -45,8 +47,7 @@ void integrateRadialEquilibrium(const std::vector<FloatType>& density, const std
 
 void computeGradientGreenGauss(const Matrix3D<Vector3D>& surfacesI, const Matrix3D<Vector3D>& surfacesJ, const Matrix3D<Vector3D>& surfacesK, 
                                 const Matrix3D<Vector3D>& midPointsI, const Matrix3D<Vector3D>& midPointsJ, const Matrix3D<Vector3D>& midPointsK, 
-                                const Matrix3D<Vector3D>& nodes, const Matrix3D<
-                                FloatType>& volumes, Matrix3D<FloatType>& field, Matrix3D<Vector3D>& gradient);
+                                const Matrix3D<Vector3D>& nodes, const Matrix3D<FloatType>& volumes, const Matrix3D<FloatType>& field, Matrix3D<Vector3D>& gradient);
 
 
 FloatType interpolateScalar(const Matrix3D<FloatType>& field, size_t i, size_t j, size_t k, const Matrix3D<Vector3D>& nodes, const Vector3D& point, Direction3D direction);

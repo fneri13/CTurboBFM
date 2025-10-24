@@ -44,6 +44,8 @@ public:
 private:
     
     FlowSolution _conservativeVars; // conservative variables solution
+
+    std::map<SolutionNames, Matrix3D<Vector3D>> _solutionGrad;
     
     std::unique_ptr<COutputBase> _output;
     
@@ -95,7 +97,8 @@ private:
      * @param[in] itCounter The iteration counter
      * @return The global residual 3D matrix
     */
-    void computeResiduals(const FlowSolution& solution, const size_t itCounter, const FloatType timePhysical, FlowSolution &residuals);
+    void computeResiduals(const FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>>& solutionGrad, 
+                            const size_t itCounter, const FloatType timePhysical, FlowSolution &residuals);
 
 
     /** @brief compute the residuals contribution from advection fluxes
@@ -115,6 +118,10 @@ private:
      * @param[in] dt The time step array
     */
     void updateSolution(const FlowSolution &solOld, FlowSolution &solNew, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt);
+
+    /** @brief update the gradient of the solution
+    */
+    void updateSolutionGradient(const FlowSolution &sol, std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad);
 
 
     /** @brief print information about the residuals
@@ -184,7 +191,9 @@ private:
      * \param[out] inviscidForce The reference to the inviscid force matrix to update
      * \param[out] viscousForce The reference to the viscous force matrix to update
      */
-    void computeSourceTerms(const FlowSolution& solution, size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType timePhysical);
+    void computeSourceTerms(const FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>>& solutionGrad, 
+                            size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, 
+                            Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType timePhysical);
 
 
     /** @brief read the restart file and store data in the reference arguments
@@ -223,5 +232,11 @@ private:
     void standardRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, 
                          Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature, Matrix3D<Vector3D> &inputForceViscous, 
                          Matrix3D<Vector3D> &inputForceInviscid);
+    
 
+    void computeGradient(const Matrix3D<FloatType> &var, Matrix3D<Vector3D> &grad) const;
+
+    StateVector computeGongSource(const FloatType& radius, const FloatType& theta, const FloatType& omega, const StateVector& primitive, 
+                            const Vector3D& densityGrad, const Vector3D& velXGrad, const Vector3D& velYGrad, const Vector3D& velZGrad, 
+                            const Vector3D& totEnergyGrad, const FloatType& volume) const;
 };

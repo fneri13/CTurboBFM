@@ -245,13 +245,13 @@ class Matrix2D {
         Matrix2D() : _ni(0), _nj(0) {}
 
         // Constructor with dimensions
-        Matrix2D(size_t ni, size_t nj) : _ni(ni), _nj(nj), _data(ni * nj) {}
+        Matrix2D(size_t ni, size_t nj) : _ni(ni), _nj(nj), _data(ni * nj, T{}) {}
 
         // Resize the matrix to new dimensions
         void resize(size_t ni, size_t nj) {
             _ni = ni;
             _nj = nj;
-            _data.resize(ni * nj);
+            _data.assign(ni * nj, T{});   // instead of resize()
         }
 
         // Overloaded () operator for access with bounds checking
@@ -267,6 +267,51 @@ class Matrix2D {
 
         size_t sizeI() const { return _ni; }
         size_t sizeJ() const { return _nj; }
+
+        // Regular addition (A + B)
+        Matrix2D<T> operator+(const Matrix2D<T>& other) const {
+            assert(_ni == other._ni && _nj == other._nj && "Matrix dimensions must match for addition");
+            Matrix2D<T> result(_ni, _nj);
+            for (size_t n = 0; n < _data.size(); ++n)
+                result._data[n] = _data[n] + other._data[n];
+            return result;
+        }
+
+        // Regular subtraction (A - B)
+        Matrix2D<T> operator-(const Matrix2D<T>& other) const {
+            assert(_ni == other._ni && _nj == other._nj && "Matrix dimensions must match for addition");
+            Matrix2D<T> result(_ni, _nj);
+            for (size_t n = 0; n < _data.size(); ++n)
+                result._data[n] = _data[n] - other._data[n];
+            return result;
+        }
+
+        // Matrix * scalar
+        Matrix2D<T> operator*(const T& scalar) const {
+            Matrix2D<T> result(_ni, _nj);
+            for (size_t n = 0; n < _data.size(); ++n)
+                result._data[n] = _data[n] * scalar;
+            return result;
+        }
+
+        // Matrix * Matrix multiplication
+        Matrix2D<T> operator*(const Matrix2D<T>& other) const {
+            assert(_nj == other._ni && "Matrix dimensions must be compatible for multiplication");
+
+            Matrix2D<T> result(_ni, other._nj);
+
+            for (size_t i = 0; i < _ni; ++i) {
+                for (size_t j = 0; j < other._nj; ++j) {
+                    T sum = T{};  // initialize to zero
+                    for (size_t k = 0; k < _nj; ++k) {
+                        sum += (*this)(i, k) * other(k, j);
+                    }
+                    result(i, j) = sum;
+                }
+            }
+
+            return result;
+        }
 
     private:
         size_t _ni, _nj;
@@ -869,6 +914,13 @@ enum class FieldNames {
     D_BLADE_METAL_ANGLE_DM=46,
 };
 
+enum class SolutionNames {
+    DENSITY=0,
+    VELOCITY_X=1,
+    VELOCITY_Y=2,
+    VELOCITY_Z=3,
+    TOTAL_ENERGY=4,
+};
 
 
 class FieldNameMapper {

@@ -78,6 +78,8 @@ class CMesh {
 
         void checkPeriodicity(FloatType periodicityAngle) const;
 
+        void enlargePeriodicElements();
+
         /** \brief Compute the flow direction for each cell, following the mesh lines. It assumes that the inlet-outlet direction is the i-axis. Other directions not supported
          * \param[out] flowDirection The flow direction array
         */
@@ -91,6 +93,8 @@ class CMesh {
         void computeUniformFlowDirection(Vector3D initDirection, Matrix3D<Vector3D> &flowDirection) const;
 
         void writeMeshQualityStats() const;
+
+        bool applyPeriodicTreatment() const {return _periodicMesh;}
 
     private:
         const Config& _config;
@@ -125,6 +129,8 @@ class CMesh {
         Statistics _aspectRatioStats, _skewnessStats, _orthogonalityStats;
 
         std::map<FieldNames, Matrix3D<Vector3D>> _gradientsMap;
+
+        bool _periodicMesh {false};
 
         // read the coordinates from the mesh CSV file
         void readPoints();

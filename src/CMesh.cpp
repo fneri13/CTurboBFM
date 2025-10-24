@@ -9,8 +9,11 @@
 #include "commonFunctions.hpp"
 
 CMesh::CMesh(Config& config) : _config(config) {
+    
     readPoints();
+    
     allocateMemory();
+    
     auto topology = config.getTopology();
     if (topology == Topology::TWO_DIMENSIONAL || topology == Topology::AXISYMMETRIC_2D || topology == Topology::AXISYMMETRIC_3D) {
         computeDualGrid2D();
@@ -512,6 +515,11 @@ void CMesh::computeInputGradients() {
 
 void CMesh::checkPeriodicity(FloatType periodicityAngle) const{
     FloatType tolerance = 1E-4;
+    if (std::abs(periodicityAngle-2.0*M_PI) > tolerance){
+        throw std::invalid_argument("For now periodic boundaries are only implemented for full annulus meshes");
+    }
+
+    
     for (size_t i=0; i<_nPointsI; i++){
         for (size_t j=0; j<_nPointsJ; j++){
             Vector3D pointA = _vertices(i,j,0);
@@ -580,4 +588,19 @@ void CMesh::writeMeshQualityStats() const {
     writeDataToCSV(_skewness, _meshQualityFolderName + "/skewness.csv");
     writeDataToCSV(_orthogonality, _meshQualityFolderName + "/orthogonality.csv");
     writeDataToCSV(_aspectRatio.getData(), _meshQualityFolderName + "/aspect_ratio.csv");
+}
+
+
+void CMesh::enlargePeriodicElements(){
+    FloatType tmpFirst, tmpLast;
+    for (size_t i=0; i<_nPointsI; i++){
+        for (size_t j=0; j<_nPointsJ; j++){
+            tmpFirst = _volumes(i, j, 0);
+            tmpLast = _volumes(i, j, _nPointsK-1);
+
+            _volumes(i,j,0) += tmpLast;
+            _volumes(i,j,_nPointsK-1) += tmpFirst;
+        }
+    }
+    _periodicMesh = true;
 }

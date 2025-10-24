@@ -643,9 +643,24 @@ void CSolverEuler::computeResiduals(const FlowSolution& solution, const std::map
         computeAdvectionFlux(FluxDirection::K, solution, it, residuals);
     }
 
+    // cure periodic cells (Blazek treatment, valid only for full-annulus at the moment)
+    if (_mesh.applyPeriodicTreatment()){
+        StateVector residualFirst, residualLast;
+        for (size_t i=0; i<_nPointsI; i++){
+            for (size_t j=0; j<_nPointsJ; j++){
+                residualFirst = residuals.at(i,j,0);
+                residualLast = residuals.at(i,j,_nPointsK-1);
+                residuals.set(i,j,0, residuals.at(i,j,0) + residualLast);
+                residuals.set(i,j,_nPointsK-1, residuals.at(i,j,_nPointsK-1) + residualFirst);
+            }
+        }
+    }
+
     // compute residuals contribution from sources
     computeSourceTerms(solution, solutionGrad, it, residuals, _inviscidForce, _viscousForce, _deviationAngle, timePhysical);
 
+    
+    
 }
 
 
@@ -937,18 +952,18 @@ void CSolverEuler::computeSourceTerms(const FlowSolution& solution, const std::m
                     bfmSource = _bfmSource->computeSource(i, j, k, primitive, inviscidForce, viscousForce, deviationAngle, timePhysical);
                     residuals.subtract(i, j, k, bfmSource);
 
-                    // compute the additional terms due to Gong modeling (if they are positive, they must be subtracted from the residual vector)
-                    omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
-                    radius = _mesh.getRadius(i, j, k);
-                    theta = _mesh.getTheta(i, j, k);
-                    densityGrad = solutionGrad.at(SolutionNames::DENSITY)(i, j, k);
-                    velXGrad = solutionGrad.at(SolutionNames::VELOCITY_X)(i, j, k);
-                    velYGrad = solutionGrad.at(SolutionNames::VELOCITY_Y)(i, j, k);
-                    velZGrad = solutionGrad.at(SolutionNames::VELOCITY_Z)(i, j, k);
-                    totEnergyGrad = solutionGrad.at(SolutionNames::TOTAL_ENERGY)(i, j, k);
-                    gongSource = computeGongSource(radius, theta, omega, primitive,
-                                                   densityGrad, velXGrad, velYGrad, velZGrad, totEnergyGrad, _mesh.getVolume(i, j, k));
-                    residuals.subtract(i, j, k, gongSource);
+                    // // compute the additional terms due to Gong modeling (if they are positive, they must be subtracted from the residual vector)
+                    // omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
+                    // radius = _mesh.getRadius(i, j, k);
+                    // theta = _mesh.getTheta(i, j, k);
+                    // densityGrad = solutionGrad.at(SolutionNames::DENSITY)(i, j, k);
+                    // velXGrad = solutionGrad.at(SolutionNames::VELOCITY_X)(i, j, k);
+                    // velYGrad = solutionGrad.at(SolutionNames::VELOCITY_Y)(i, j, k);
+                    // velZGrad = solutionGrad.at(SolutionNames::VELOCITY_Z)(i, j, k);
+                    // totEnergyGrad = solutionGrad.at(SolutionNames::TOTAL_ENERGY)(i, j, k);
+                    // gongSource = computeGongSource(radius, theta, omega, primitive,
+                    //                                densityGrad, velXGrad, velYGrad, velZGrad, totEnergyGrad, _mesh.getVolume(i, j, k));
+                    // residuals.subtract(i, j, k, gongSource);
                 }
             }
         }

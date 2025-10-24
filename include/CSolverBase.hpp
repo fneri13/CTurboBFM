@@ -52,7 +52,7 @@ class CSolverBase {
     protected:
         const Config& _config;
         
-        const CMesh& _mesh;
+        CMesh& _mesh;
         
         size_t _nDimensions {0}, _nPointsI, _nPointsJ, _nPointsK;
         

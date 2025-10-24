@@ -77,6 +77,7 @@ void CSolverBase::readBoundaryConditions(){
             if (!periodicityChecked) {
                 _mesh.checkPeriodicity(_boundaryValues[bound].back());
                 periodicityChecked = true;
+                _mesh.enlargePeriodicElements();
             }
         }
         else {

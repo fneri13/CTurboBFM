@@ -1061,9 +1061,11 @@ StateVector CSolverEuler::computeGongSource(const FloatType& radius, const Float
     Matrix2D<FloatType> dFy_dU(5, 5), dFz_dU(5, 5), jacobianTerm(5, 5);
     Vector3D yDir = Vector3D(0, 1, 0);
     Vector3D zDir = Vector3D(0, 0, 1);
-    dFy_dU = computeAdvectionFluxJacobian(primitive, yDir, *_fluid);
-    dFz_dU = computeAdvectionFluxJacobian(primitive, zDir, *_fluid);
-    jacobianTerm = dFy_dU * (- std::sin(theta)/radius) + dFz_dU * (std::cos(theta) / radius);
+    Vector3D thetaDir = Vector3D(0, -std::sin(theta), std::cos(theta));
+    // dFy_dU = computeAdvectionFluxJacobian(primitive, yDir, *_fluid);
+    // dFz_dU = computeAdvectionFluxJacobian(primitive, zDir, *_fluid);
+    // jacobianTerm = dFy_dU * (- std::sin(theta)/radius) + dFz_dU * (std::cos(theta) / radius);
+    jacobianTerm = computeAdvectionFluxJacobian(primitive, thetaDir, *_fluid) * (1.0/radius);
 
     // Solution Gradient term
     Matrix2D<FloatType> dU_dy(5, 1), dU_dz(5, 1), dU_dtheta(5, 1); // derivatives of the conservative solution

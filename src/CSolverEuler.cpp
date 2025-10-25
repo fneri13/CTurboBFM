@@ -654,14 +654,15 @@ void CSolverEuler::computeResiduals(const FlowSolution& solution, const std::map
                 StateVector R2 = residuals.at(i, j, _nPointsK - 1);
 
                 // Rotate the second in place of a common frame (e.g. frame of the "first" side)
+                StateVector R1_rot = rotateStateVectorAlongXAxis(R1, +angle);
                 StateVector R2_rot = rotateStateVectorAlongXAxis(R2, -angle);
 
                 // Combine residuals to get an average
-                StateVector R_sum = R1 + R2_rot;
+                // StateVector R_sum = R1 + R2_rot;
 
                 // Symmetrize: give each half (ensures conservation)
-                residuals.set(i, j, 0, R_sum);
-                residuals.set(i, j, _nPointsK - 1, rotateStateVectorAlongXAxis(R_sum, +angle));
+                residuals.set(i, j, 0, R1 + R2_rot);
+                residuals.set(i, j, _nPointsK - 1, R2 + R1_rot);
             }
         }
     }

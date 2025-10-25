@@ -106,6 +106,8 @@ public:
     FloatType getInitPressure() const { return parseFloat("INIT_PRESSURE");}
     
     FloatType getInitTemperature() const { return parseFloat("INIT_TEMPERATURE");}
+
+    ReferenceFrame getInletReferenceFrame() const;
     
     Vector3D getInitDirection() const ;
     

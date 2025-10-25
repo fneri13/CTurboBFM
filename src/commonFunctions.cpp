@@ -111,6 +111,15 @@ Vector3D rotateVectorAlongXAxis(const Vector3D& v, FloatType theta){
     return newVector;
 }
 
+StateVector rotateStateVectorAlongXAxis(const StateVector& state, FloatType theta){
+    Vector3D vector(state[1], state[2], state[3]);
+    Vector3D rotatedVector = rotateVectorAlongXAxis(vector, theta);
+
+    StateVector newVector({state[0], rotatedVector.x(), rotatedVector.y(), rotatedVector.z(), state[4]});
+
+    return newVector;
+}
+
 Vector3D computeCylindricalVectorFromCartesian(Vector3D vec, FloatType theta){
     Vector3D newVector;
     newVector.x() = vec.x();

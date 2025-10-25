@@ -24,6 +24,10 @@ class CMesh {
         const Matrix3D<Vector3D>& getMidPoints(FluxDirection direction) const;
 
         const Matrix3D<Vector3D>& getSurfacesI() const {return _surfacesI;}
+
+        FloatType getPeriodicityAngleRad() {return _periodicityAngleRad;}
+
+        FloatType getPeriodicityAngleDeg() {return _periodicityAngleRad * 180.0 / M_PI;}
         
         const Matrix3D<Vector3D>& getMidPointsI() const {return _centersI;}
 
@@ -76,7 +80,7 @@ class CMesh {
 
         void computeInputGradients();
 
-        void checkPeriodicity(FloatType periodicityAngle) const;
+        void checkPeriodicity(FloatType periodicityAngle);
 
         void enlargePeriodicElements();
 
@@ -98,6 +102,8 @@ class CMesh {
 
     private:
         const Config& _config;
+
+        FloatType _periodicityAngleRad{0.0};
 
         size_t _nPointsI, _nPointsJ, _nPointsK, _nPointsTotal;
 

@@ -436,3 +436,18 @@ FloatType Config::getBfmRelaxationFactor() const {
         return 1.0;
     }
 }
+
+ReferenceFrame Config::getInletReferenceFrame() const {
+    std::string value = parseString("INLET_REFERENCE_FRAME", true);
+    ReferenceFrame frame = ReferenceFrame::CARTESIAN;
+    if (value == "Cartesian" || value == "cartesian" || value == "CARTESIAN" || value == "none") {
+        frame = ReferenceFrame::CARTESIAN;
+    } 
+    else if (value == "Cylindrical" || value == "cylindrical" || value == "CYLINDRICAL") {
+        frame = ReferenceFrame::CYLINDRICAL;
+    }
+    else {
+        throw std::runtime_error("Invalid value for key \"INLET_REFERENCE_FRAME\" in configuration.");
+    }
+    return frame;
+}

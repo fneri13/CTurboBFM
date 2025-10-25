@@ -643,24 +643,32 @@ void CSolverEuler::computeResiduals(const FlowSolution& solution, const std::map
         computeAdvectionFlux(FluxDirection::K, solution, it, residuals);
     }
 
-    // cure periodic cells (Blazek treatment, valid only for full-annulus at the moment)
+    
+
+    // cure periodic cells (Blazek treatment, valid only for full-annulus at the moment). The volumes have been added, and here we add also the residuals coming from fluxes
     if (_mesh.applyPeriodicTreatment()){
-        StateVector residualFirst, residualLast;
+        FloatType angle = _mesh.getPeriodicityAngleRad();
         for (size_t i=0; i<_nPointsI; i++){
             for (size_t j=0; j<_nPointsJ; j++){
-                residualFirst = residuals.at(i,j,0);
-                residualLast = residuals.at(i,j,_nPointsK-1);
-                residuals.set(i,j,0, residuals.at(i,j,0) + residualLast);
-                residuals.set(i,j,_nPointsK-1, residuals.at(i,j,_nPointsK-1) + residualFirst);
+                StateVector R1 = residuals.at(i, j, 0);
+                StateVector R2 = residuals.at(i, j, _nPointsK - 1);
+
+                // Rotate the second in place of a common frame (e.g. frame of the "first" side)
+                StateVector R2_rot = rotateStateVectorAlongXAxis(R2, -angle);
+
+                // Combine residuals to get an average
+                StateVector R_sum = R1 + R2_rot;
+
+                // Symmetrize: give each half (ensures conservation)
+                residuals.set(i, j, 0, R_sum);
+                residuals.set(i, j, _nPointsK - 1, rotateStateVectorAlongXAxis(R_sum, +angle));
             }
         }
     }
 
-    // compute residuals contribution from sources
+     // compute residuals contribution from sources. They don't need to be added again, since for periodic configurations their volume has already been increased
     computeSourceTerms(solution, solutionGrad, it, residuals, _inviscidForce, _viscousForce, _deviationAngle, timePhysical);
-
-    
-    
+        
 }
 
 
@@ -734,18 +742,39 @@ void CSolverEuler::computeAdvectionFlux(FluxDirection direction, const FlowSolut
                 else {
                     Uleft = solution.at(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2]);
                     Uright = solution.at(iFace, jFace, kFace);
-                    if (dirFace==1){
-                        Uleftleft = Uleft;
+
+                    // get the extended stencil of values
+                    if (direction==FluxDirection::K && _mesh.applyPeriodicTreatment()){ // for periodic boundaries
+                        if (dirFace==1){                                                // first internal element
+                        Uleftleft = solution.at(iFace , jFace , nk-3);                  // last internal element
+                        Uleftleft = rotateStateVectorAlongXAxis(Uleftleft, -_mesh.getPeriodicityAngleRad());
+                        Urightright = solution.at(iFace , jFace, kFace+1);              // second internal element
+                        }
+                        else if (dirFace==stopFace-1){ 
+                            Uleftleft = solution.at(iFace, jFace, kFace-2);             // last-1 internal element
+                            Urightright = solution.at(iFace, jFace, 1);                 // first internal element
+                            Urightright = rotateStateVectorAlongXAxis(Urightright, _mesh.getPeriodicityAngleRad());
+                        }
+                        else {
+                            Uleftleft = solution.at(iFace-2*stepMask[0], jFace-2*stepMask[1], kFace-2*stepMask[2]);
+                            Urightright = solution.at(iFace+1*stepMask[0], jFace+1*stepMask[1], kFace+1*stepMask[2]);
+                        }
+                    }
+                    else { // normal topology
+                        if (dirFace==1){ // first internal element
+                        Uleftleft = Uleft - (Uright - Uleft); // stupid extrapolation
                         Urightright = solution.at(iFace+1*stepMask[0], jFace+1*stepMask[1], kFace+1*stepMask[2]);
+                        }
+                        else if (dirFace==stopFace-1){ // last internal element
+                            Uleftleft = solution.at(iFace-2*stepMask[0], jFace-2*stepMask[1], kFace-2*stepMask[2]);
+                            Urightright = Uright + (Uright - Uleft); // stupid extrapolation
+                        }
+                        else {
+                            Uleftleft = solution.at(iFace-2*stepMask[0], jFace-2*stepMask[1], kFace-2*stepMask[2]);
+                            Urightright = solution.at(iFace+1*stepMask[0], jFace+1*stepMask[1], kFace+1*stepMask[2]);
+                        }
                     }
-                    else if (dirFace==stopFace-1){
-                        Uleftleft = solution.at(iFace-2*stepMask[0], jFace-2*stepMask[1], kFace-2*stepMask[2]);
-                        Urightright = Uright;
-                    }
-                    else {
-                        Uleftleft = solution.at(iFace-2*stepMask[0], jFace-2*stepMask[1], kFace-2*stepMask[2]);
-                        Urightright = solution.at(iFace+1*stepMask[0], jFace+1*stepMask[1], kFace+1*stepMask[2]);
-                    }
+                    
                     surface = surfaces(iFace, jFace, kFace);
                     flux = _advectionScheme->computeFlux(Uleftleft, Uleft, Uright, Urightright, surface);
                     residuals.add(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2], flux * surface.magnitude());
@@ -937,9 +966,10 @@ void CSolverEuler::computeSourceTerms(const FlowSolution& solution, const std::m
         return ;
     }
 
-    StateVector primitive, conservative, bfmSource, gongSource;
-    FloatType omega, radius, theta;
-    Vector3D densityGrad, velXGrad, velYGrad, velZGrad, totEnergyGrad;
+    StateVector primitive, conservative, bfmSource;
+    // FloatType omega, radius, theta;
+    // Vector3D densityGrad, velXGrad, velYGrad, velZGrad, totEnergyGrad;
+    // StateVector gongSource;
     for (size_t i = 0; i < _nPointsI; i++) {
         for (size_t j = 0; j < _nPointsJ; j++) {
             for (size_t k = 0; k < _nPointsK; k++) {
@@ -952,7 +982,7 @@ void CSolverEuler::computeSourceTerms(const FlowSolution& solution, const std::m
                     bfmSource = _bfmSource->computeSource(i, j, k, primitive, inviscidForce, viscousForce, deviationAngle, timePhysical);
                     residuals.subtract(i, j, k, bfmSource);
 
-                    // // compute the additional terms due to Gong modeling (if they are positive, they must be subtracted from the residual vector)
+                    // // // compute the additional terms due to Gong modeling (if they are positive, they must be subtracted from the residual vector)
                     // omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
                     // radius = _mesh.getRadius(i, j, k);
                     // theta = _mesh.getTheta(i, j, k);

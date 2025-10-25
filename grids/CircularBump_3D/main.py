@@ -14,13 +14,13 @@ The Fundamentals of Computational Fluid Dynamics (Second Edition) by Charles Hir
 
 OUTPUT_FOLDER = 'Grid'
 L = 1
-HUB_RADIUS = L/5
-NX = 128
-NY = 48
-NK = 15
-THETA_MAX = 30*np.pi/180
-STREAMWISE_COEFF = 1.1
-SPANWISE_COEFF = 1.1
+HUB_RADIUS = L/3
+NX = 72
+NY = 24
+NK = 5
+THETA_MAX = 10*np.pi/180
+STREAMWISE_COEFF = 1.2
+SPANWISE_COEFF = 1.0
 
 
 

@@ -1114,3 +1114,8 @@ enum class FluidModel {
     IDEAL = 0,
     REAL = 1
 };
+
+enum class ReferenceFrame {
+    CARTESIAN = 0,
+    CYLINDRICAL = 1
+};

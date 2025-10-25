@@ -513,12 +513,9 @@ void CMesh::computeInputGradients() {
 }
 
 
-void CMesh::checkPeriodicity(FloatType periodicityAngle) const{
-    FloatType tolerance = 1E-4;
-    if (std::abs(periodicityAngle-2.0*M_PI) > tolerance){
-        throw std::invalid_argument("For now periodic boundaries are only implemented for full annulus meshes");
-    }
-
+void CMesh::checkPeriodicity(FloatType periodicityAngle) {
+    _periodicityAngleRad = periodicityAngle;
+    FloatType tolerance = 1E-3;
     
     for (size_t i=0; i<_nPointsI; i++){
         for (size_t j=0; j<_nPointsJ; j++){
@@ -530,7 +527,7 @@ void CMesh::checkPeriodicity(FloatType periodicityAngle) const{
 
             FloatType deltaTheta = std::abs(thetaA-thetaB);
 
-            if (std::abs(deltaTheta - periodicityAngle) > tolerance && std::abs(std::abs(deltaTheta - periodicityAngle)-2*M_PI) > tolerance){
+            if (std::abs(deltaTheta - _periodicityAngleRad) > tolerance && std::abs(std::abs(deltaTheta - _periodicityAngleRad)-2.0*M_PI) > tolerance){
                 throw std::invalid_argument("Periodicity check failed!");
             }
         }

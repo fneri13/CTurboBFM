@@ -35,4 +35,5 @@ class CBoundaryConditionInlet : public CBoundaryConditionBase {
         
     protected:
         std::vector<FloatType> _boundaryValues;
+        ReferenceFrame _referenceFrame;
 };

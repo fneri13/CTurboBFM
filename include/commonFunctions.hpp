@@ -33,6 +33,8 @@ FloatType computeAngleBetweenVectors(const Vector3D& v1, const Vector3D& v2);
 
 Vector3D rotateVectorAlongXAxis(const Vector3D& v, FloatType theta);
 
+StateVector rotateStateVectorAlongXAxis(const StateVector& v, FloatType theta);
+
 // convert a cartesian vector (x,y,z components) to a cylindrical vector (axial, radial, tangential components)
 Vector3D computeCylindricalVectorFromCartesian(Vector3D vec, FloatType theta);
 

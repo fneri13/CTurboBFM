@@ -4,6 +4,7 @@
 CBoundaryConditionInlet::CBoundaryConditionInlet(const Config &config, const CMesh &mesh, CFluidBase &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues)
     : CBoundaryConditionBase(config, mesh, fluid, boundIndex) {
         _boundaryValues = inletValues;
+        _referenceFrame = config.getInletReferenceFrame();
     }
 
 
@@ -25,6 +26,12 @@ StateVector CBoundaryConditionInlet::computeBoundaryFlux(StateVector internalCon
     // reconstruct the boundary state                                     
     FloatType velocityBoundMag = 2.0*soundSpeedBound / (_fluid.getGamma() - 1.0) - Jm;
     Vector3D flowDirection = {_boundaryValues[2], _boundaryValues[3], _boundaryValues[4]};
+
+    if (_referenceFrame == ReferenceFrame::CYLINDRICAL){
+        FloatType theta = _mesh.getTheta(indices[0], indices[1], indices[2]);
+        flowDirection = computeCartesianVectorFromCylindrical(flowDirection, theta);
+    }
+
     if (flowDirection.x() == 1.0 && flowDirection.y() == 1.0 && flowDirection.z() == 1.0) {
         // in this case the direction is normal to the surface
         flowDirection = -surface;

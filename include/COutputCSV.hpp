@@ -16,6 +16,6 @@ class COutputCSV : public COutputBase {
         
         virtual ~COutputCSV() = default;
 
-        virtual void writeSolution(size_t iterationCounter) override;
+        virtual void writeSolution(size_t iterationCounter, bool alsoGradients=false) override;
 
 };

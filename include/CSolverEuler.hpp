@@ -39,6 +39,8 @@ public:
     void solve() override;
 
     virtual void checkConvergence(bool &exitLoop, bool &isSteady) const override;
+
+    void writeSolution(size_t iterationCounter, bool alsoGradients=false) override;
     
 
 private:

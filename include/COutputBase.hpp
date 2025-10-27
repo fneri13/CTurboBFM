@@ -19,9 +19,9 @@ class COutputBase {
         
         virtual ~COutputBase() = default;
 
-        virtual void writeSolution(size_t iterationCounter) = 0;
+        virtual void writeSolution(size_t iterationCounter, bool alsoGradients=false) = 0;
 
-        void getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>& scalarsMap) const;
+        void getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>& scalarsMap, bool alsoGradients=false) const;
 
     protected:
         const Config& _config;

@@ -13,7 +13,7 @@ COutputBase::COutputBase(const Config &config, const CMesh &mesh, const FlowSolu
 
 
 
-void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>& scalarsMap) const {
+void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>& scalarsMap, bool alsoGradients) const {
     size_t ni = _mesh.getNumberPointsI();
     size_t nj = _mesh.getNumberPointsJ();
     size_t nk = _mesh.getNumberPointsK();
@@ -33,6 +33,31 @@ void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>&
     scalarsMap.emplace("Total Temperature", Matrix3D<FloatType>(ni, nj, nk));
     scalarsMap.emplace("Entropy",           Matrix3D<FloatType>(ni, nj, nk));
 
+
+    // allocate space also for gradients if needed
+    if (alsoGradients){
+        scalarsMap.emplace("Density Gradient X",          Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Density Gradient Y",          Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Density Gradient Z",          Matrix3D<FloatType>(ni, nj, nk));
+
+        scalarsMap.emplace("Velocity X Gradient X",       Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Velocity X Gradient Y",       Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Velocity X Gradient Z",       Matrix3D<FloatType>(ni, nj, nk));
+
+        scalarsMap.emplace("Velocity Y Gradient X",       Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Velocity Y Gradient Y",       Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Velocity Y Gradient Z",       Matrix3D<FloatType>(ni, nj, nk));
+
+        scalarsMap.emplace("Velocity Z Gradient X",       Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Velocity Z Gradient Y",       Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Velocity Z Gradient Z",       Matrix3D<FloatType>(ni, nj, nk));
+
+        scalarsMap.emplace("Pressure Gradient X",     Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Pressure Gradient Y",     Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Pressure Gradient Z",     Matrix3D<FloatType>(ni, nj, nk));
+    }
+
+
     // Cache references for speed
     auto& density     = scalarsMap["Density"];
     auto& velX        = scalarsMap["Velocity X"];
@@ -45,6 +70,7 @@ void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>&
     auto& pTotal      = scalarsMap["Total Pressure"];
     auto& tTotal      = scalarsMap["Total Temperature"];
     auto& entropy     = scalarsMap["Entropy"];
+
 
     // BFM simulation additional variables
     const bool isBFMActive = _config.isBFMActive();
@@ -66,8 +92,6 @@ void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>&
         scalarsMap.emplace("Deviation Angle",        Matrix3D<FloatType>(ni, nj, nk));
 
     }
-
-    
 
     // Reusable temporaries
     Vector3D vel;
@@ -138,7 +162,71 @@ void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>&
             }
         }
     }
+
+    // compute gradients
+    Matrix3D<Vector3D> rhoGrad(ni, nj, nk), velXGrad(ni, nj, nk), velYGrad(ni, nj, nk), velZGrad(ni, nj, nk), pressGrad(ni, nj, nk);
+    if (alsoGradients){
+        computeGradientGreenGauss(  _mesh.getSurfacesI(), _mesh.getSurfacesJ(), _mesh.getSurfacesK(), 
+                                    _mesh.getMidPointsI(), _mesh.getMidPointsJ(), _mesh.getMidPointsK(), 
+                                    _mesh.getVertices(), _mesh.getVolumes(), scalarsMap["Density"], rhoGrad);
+        
+        computeGradientGreenGauss(  _mesh.getSurfacesI(), _mesh.getSurfacesJ(), _mesh.getSurfacesK(), 
+                                    _mesh.getMidPointsI(), _mesh.getMidPointsJ(), _mesh.getMidPointsK(), 
+                                    _mesh.getVertices(), _mesh.getVolumes(), scalarsMap["Velocity X"], velXGrad);
+        
+        computeGradientGreenGauss(  _mesh.getSurfacesI(), _mesh.getSurfacesJ(), _mesh.getSurfacesK(), 
+                                    _mesh.getMidPointsI(), _mesh.getMidPointsJ(), _mesh.getMidPointsK(), 
+                                    _mesh.getVertices(), _mesh.getVolumes(), scalarsMap["Velocity Y"], velYGrad);
+        
+        computeGradientGreenGauss(  _mesh.getSurfacesI(), _mesh.getSurfacesJ(), _mesh.getSurfacesK(), 
+                                    _mesh.getMidPointsI(), _mesh.getMidPointsJ(), _mesh.getMidPointsK(), 
+                                    _mesh.getVertices(), _mesh.getVolumes(), scalarsMap["Velocity Z"], velZGrad);
+        
+        computeGradientGreenGauss(  _mesh.getSurfacesI(), _mesh.getSurfacesJ(), _mesh.getSurfacesK(), 
+                                    _mesh.getMidPointsI(), _mesh.getMidPointsJ(), _mesh.getMidPointsK(), 
+                                    _mesh.getVertices(), _mesh.getVolumes(), scalarsMap["Pressure"], pressGrad);
+    }
+
+    // plug them in the map
+    for (size_t i = 0; i < ni; ++i) {
+        for (size_t j = 0; j < nj; ++j) {
+            for (size_t k = 0; k < nk; ++k) {
+                scalarsMap["Density Gradient X"](i, j, k) = rhoGrad(i, j, k).x();
+                scalarsMap["Density Gradient Y"](i, j, k) = rhoGrad(i, j, k).y();
+                scalarsMap["Density Gradient Z"](i, j, k) = rhoGrad(i, j, k).z();
+
+                scalarsMap["Velocity X Gradient X"](i, j, k) = velXGrad(i, j, k).x();
+                scalarsMap["Velocity X Gradient Y"](i, j, k) = velXGrad(i, j, k).y();
+                scalarsMap["Velocity X Gradient Z"](i, j, k) = velXGrad(i, j, k).z();
+
+                scalarsMap["Velocity Y Gradient X"](i, j, k) = velYGrad(i, j, k).x();
+                scalarsMap["Velocity Y Gradient Y"](i, j, k) = velYGrad(i, j, k).y();
+                scalarsMap["Velocity Y Gradient Z"](i, j, k) = velYGrad(i, j, k).z();
+
+                scalarsMap["Velocity Z Gradient X"](i, j, k) = velZGrad(i, j, k).x();
+                scalarsMap["Velocity Z Gradient Y"](i, j, k) = velZGrad(i, j, k).y();
+                scalarsMap["Velocity Z Gradient Z"](i, j, k) = velZGrad(i, j, k).z();
+
+                scalarsMap["Pressure Gradient X"](i, j, k) = pressGrad(i, j, k).x();
+                scalarsMap["Pressure Gradient Y"](i, j, k) = pressGrad(i, j, k).y();
+                scalarsMap["Pressure Gradient Z"](i, j, k) = pressGrad(i, j, k).z();
+            }
+        }
+    }
+
+
+
 }
+
+
+
+
+
+
+
+
+
+
 
 
 std::string COutputBase::getOutputFilename(size_t iterationCounter) {

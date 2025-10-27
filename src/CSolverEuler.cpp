@@ -1165,3 +1165,9 @@ StateVector CSolverEuler::computeGongSource(const FloatType& radius, const Float
 
     return source*volume;
 }
+
+
+
+void CSolverEuler::writeSolution(size_t iterationCounter, bool alsoGradients){
+    _output->writeSolution(iterationCounter, alsoGradients);
+}

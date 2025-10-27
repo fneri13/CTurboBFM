@@ -1,6 +1,6 @@
 #include "COutputCSV.hpp"
 
-void COutputCSV::writeSolution(size_t iterationCounter){
+void COutputCSV::writeSolution(size_t iterationCounter, bool alsoGradients){
     std::string filename = getOutputFilename(iterationCounter);
 
     std::ofstream file(_outputDirectory + "/" + filename + ".csv");
@@ -10,7 +10,7 @@ void COutputCSV::writeSolution(size_t iterationCounter){
     }
 
     std::map<std::string, Matrix3D<FloatType>> scalarFieldsMap;
-    getScalarFieldsMap(scalarFieldsMap);
+    getScalarFieldsMap(scalarFieldsMap, alsoGradients);
 
     size_t ni = _mesh.getNumberPointsI();
     size_t nj = _mesh.getNumberPointsJ();

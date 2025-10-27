@@ -49,6 +49,8 @@ class CSolverBase {
 
         virtual void checkConvergence(bool &exitLoop, bool &skip) const = 0;
 
+        virtual void writeSolution(size_t iterationCounter, bool alsoGradients=false) = 0;
+
     protected:
         const Config& _config;
         

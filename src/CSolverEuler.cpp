@@ -359,7 +359,7 @@ void CSolverEuler::solve(){
             updateRadialProfiles(solutionTmp);
             computeResiduals(solutionTmp, solutionGradTmp, it, _time.back(), residuals);
             updateSolution(solutionOld, solutionTmp, residuals, integrationCoeff, timestep);
-            // updateSolutionGradient(solutionTmp, solutionGradTmp);
+            updateSolutionGradient(solutionTmp, solutionGradTmp);
         }
         
         // update the physical time
@@ -979,9 +979,10 @@ void CSolverEuler::computeSourceTerms(const FlowSolution& solution, const std::m
     }
 
     StateVector primitive, conservative, bfmSource;
-    // FloatType omega, radius, theta;
-    // Vector3D densityGrad, velXGrad, velYGrad, velZGrad, totEnergyGrad;
-    // StateVector gongSource;
+    FloatType omega, radius, theta;
+    Vector3D densityGrad, velXGrad, velYGrad, velZGrad, totEnergyGrad;
+    StateVector gongSource;
+    bool gongModelingActive = _config.isGongModelingActive();
     for (size_t i = 0; i < _nPointsI; i++) {
         for (size_t j = 0; j < _nPointsJ; j++) {
             for (size_t k = 0; k < _nPointsK; k++) {
@@ -994,18 +995,21 @@ void CSolverEuler::computeSourceTerms(const FlowSolution& solution, const std::m
                     bfmSource = _bfmSource->computeSource(i, j, k, primitive, inviscidForce, viscousForce, deviationAngle, timePhysical);
                     residuals.subtract(i, j, k, bfmSource);
 
-                    // // // compute the additional terms due to Gong modeling (if they are positive, they must be subtracted from the residual vector)
-                    // omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
-                    // radius = _mesh.getRadius(i, j, k);
-                    // theta = _mesh.getTheta(i, j, k);
-                    // densityGrad = solutionGrad.at(SolutionNames::DENSITY)(i, j, k);
-                    // velXGrad = solutionGrad.at(SolutionNames::VELOCITY_X)(i, j, k);
-                    // velYGrad = solutionGrad.at(SolutionNames::VELOCITY_Y)(i, j, k);
-                    // velZGrad = solutionGrad.at(SolutionNames::VELOCITY_Z)(i, j, k);
-                    // totEnergyGrad = solutionGrad.at(SolutionNames::TOTAL_ENERGY)(i, j, k);
-                    // gongSource = computeGongSource(radius, theta, omega, primitive,
-                    //                                densityGrad, velXGrad, velYGrad, velZGrad, totEnergyGrad, _mesh.getVolume(i, j, k));
-                    // residuals.subtract(i, j, k, gongSource);
+                    // compute the additional terms due to Gong modeling (if they are positive, they must be subtracted from the residual vector)
+                    if (gongModelingActive){
+                        omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
+                        radius = _mesh.getRadius(i, j, k);
+                        theta = _mesh.getTheta(i, j, k);
+                        densityGrad = solutionGrad.at(SolutionNames::DENSITY)(i, j, k);
+                        velXGrad = solutionGrad.at(SolutionNames::VELOCITY_X)(i, j, k);
+                        velYGrad = solutionGrad.at(SolutionNames::VELOCITY_Y)(i, j, k);
+                        velZGrad = solutionGrad.at(SolutionNames::VELOCITY_Z)(i, j, k);
+                        totEnergyGrad = solutionGrad.at(SolutionNames::TOTAL_ENERGY)(i, j, k);
+                        gongSource = computeGongSource(radius, theta, omega, primitive,
+                                                    densityGrad, velXGrad, velYGrad, velZGrad, totEnergyGrad, _mesh.getVolume(i, j, k));
+                        residuals.subtract(i, j, k, gongSource);
+                    }
+                    
                 }
             }
         }
@@ -1033,7 +1037,7 @@ void CSolverEuler::initializeMonitorPoints(){
             return;
         }
 
-        FloatType deltaAngle = 360.0 / (circumferentialPoints);
+        FloatType deltaAngle = _mesh.getPeriodicityAngleDeg() / (circumferentialPoints);
         std::cout << "Delta angle of monitor points is: " << deltaAngle << " degrees" << std::endl;
 
         for (unsigned int k = 1; k < circumferentialPoints; k++){

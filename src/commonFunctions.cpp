@@ -402,7 +402,7 @@ Matrix2D<FloatType> computeAdvectionFluxJacobian(const StateVector& primitive, c
     jacobian(3, 3) = V - a3 * nz * w;
     jacobian(3, 4) = a2 * nz;
 
-    jacobian(4, 0) = V * (phi - a1); // this term maybe is negative, not super sure
+    jacobian(4, 0) = V * (phi - a1); 
     jacobian(4, 1) = nx * a1 - a2 * u * V;
     jacobian(4, 2) = ny * a1 - a2 * v * V;
     jacobian(4, 3) = nz * a1 - a2 * w * V;

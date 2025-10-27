@@ -17,7 +17,7 @@ StateVector CSourceBFMThollet::computeInviscidComponent(size_t i, size_t j, size
     FloatType relaxFactor = _config.getBfmRelaxationFactor();
 
     // update the force according to equation 24 of Chima's paper
-    Vector3D forceCartesian = inviscidForce(i, j, k) * (1 - relaxFactor) + forceCartesianNew * relaxFactor;
+    Vector3D forceCartesian = inviscidForce(i, j, k) * (1.0 - relaxFactor) + forceCartesianNew * relaxFactor;
     
     // update the force in memory
     inviscidForce(i, j, k) = forceCartesian;
@@ -81,7 +81,7 @@ StateVector CSourceBFMThollet::computeViscousComponent(size_t i, size_t j, size_
 
     // update the force according to equation 24 of Chima's paper
     FloatType relaxFactor = _config.getBfmRelaxationFactor();
-    Vector3D forceCartesian = viscousForce(i, j, k) * (1 - relaxFactor) + forceCartesianNew * relaxFactor;
+    Vector3D forceCartesian = viscousForce(i, j, k) * (1.0 - relaxFactor) + forceCartesianNew * relaxFactor;
     
     // update the force in memory
     viscousForce(i, j, k) = forceCartesian;

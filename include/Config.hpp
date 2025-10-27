@@ -110,6 +110,8 @@ public:
     ReferenceFrame getInletReferenceFrame() const;
     
     Vector3D getInitDirection() const ;
+
+    bool isGongModelingActive() const {return parseBool("GONG_MODELING_ACTIVE", false);}
     
     FloatType getCFL() const {return parseFloat("CFL");}
 

@@ -185,31 +185,32 @@ void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>&
         computeGradientGreenGauss(  _mesh.getSurfacesI(), _mesh.getSurfacesJ(), _mesh.getSurfacesK(), 
                                     _mesh.getMidPointsI(), _mesh.getMidPointsJ(), _mesh.getMidPointsK(), 
                                     _mesh.getVertices(), _mesh.getVolumes(), scalarsMap["Pressure"], pressGrad);
-    }
+    
 
-    // plug them in the map
-    for (size_t i = 0; i < ni; ++i) {
-        for (size_t j = 0; j < nj; ++j) {
-            for (size_t k = 0; k < nk; ++k) {
-                scalarsMap["Density Gradient X"](i, j, k) = rhoGrad(i, j, k).x();
-                scalarsMap["Density Gradient Y"](i, j, k) = rhoGrad(i, j, k).y();
-                scalarsMap["Density Gradient Z"](i, j, k) = rhoGrad(i, j, k).z();
 
-                scalarsMap["Velocity X Gradient X"](i, j, k) = velXGrad(i, j, k).x();
-                scalarsMap["Velocity X Gradient Y"](i, j, k) = velXGrad(i, j, k).y();
-                scalarsMap["Velocity X Gradient Z"](i, j, k) = velXGrad(i, j, k).z();
+        for (size_t i = 0; i < ni; ++i) {
+            for (size_t j = 0; j < nj; ++j) {
+                for (size_t k = 0; k < nk; ++k) {
+                    scalarsMap["Density Gradient X"](i, j, k) = rhoGrad(i, j, k).x();
+                    scalarsMap["Density Gradient Y"](i, j, k) = rhoGrad(i, j, k).y();
+                    scalarsMap["Density Gradient Z"](i, j, k) = rhoGrad(i, j, k).z();
 
-                scalarsMap["Velocity Y Gradient X"](i, j, k) = velYGrad(i, j, k).x();
-                scalarsMap["Velocity Y Gradient Y"](i, j, k) = velYGrad(i, j, k).y();
-                scalarsMap["Velocity Y Gradient Z"](i, j, k) = velYGrad(i, j, k).z();
+                    scalarsMap["Velocity X Gradient X"](i, j, k) = velXGrad(i, j, k).x();
+                    scalarsMap["Velocity X Gradient Y"](i, j, k) = velXGrad(i, j, k).y();
+                    scalarsMap["Velocity X Gradient Z"](i, j, k) = velXGrad(i, j, k).z();
 
-                scalarsMap["Velocity Z Gradient X"](i, j, k) = velZGrad(i, j, k).x();
-                scalarsMap["Velocity Z Gradient Y"](i, j, k) = velZGrad(i, j, k).y();
-                scalarsMap["Velocity Z Gradient Z"](i, j, k) = velZGrad(i, j, k).z();
+                    scalarsMap["Velocity Y Gradient X"](i, j, k) = velYGrad(i, j, k).x();
+                    scalarsMap["Velocity Y Gradient Y"](i, j, k) = velYGrad(i, j, k).y();
+                    scalarsMap["Velocity Y Gradient Z"](i, j, k) = velYGrad(i, j, k).z();
 
-                scalarsMap["Pressure Gradient X"](i, j, k) = pressGrad(i, j, k).x();
-                scalarsMap["Pressure Gradient Y"](i, j, k) = pressGrad(i, j, k).y();
-                scalarsMap["Pressure Gradient Z"](i, j, k) = pressGrad(i, j, k).z();
+                    scalarsMap["Velocity Z Gradient X"](i, j, k) = velZGrad(i, j, k).x();
+                    scalarsMap["Velocity Z Gradient Y"](i, j, k) = velZGrad(i, j, k).y();
+                    scalarsMap["Velocity Z Gradient Z"](i, j, k) = velZGrad(i, j, k).z();
+
+                    scalarsMap["Pressure Gradient X"](i, j, k) = pressGrad(i, j, k).x();
+                    scalarsMap["Pressure Gradient Y"](i, j, k) = pressGrad(i, j, k).y();
+                    scalarsMap["Pressure Gradient Z"](i, j, k) = pressGrad(i, j, k).z();
+                }
             }
         }
     }

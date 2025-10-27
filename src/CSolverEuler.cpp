@@ -388,7 +388,7 @@ void CSolverEuler::solve(){
 
         // write volume output file
         if (it%solutionOutputFreq == 0 || it == nIterMax) {
-            _output->writeSolution(it);
+            _output->writeSolution(it, false);
         } 
 
         // write additional text files

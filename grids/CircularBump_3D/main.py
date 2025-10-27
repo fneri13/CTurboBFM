@@ -15,11 +15,12 @@ The Fundamentals of Computational Fluid Dynamics (Second Edition) by Charles Hir
 OUTPUT_FOLDER = 'Grid'
 L = 1
 HUB_RADIUS = L/3
-NX = 72
-NY = 24
-NK = 5
-THETA_MAX = 10*np.pi/180
-STREAMWISE_COEFF = 1.2
+NX = 80
+NY = 30
+NK = 100
+PERIODICITY_THETA_DEG = 360
+THETA_MAX = PERIODICITY_THETA_DEG*np.pi/180
+STREAMWISE_COEFF = 1.1
 SPANWISE_COEFF = 1.0
 
 
@@ -105,11 +106,9 @@ plotter.show_axes()
 
 
 # Create output directory
-if os.path.exists(OUTPUT_FOLDER):
-    print('Output Folder already present')
-else:
-    os.mkdir(OUTPUT_FOLDER)
-with open(OUTPUT_FOLDER + '/grid_%02i_%02i_%02i.csv' %(NI, NJ, NK), 'w') as file:
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+filename = OUTPUT_FOLDER + '/grid_%02i_%02i_%02i_periodicitydeg_%02i.csv' %(NI, NJ, NK, PERIODICITY_THETA_DEG)
+with open(filename, 'w') as file:
     file.write(f"NDIMENSIONS=3\n")
     file.write(f"NI={NI}\n")
     file.write(f"NJ={NJ}\n")
@@ -119,7 +118,7 @@ with open(OUTPUT_FOLDER + '/grid_%02i_%02i_%02i.csv' %(NI, NJ, NK), 'w') as file
         for j in range(NJ):
             for k in range(NK):
                 file.write(f"{X3d[i,j,k]:.6f},{Y3d[i,j,k]:.6f},{Z3d[i,j,k]:.6f}\n")
-    print(f"Grid saved to {OUTPUT_FOLDER}/grid_%02i_%02i_%02i.csv" %(NI, NJ, NK))
+    print(f"Grid saved to {filename}")
 
 
 plotter.show()

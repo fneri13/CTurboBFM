@@ -514,7 +514,6 @@ void CMesh::computeInputGradients() {
 
 
 void CMesh::checkPeriodicity(FloatType periodicityAngle) {
-    _periodicityAngleRad = periodicityAngle;
     FloatType tolerance = 1E-3;
     
     for (size_t i=0; i<_nPointsI; i++){
@@ -527,7 +526,7 @@ void CMesh::checkPeriodicity(FloatType periodicityAngle) {
 
             FloatType deltaTheta = std::abs(thetaA-thetaB);
 
-            if (std::abs(deltaTheta - _periodicityAngleRad) > tolerance && std::abs(std::abs(deltaTheta - _periodicityAngleRad)-2.0*M_PI) > tolerance){
+            if (std::abs(deltaTheta - periodicityAngle) > tolerance && std::abs(std::abs(deltaTheta - periodicityAngle)-2.0*M_PI) > tolerance){
                 throw std::invalid_argument("Periodicity check failed!");
             }
         }
@@ -588,16 +587,7 @@ void CMesh::writeMeshQualityStats() const {
 }
 
 
-void CMesh::enlargePeriodicElements(){
-    FloatType tmpFirst, tmpLast;
-    for (size_t i=0; i<_nPointsI; i++){
-        for (size_t j=0; j<_nPointsJ; j++){
-            tmpFirst = _volumes(i, j, 0);
-            tmpLast = _volumes(i, j, _nPointsK-1);
-
-            _volumes(i,j,0) += tmpLast;
-            _volumes(i,j,_nPointsK-1) += tmpFirst;
-        }
-    }
+void CMesh::setPeriodicMesh(FloatType periodicityAngle) {
+    _periodicityAngleRad = periodicityAngle;
     _periodicMesh = true;
 }

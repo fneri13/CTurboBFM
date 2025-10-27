@@ -75,9 +75,10 @@ void CSolverBase::readBoundaryConditions(){
         else if (_boundaryTypes[bound] == BoundaryType::PERIODIC){
             _boundaryValues[bound].push_back(_config.getPeriodicityAngleRad());
             if (!periodicityChecked) {
-                _mesh.checkPeriodicity(_boundaryValues[bound].back());
+                FloatType angle = _boundaryValues[bound].back();
+                _mesh.checkPeriodicity(angle);
+                _mesh.setPeriodicMesh(angle);
                 periodicityChecked = true;
-                _mesh.enlargePeriodicElements();
             }
         }
         else {

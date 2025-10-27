@@ -82,7 +82,7 @@ class CMesh {
 
         void checkPeriodicity(FloatType periodicityAngle);
 
-        void enlargePeriodicElements();
+        void setPeriodicMesh(FloatType angle);
 
         /** \brief Compute the flow direction for each cell, following the mesh lines. It assumes that the inlet-outlet direction is the i-axis. Other directions not supported
          * \param[out] flowDirection The flow direction array

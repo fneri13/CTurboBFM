@@ -36,6 +36,10 @@ class CBoundaryConditionBase {
          * @param flowSolution The entire flow solution.
          */
         virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution, const size_t iterCounter) = 0;
+
+
+        StateVector computeSubsonicsInletFlux(StateVector internalConservative, Vector3D surface, 
+                                        FloatType totPressure, FloatType totTemperature, Vector3D flowDirection);
         
     protected:
         const Config& _config;

@@ -32,7 +32,8 @@ class CBoundaryConditionInlet : public CBoundaryConditionBase {
          * @return The boundary flux.
          */
         virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution, const size_t iterCounter) override;
-        
+
+
     protected:
         std::vector<FloatType> _boundaryValues;
         ReferenceFrame _referenceFrame;

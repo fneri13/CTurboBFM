@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CBoundaryConditionInlet.hpp"
 #include "CBoundaryConditionBase.hpp"
 #include "CInput.hpp"
 

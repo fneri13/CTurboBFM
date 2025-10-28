@@ -10,11 +10,9 @@ CBoundaryConditionInlet::CBoundaryConditionInlet(const Config &config, const CMe
 
 StateVector CBoundaryConditionInlet::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution, const size_t iterCounter) {
     
-    // gather boundary values
+    // gather boundary values from config
     FloatType totPressure = _boundaryValues[0];
-    
     FloatType totTemperature = _boundaryValues[1];
-    
     Vector3D flowDirection = {_boundaryValues[2], _boundaryValues[3], _boundaryValues[4]};
 
     if (_referenceFrame == ReferenceFrame::CYLINDRICAL){

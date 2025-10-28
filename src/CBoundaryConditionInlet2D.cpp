@@ -28,10 +28,6 @@ StateVector CBoundaryConditionInlet2D::computeBoundaryFlux(StateVector internalC
     FloatType ny = _inputGrid.getField(FieldNames::INLET_NY, indices[0], indices[1], indices[2]);
     FloatType nz = _inputGrid.getField(FieldNames::INLET_NZ, indices[0], indices[1], indices[2]);
     Vector3D flowDirection(nx, ny, nz);
-    if (_referenceFrame == ReferenceFrame::CYLINDRICAL){
-        FloatType theta = _mesh.getTheta(indices[0], indices[1], indices[2]);
-        flowDirection = computeCartesianVectorFromCylindrical(flowDirection, theta);
-    }
     flowDirection /= flowDirection.magnitude();
 
     // boundary values from input file

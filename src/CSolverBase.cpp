@@ -65,6 +65,10 @@ void CSolverBase::readBoundaryConditions(){
         if (_boundaryTypes[bound] == BoundaryType::INLET || _boundaryTypes[bound] == BoundaryType::INLET_SUPERSONIC) {
             _boundaryValues[bound] = _config.getInletBCValues();
         }
+        else if (_boundaryTypes[bound] == BoundaryType::INLET_2D){
+            _boundaryValues[bound] = std::vector<FloatType> {};
+            _inlet2DfilePath = _config.getInlet2DfilePath();
+        }
         else if (_boundaryTypes[bound] == BoundaryType::OUTLET || _boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC || _boundaryTypes[bound] == BoundaryType::THROTTLE){
             _boundaryValues[bound] = _config.getOutletBCValues();
         }
@@ -93,6 +97,9 @@ void CSolverBase::readBoundaryConditions(){
         }
         else if (_boundaryTypes[bound] == BoundaryType::INLET){
             _boundaryConditions[bound] = std::make_unique<CBoundaryConditionInlet>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
+        }
+        else if (_boundaryTypes[bound] == BoundaryType::INLET_2D){
+            _boundaryConditions[bound] = std::make_unique<CBoundaryConditionInlet2D>(_config, _mesh, *_fluid, bound, _inlet2DfilePath);
         }
         else if (_boundaryTypes[bound] == BoundaryType::INLET_SUPERSONIC){
             _boundaryConditions[bound] = std::make_unique<CBoundaryConditionInletSupersonic>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);

@@ -125,6 +125,8 @@ public:
 
     std::string getSolutionName() const {return parseString("SOLUTION_NAME");}
 
+    std::string getInlet2DfilePath() const {return parseString("INLET_2D_FILEPATH");}
+
     std::string getChimaScalingFunctionsFile() const {return parseString("CHIMA_SCALING_FUNCTIONS_FILEPATH");}
 
     FloatType getChimaReferenceMassFlow() const {return parseFloat("CHIMA_REFERENCE_MASS_FLOW");}

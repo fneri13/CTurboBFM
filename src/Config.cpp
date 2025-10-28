@@ -260,6 +260,9 @@ BoundaryType Config::getBoundaryType(BoundaryIndices bcIndex) const{
     else if (boundaryString == "inlet_supersonic") {
         boundaryType = BoundaryType::INLET_SUPERSONIC;
     }
+    else if (boundaryString == "inlet_2d") {
+        boundaryType = BoundaryType::INLET_2D;
+    }
     else if (boundaryString == "outlet") {
         boundaryType = BoundaryType::OUTLET;
     } 

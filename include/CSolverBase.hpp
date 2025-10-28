@@ -11,6 +11,7 @@
 #include "CBoundaryConditionBase.hpp"
 #include "CBoundaryConditionEulerWall.hpp"
 #include "CBoundaryConditionInlet.hpp"
+#include "CBoundaryConditionInlet2D.hpp"
 #include "CBoundaryConditionOutlet.hpp"
 #include "CBoundaryConditionInletSupersonic.hpp"
 #include "CBoundaryConditionOutletSupersonic.hpp"
@@ -89,6 +90,8 @@ class CSolverBase {
         size_t _residualsDropConvergence = 16;
 
         FluidModel _fluidModel = FluidModel::IDEAL;
+
+        std::string _inlet2DfilePath{""}; // name of the 2D inlet file
 
         
 

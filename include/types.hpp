@@ -184,7 +184,8 @@ enum class BoundaryType {
     EMPTY = 6,
     WEDGE = 7,
     PERIODIC = 8,
-    THROTTLE = 9
+    THROTTLE = 9,
+    INLET_2D,
 };
 
 
@@ -912,6 +913,11 @@ enum class FieldNames {
     BLADE_GAS_PATH_ANGLE=44,
     BLADE_LEAN_ANGLE=45,
     D_BLADE_METAL_ANGLE_DM=46,
+    TOTAL_PRESSURE=47,
+    TOTAL_TEMPERATURE=48,
+    INLET_NX=49,
+    INLET_NY=50,
+    INLET_NZ=51,
 };
 
 enum class SolutionNames {
@@ -973,7 +979,12 @@ public:
             {"bladeMetalAngle", FieldNames::BLADE_METAL_ANGLE},
             {"bladeGasPathAngle", FieldNames::BLADE_GAS_PATH_ANGLE},
             {"bladeLeanAngle", FieldNames::BLADE_LEAN_ANGLE},
-            {"dbladeMetalAngle_dm", FieldNames::D_BLADE_METAL_ANGLE_DM}
+            {"dbladeMetalAngle_dm", FieldNames::D_BLADE_METAL_ANGLE_DM},
+            {"Pt", FieldNames::TOTAL_PRESSURE},
+            {"Tt", FieldNames::TOTAL_TEMPERATURE},
+            {"nx", FieldNames::INLET_NX},
+            {"ny", FieldNames::INLET_NY},
+            {"nz", FieldNames::INLET_NZ},
         };
         return map;
     }
@@ -1026,7 +1037,12 @@ public:
             {FieldNames::BLADE_METAL_ANGLE, "bladeMetalAngle"},
             {FieldNames::BLADE_GAS_PATH_ANGLE, "bladeGasPathAngle"},
             {FieldNames::BLADE_LEAN_ANGLE, "bladeLeanAngle"},
-            {FieldNames::D_BLADE_METAL_ANGLE_DM, "dbladeMetalAngle_dm"}
+            {FieldNames::D_BLADE_METAL_ANGLE_DM, "dbladeMetalAngle_dm"},
+            {FieldNames::TOTAL_PRESSURE, "Pt"},
+            {FieldNames::TOTAL_TEMPERATURE, "Tt"},
+            {FieldNames::INLET_NX, "nx"},
+            {FieldNames::INLET_NY, "ny"},
+            {FieldNames::INLET_NZ, "nz"},
         };
         return map;
     }

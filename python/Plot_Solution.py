@@ -9,6 +9,7 @@ import os
 import matplotlib.pyplot as plt
 # from styles import *
 
+NLEVELS = 100
 
 
 def GetDataDict(input_filename, field):
@@ -44,7 +45,7 @@ def GetDataDict(input_filename, field):
 
 
 
-def PlotData(data, iSlice, jSlice, kSlice, fieldName):
+def PlotData(data, iSlice, jSlice, kSlice, fieldName, gridType):
     
     # get the dimensionality
     nDim = 0
@@ -61,8 +62,10 @@ def PlotData(data, iSlice, jSlice, kSlice, fieldName):
     
     if nDim==1:
         Plot1D(data, iSlice, jSlice, kSlice, fieldName)
-    elif nDim==2:
-        Plot2D(data, iSlice, jSlice, kSlice, fieldName)
+    elif nDim==2 and gridType.lower() == "cylindrical":
+        Plot2DCylindrical(data, iSlice, jSlice, kSlice, fieldName)
+    elif nDim==2 and gridType.lower() == "computational":
+        Plot2DComputational(data, iSlice, jSlice, kSlice, fieldName)
 
 
 
@@ -98,14 +101,14 @@ def Plot1D(data, iSlice, jSlice, kSlice, fieldName):
 
 
 
-def Plot2D(data, iSlice, jSlice, kSlice, fieldName):
+def Plot2DCylindrical(data, iSlice, jSlice, kSlice, fieldName):
     if iSlice == ':' and jSlice == ':':
         k = int(kSlice)
         x = data['axial'][:, :, k]
         y = data['radial'][:, :, k]
         values = data[fieldName][:, :, k]
         xlabel, ylabel = r'$x$ [m]', r'$r$ [m]'
-        title = f"kPlane-{k}"
+        title = f"KPlane_{k}"
 
     elif iSlice == ':' and kSlice == ':':
         j = int(jSlice)
@@ -113,7 +116,7 @@ def Plot2D(data, iSlice, jSlice, kSlice, fieldName):
         y = data['radial'][:, j, :] * data['theta'][:, j, :]
         values = data[fieldName][:, j, :]
         xlabel, ylabel = r'$x$ [m]', r'$r\theta$ [m]'
-        title = f"jPlane-{j}"
+        title = f"JPlane_{j}"
 
     elif jSlice == ':' and kSlice == ':':
         i = int(iSlice)
@@ -121,18 +124,50 @@ def Plot2D(data, iSlice, jSlice, kSlice, fieldName):
         y = data['z'][i, :, :]
         values = data[fieldName][i, :, :]
         xlabel, ylabel = r'$y$ [m]', r'$z$ [m]'
-        title = f"iPlane-{i}"
+        title = f"IPlane_{i}"
 
     else:
         raise ValueError("Exactly one slice index should be numeric, others ':'")
     
     plt.figure()
-    plt.contourf(x, y, values, cmap = 'turbo', levels=30)
+    plt.contourf(x, y, values, cmap = 'turbo', levels=NLEVELS)
     plt.colorbar()
     plt.title(f"{fieldName} at {title}")
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.gca().set_aspect('equal', adjustable='box')
+    plt.savefig(f"Pictures/{fieldName}_2D_plot_{title}.pdf", bbox_inches='tight')
+
+
+
+def Plot2DComputational(data, iSlice, jSlice, kSlice, fieldName):
+    if iSlice == ':' and jSlice == ':':
+        k = int(kSlice)
+        values = data[fieldName][:, :, k]
+        xlabel, ylabel = r'I', r'J'
+        title = f"KPlane_{k}"
+
+    elif iSlice == ':' and kSlice == ':':
+        j = int(jSlice)
+        values = data[fieldName][:, j, :]
+        xlabel, ylabel = r'I', r'K'
+        title = f"JPlane_{j}"
+
+    elif jSlice == ':' and kSlice == ':':
+        i = int(iSlice)
+        values = data[fieldName][i, :, :]
+        xlabel, ylabel = r'J', r'K'
+        title = f"IPlane_{i}"
+
+    else:
+        raise ValueError("Exactly one slice index should be numeric, others ':'")
+    
+    plt.figure()
+    plt.imshow(values.T, cmap='turbo', interpolation='bicubic', origin='lower')
+    plt.colorbar()
+    plt.title(f"{fieldName} at {title}")
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     plt.savefig(f"Pictures/{fieldName}_2D_plot_{title}.pdf", bbox_inches='tight')
         
     
@@ -147,6 +182,8 @@ if __name__ == "__main__":
     parser.add_argument("jSlice", type=str, help="Slice along j-index")
     parser.add_argument("kSlice", type=str, help="Slice along k-index")
     parser.add_argument("fieldName", type=str, help="Field name to plot")
+    parser.add_argument("gridType", type=str, nargs='?', default="cylindrical",
+                        help="Grid type for 2D plots, either 'cylindrical' or 'computational' (default: cylindrical)")
     
     args = parser.parse_args()
 
@@ -155,9 +192,10 @@ if __name__ == "__main__":
     jSlice = args.jSlice
     kSlice = args.kSlice
     fieldName = args.fieldName
+    gridType = args.gridType
     
     os.makedirs("Pictures", exist_ok=True)
     data = GetDataDict(inputFile, fieldName)
-    PlotData(data, iSlice, jSlice, kSlice, fieldName)
+    PlotData(data, iSlice, jSlice, kSlice, fieldName, gridType)
     plt.show()
     

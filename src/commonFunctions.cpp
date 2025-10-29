@@ -357,7 +357,7 @@ void writeDataToCSV(const std::vector<FloatType>& data, const std::string& filen
 
 
 Matrix2D<FloatType> computeAdvectionFluxJacobian(const StateVector& primitive, const Vector3D& direction, const CFluidBase& fluid){
-    // formulation taken from Blazek, there could be a typo in the element (4,0)
+    // formulation taken from Blazek
 
     Matrix2D<FloatType> jacobian(5, 5);
 

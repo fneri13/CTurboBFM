@@ -32,7 +32,6 @@
 class CSolverBase {
     
     public:
-        CSolverBase();
 
         CSolverBase(Config &config, CMesh &mesh);
         

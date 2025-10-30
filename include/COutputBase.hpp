@@ -25,14 +25,24 @@ class COutputBase {
 
     protected:
         const Config& _config;
+        
         const CMesh& _mesh;
+        
         const FlowSolution& _solution;
+        
         const CFluidBase& _fluid;
+        
         const Matrix3D<Vector3D>& _inviscidForce;
+        
         const Matrix3D<Vector3D>& _viscousForce;
+        
         const Matrix3D<FloatType>& _deviationAngle;
+        
         bool _isUnsteadyOutput;
 
         std::string getOutputFilename(size_t iterationCounter);
+        
         std::string _outputDirectory = "Volume_CSV";
+
+        OutputFields _outputFields;
 };

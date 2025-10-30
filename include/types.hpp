@@ -1135,3 +1135,9 @@ enum class ReferenceFrame {
     CARTESIAN = 0,
     CYLINDRICAL = 1
 };
+
+enum class OutputFields {
+    PRIMARY = 0,
+    SECONDARY = 1,
+    TURBO_BFM = 2
+};

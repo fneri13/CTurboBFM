@@ -263,13 +263,14 @@ void CSolverEuler::readRestartFile(const std::string &restartFileName, size_t &N
         columnIndex[column] = idx++;
     }
 
-    // Get indexes of the fields of interest
+    // Get indexes of the fields of interest (primary fields should always be available in the restart)
     size_t iDensity     = columnIndex["Density"];
     size_t iVelX        = columnIndex["Velocity X"];
     size_t iVelY        = columnIndex["Velocity Y"];
     size_t iVelZ        = columnIndex["Velocity Z"];
-    size_t iTemperature = columnIndex["Temperature"];
+    size_t iTotEnergy = columnIndex["Total Energy"];
 
+    // these could also not be there, not a problem
     size_t iForceInviscidX{1000};
     size_t iForceInviscidY{1000};
     size_t iForceInviscidZ{1000};
@@ -300,15 +301,17 @@ void CSolverEuler::readRestartFile(const std::string &restartFileName, size_t &N
         inputVelX(i,j,k)        = row[iVelX];
         inputVelY(i,j,k)        = row[iVelY];
         inputVelZ(i,j,k)        = row[iVelZ];
-        inputTemperature(i,j,k) = row[iTemperature];
+        FloatType totalEnergy = row[iTotEnergy];
+        inputTemperature(i,j,k) = _fluid->computeTemperature_rho_u_et(inputDensity(i,j,k), {inputVelX(i,j,k), inputVelY(i,j,k), inputVelZ(i,j,k)}, totalEnergy);
 
-        if (isBfmSimulation){
-            inputForceInviscid(i,j,k).x() = row[iForceInviscidX];
-            inputForceInviscid(i,j,k).y() = row[iForceInviscidY];
-            inputForceInviscid(i,j,k).z() = row[iForceInviscidZ];
-            inputForceViscous(i,j,k).x()  = row[iForceViscousX];
-            inputForceViscous(i,j,k).y()  = row[iForceViscousY];
-            inputForceViscous(i,j,k).z()  = row[iForceViscousZ];
+        if (isBfmSimulation) {
+            inputForceInviscid(i,j,k).x() = (iForceInviscidX != 0) ? row[iForceInviscidX] : 0.0;
+            inputForceInviscid(i,j,k).y() = (iForceInviscidY != 0) ? row[iForceInviscidY] : 0.0;
+            inputForceInviscid(i,j,k).z() = (iForceInviscidZ != 0) ? row[iForceInviscidZ] : 0.0;
+
+            inputForceViscous(i,j,k).x()  = (iForceViscousX != 0) ? row[iForceViscousX] : 0.0;
+            inputForceViscous(i,j,k).y()  = (iForceViscousY != 0) ? row[iForceViscousY] : 0.0;
+            inputForceViscous(i,j,k).z()  = (iForceViscousZ != 0) ? row[iForceViscousZ] : 0.0;
         }
 
         // Update indices: k fastest, then j, then i

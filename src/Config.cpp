@@ -454,3 +454,25 @@ ReferenceFrame Config::getInletReferenceFrame() const {
     }
     return frame;
 }
+
+
+OutputFields Config::getOutputFields() const {
+    std::string value = parseString("OUTPUT_FIELDS", true);
+    OutputFields fields;
+    
+    if (value == "None" || value == "primary" || value == "Primary" || value == "PRIMARY"){
+        fields = OutputFields::PRIMARY;
+    }
+    else if (value == "secondary" || value == "Secondary" || value == "SECONDARY"){
+        fields = OutputFields::SECONDARY;
+    }
+    else if (value == "turbo_bfm" || value == "Turbo_bfm" || value == "TURBO_BFM"){
+        fields = OutputFields::TURBO_BFM;
+    }
+    else {
+        std::cout << "OUTPUT_FIELDS input not recognized, set to PRIMARY fields only." << std::endl;
+        fields = OutputFields::PRIMARY;
+    }
+    
+    return fields;
+}

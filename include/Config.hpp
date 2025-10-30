@@ -207,4 +207,6 @@ public:
     FloatType getPerturbationRadialExtension() const {return parseFloat("PERTURBATION_RADIAL_EXTENSION");} 
 
     FloatType getFixedTimeStep() const {return parseFloat("FIXED_TIME_STEP");} 
+
+    OutputFields getOutputFields() const ;
 };

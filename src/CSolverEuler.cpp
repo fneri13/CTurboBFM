@@ -1265,24 +1265,31 @@ void CSolverEuler::computeGradient(const Matrix3D<FloatType> &var, Matrix3D<Vect
 
 
 void CSolverEuler::computeSolutionGradient(const FlowSolution &sol, std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad){
-    computeGradient(sol.getDensity(), solutionGrad[SolutionNames::DENSITY]);
-    computeGradient(sol.getVelocityX(), solutionGrad[SolutionNames::VELOCITY_X]);
-    computeGradient(sol.getVelocityY(), solutionGrad[SolutionNames::VELOCITY_Y]);
-    computeGradient(sol.getVelocityZ(), solutionGrad[SolutionNames::VELOCITY_Z]);
-    computeGradient(sol.getTotalEnergy(), solutionGrad[SolutionNames::TOTAL_ENERGY]);
 
-    Matrix3D<FloatType> temperature(_mesh.getNumberPointsI(), _mesh.getNumberPointsJ(), _mesh.getNumberPointsK());
-    StateVector primitive;
-    for (size_t i = 0; i < _mesh.getNumberPointsI(); i++){
-        for (size_t j = 0; j < _mesh.getNumberPointsJ(); j++){
-            for (size_t k = 0; k < _mesh.getNumberPointsK(); k++){
-                primitive = getEulerPrimitiveFromConservative(sol.at(i, j, k));
-                temperature(i, j, k) = _fluid->computeTemperature_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
+    // primitive gradients needed by viscosity or Gong source terms
+    if (_config.isViscosityActive() || _config.isGongModelingActive()){
+        computeGradient(sol.getDensity(), solutionGrad[SolutionNames::DENSITY]);
+        computeGradient(sol.getVelocityX(), solutionGrad[SolutionNames::VELOCITY_X]);
+        computeGradient(sol.getVelocityY(), solutionGrad[SolutionNames::VELOCITY_Y]);
+        computeGradient(sol.getVelocityZ(), solutionGrad[SolutionNames::VELOCITY_Z]);
+        computeGradient(sol.getTotalEnergy(), solutionGrad[SolutionNames::TOTAL_ENERGY]);
+    }
+    
+    // temperature gradient needed only by viscous fluxes
+    if (_config.isViscosityActive()){
+        Matrix3D<FloatType> temperature(_mesh.getNumberPointsI(), _mesh.getNumberPointsJ(), _mesh.getNumberPointsK());
+        StateVector primitive;
+        for (size_t i = 0; i < _mesh.getNumberPointsI(); i++){
+            for (size_t j = 0; j < _mesh.getNumberPointsJ(); j++){
+                for (size_t k = 0; k < _mesh.getNumberPointsK(); k++){
+                    primitive = getEulerPrimitiveFromConservative(sol.at(i, j, k));
+                    temperature(i, j, k) = _fluid->computeTemperature_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
+                }
             }
         }
+        computeGradient(temperature, solutionGrad[SolutionNames::TEMPERATURE]);
     }
-
-    computeGradient(temperature, solutionGrad[SolutionNames::TEMPERATURE]);
+    
 }
 
 

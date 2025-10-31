@@ -33,7 +33,7 @@ void COutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>&
     if (_outputFields == OutputFields::SECONDARY || _outputFields == OutputFields::TURBO_BFM){
         scalarsMap.emplace("Pressure",          Matrix3D<FloatType>(ni, nj, nk));
         scalarsMap.emplace("Temperature",       Matrix3D<FloatType>(ni, nj, nk));
-        scalarsMap.emplace("Mach",              Matrix3D<FloatType>(ni, nj, nk));
+        scalarsMap.emplace("Mach",           Matrix3D<FloatType>(ni, nj, nk));
         scalarsMap.emplace("Total Pressure",    Matrix3D<FloatType>(ni, nj, nk));
         scalarsMap.emplace("Total Temperature", Matrix3D<FloatType>(ni, nj, nk));
         scalarsMap.emplace("Entropy",           Matrix3D<FloatType>(ni, nj, nk));

@@ -73,6 +73,7 @@ void CSolverEuler::initializeSolutionArrays(){
     _solutionGrad[SolutionNames::VELOCITY_Y] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
     _solutionGrad[SolutionNames::VELOCITY_Z] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
     _solutionGrad[SolutionNames::TOTAL_ENERGY] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
+    _solutionGrad[SolutionNames::TEMPERATURE] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
 
 
     // Initialize the solution either from scratch or from a restart file
@@ -356,13 +357,14 @@ void CSolverEuler::solve(){
         if (turboOutput) updateTurboPerformance(solutionOld);                               // extract the turbo performance
         if (monitorPointsActive) updateMonitorPoints(solutionOld);                          // extract the monitor points data
         computeTimestepArray(solutionOld, timestep);                                        // compute the physical time step
+        preprocessSolution(solutionOld);
         
         // runge-kutta steps
         for (const auto &integrationCoeff: timeIntegrationCoeffs){
-            updateRadialProfiles(solutionTmp);
+            preprocessSolution(solutionTmp);
+            computeSolutionGradient(solutionTmp, solutionGradTmp);
             computeResiduals(solutionTmp, solutionGradTmp, it, _time.back(), residuals);
-            updateSolution(solutionOld, solutionTmp, residuals, integrationCoeff, timestep);
-            updateSolutionGradient(solutionTmp, solutionGradTmp);
+            updateSolution(solutionOld, solutionTmp, residuals, integrationCoeff, timestep);   
         }
         
         // update the physical time
@@ -646,6 +648,16 @@ void CSolverEuler::computeResiduals(const FlowSolution& solution, const std::map
         computeAdvectionFlux(FluxDirection::K, solution, it, residuals);
     }
 
+
+    // viscous fluxes
+    if (_config.isViscosityActive()){
+        computeViscousFlux(FluxDirection::I, solution, solutionGrad, it, residuals);
+        computeViscousFlux(FluxDirection::J, solution, solutionGrad, it, residuals);
+        if (_topology==Topology::THREE_DIMENSIONAL || _topology==Topology::AXISYMMETRIC_3D){
+            computeViscousFlux(FluxDirection::K, solution, solutionGrad, it, residuals);
+        }
+    }
+
     // compute residuals contribution from sources. They don't need to be added again, since for periodic configurations their volume has already been increased
     computeSourceTerms(solution, solutionGrad, it, residuals, _inviscidForce, _viscousForce, _deviationAngle, timePhysical);
 
@@ -669,6 +681,16 @@ void CSolverEuler::computeResiduals(const FlowSolution& solution, const std::map
             }
         }
     }
+
+    // treat no-slip walls
+    if (_config.isViscosityActive()){
+            for (auto& bc : _boundaryTypes){
+            if (bc.second == BoundaryType::NO_SLIP_WALL){
+                setMomentumToZero(residuals, bc.first);
+            }
+        }
+    }
+    
 
 }
 
@@ -788,6 +810,146 @@ void CSolverEuler::computeAdvectionFlux(FluxDirection direction, const FlowSolut
     }
     
 }
+
+
+void CSolverEuler::computeViscousFlux(FluxDirection direction, const FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>>& gradients, size_t itCounter, FlowSolution &residuals) const {
+    const auto stepMask = getStepMask(direction);
+    const Matrix3D<Vector3D>& surfaces = _mesh.getSurfaces(direction);
+    
+    StateVector Uleft{}, Uright{}, Uavg{}, flux {};
+    Vector3D surface {};
+    Vector3D uxGrad, uyGrad, uzGrad, tempGrad;
+
+    size_t ni = surfaces.sizeI(); 
+    size_t nj = surfaces.sizeJ(); 
+    size_t nk = surfaces.sizeK();
+
+    for (size_t iFace = 0; iFace < ni; ++iFace) {
+        for (size_t jFace = 0; jFace < nj; ++jFace) {
+            for (size_t kFace = 0; kFace < nk; ++kFace) {
+                size_t dirFace = 0;
+                size_t stopFace = 0;
+
+                switch (direction)
+                {
+                case (FluxDirection::I):
+                    dirFace = iFace;
+                    stopFace = ni-1;
+                    break;
+                case (FluxDirection::J):
+                    dirFace = jFace;
+                    stopFace = nj-1;
+                    break;
+                case (FluxDirection::K):
+                    dirFace = kFace;
+                    stopFace = nk-1;
+                    break;
+                default:
+                    throw std::runtime_error("Invalid FluxDirection.");
+                }
+                
+                // HERE WE NEED TO TREAT ALSO BOUNDARIES, WHOSE FLUX HAS ALREADY BEEN TREATED FOR THE ADVECTION PART --> THEREFORE NO BOUNDARY FLUXES HERE ?
+
+                // starting boundary fluxes
+                if (dirFace == 0) {
+                    continue;
+                } 
+                // ending boundary fluxes
+                else if (dirFace == stopFace) { 
+                    continue;
+                } 
+                // internal flux calculation
+                else {
+                    Uleft = solution.at(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2]);
+                    
+                    Uright = solution.at(iFace, jFace, kFace);
+                    
+                    Uavg = (Uleft + Uright) * 0.5;
+
+                    uxGrad = (gradients.at(SolutionNames::VELOCITY_X)(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2]) + 
+                             gradients.at(SolutionNames::VELOCITY_X)(iFace, jFace, kFace)) * 0.5;
+                    
+                    uyGrad = (gradients.at(SolutionNames::VELOCITY_Y)(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2]) + 
+                             gradients.at(SolutionNames::VELOCITY_Y)(iFace, jFace, kFace)) * 0.5;
+
+                    uzGrad = (gradients.at(SolutionNames::VELOCITY_Z)(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2]) + 
+                             gradients.at(SolutionNames::VELOCITY_Z)(iFace, jFace, kFace)) * 0.5;
+                    
+                    tempGrad = (gradients.at(SolutionNames::TEMPERATURE)(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2]) + 
+                             gradients.at(SolutionNames::TEMPERATURE)(iFace, jFace, kFace)) * 0.5;
+                    
+                    surface = surfaces(iFace, jFace, kFace);
+
+                    flux = computeViscousFlux(Uavg, uxGrad, uyGrad, uzGrad, tempGrad, surface);
+                    
+                    residuals.add(iFace-1*stepMask[0], jFace-1*stepMask[1], kFace-1*stepMask[2], flux * surface.magnitude());
+                    
+                    residuals.subtract(iFace, jFace, kFace, flux * surface.magnitude());
+                
+                }
+            
+            }
+        }
+    }
+    
+}
+
+
+
+StateVector CSolverEuler::computeViscousFlux(const StateVector& conservative, const Vector3D& velXGrad, const Vector3D& velYGrad, 
+                                   const Vector3D& velZGrad, const Vector3D& tempGrad, const Vector3D& surface) const{
+    
+    // fluid state
+    StateVector primitive = getEulerPrimitiveFromConservative(conservative);
+    Vector3D vel = Vector3D(primitive[1], primitive[2], primitive[3]);
+    
+    // fluid quantities
+    FloatType nu = _config.getFluidKinematicViscosity();
+    FloatType mu = nu * primitive[0]; 
+    FloatType lmbda = -2.0 / 3.0 * mu;         
+    FloatType cp = _config.getFluidHeatCapacity(); 
+    FloatType Pr = _config.getFluidPrandtlNumber();             
+    FloatType kappa = cp * mu / Pr;   
+    
+    // viscous stresses
+    FloatType tauxx, tauyy, tauzz, tauxy, tauxz, tauyz;
+
+    FloatType divVel = velXGrad.x() + velYGrad.y() + velZGrad.z();
+    
+    // viscous stresses
+    tauxx = lmbda * divVel + 2.0 * mu * velXGrad.x();
+    tauyy = lmbda * divVel + 2.0 * mu * velYGrad.y();
+    tauzz = lmbda * divVel + 2.0 * mu * velZGrad.z();
+
+    tauxy = mu * (velXGrad.y() + velYGrad.x());
+    tauxz = mu * (velXGrad.z() + velZGrad.x());
+    tauyz = mu * (velYGrad.z() + velZGrad.y());
+
+    Vector3D tauX = Vector3D(tauxx, tauxy, tauxz);
+    Vector3D tauY = Vector3D(tauxy, tauyy, tauyz);
+    Vector3D tauZ = Vector3D(tauxz, tauyz, tauzz);
+
+    // theta terms (Blazek pag 17)
+    FloatType thetaX = tauX.dot(vel) + kappa * tempGrad.x();
+    FloatType thetaY = tauY.dot(vel) + kappa * tempGrad.y();
+    FloatType thetaZ = tauZ.dot(vel) + kappa * tempGrad.z();
+
+    StateVector flux({0.0, 0.0, 0.0, 0.0, 0.0});
+    Vector3D surfDir = surface / surface.magnitude();
+    
+    flux[0] = 0.0;
+    flux[1] = tauX.dot(surfDir);
+    flux[2] = tauY.dot(surfDir);
+    flux[3] = tauZ.dot(surfDir);
+    flux[4] = thetaX*surfDir.x() + thetaY*surfDir.y() + thetaZ*surfDir.z();
+
+    return flux*(-1.0); // minus due to viscous flux positive considered on the left hand side
+
+}
+
+
+
+
 
 void CSolverEuler::updateSolution(const FlowSolution &solOld, FlowSolution &solNew, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt){
     for (size_t i = 0; i < _nPointsI; i++) {
@@ -1102,12 +1264,25 @@ void CSolverEuler::computeGradient(const Matrix3D<FloatType> &var, Matrix3D<Vect
 }
 
 
-void CSolverEuler::updateSolutionGradient(const FlowSolution &sol, std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad){
+void CSolverEuler::computeSolutionGradient(const FlowSolution &sol, std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad){
     computeGradient(sol.getDensity(), solutionGrad[SolutionNames::DENSITY]);
     computeGradient(sol.getVelocityX(), solutionGrad[SolutionNames::VELOCITY_X]);
     computeGradient(sol.getVelocityY(), solutionGrad[SolutionNames::VELOCITY_Y]);
     computeGradient(sol.getVelocityZ(), solutionGrad[SolutionNames::VELOCITY_Z]);
     computeGradient(sol.getTotalEnergy(), solutionGrad[SolutionNames::TOTAL_ENERGY]);
+
+    Matrix3D<FloatType> temperature(_mesh.getNumberPointsI(), _mesh.getNumberPointsJ(), _mesh.getNumberPointsK());
+    StateVector primitive;
+    for (size_t i = 0; i < _mesh.getNumberPointsI(); i++){
+        for (size_t j = 0; j < _mesh.getNumberPointsJ(); j++){
+            for (size_t k = 0; k < _mesh.getNumberPointsK(); k++){
+                primitive = getEulerPrimitiveFromConservative(sol.at(i, j, k));
+                temperature(i, j, k) = _fluid->computeTemperature_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
+            }
+        }
+    }
+
+    computeGradient(temperature, solutionGrad[SolutionNames::TEMPERATURE]);
 }
 
 
@@ -1173,4 +1348,42 @@ StateVector CSolverEuler::computeGongSource(const FloatType& radius, const Float
 
 void CSolverEuler::writeSolution(size_t iterationCounter, bool alsoGradients){
     _output->writeSolution(iterationCounter, alsoGradients);
+}
+
+
+
+
+void CSolverEuler::setMomentumToZero(FlowSolution &sol, const BoundaryIndices &boundaryIndex) const{
+    
+    size_t iStart, iLast, jStart, jLast, kStart, kLast;
+    fetchBoundarySliceIndices(boundaryIndex, iStart, iLast, jStart, jLast, kStart, kLast);
+
+    for (size_t i = iStart; i < iLast; i++) {
+        for (size_t j = jStart; j < jLast; j++) {
+            for (size_t k = kStart; k < kLast; k++) {
+                for (int eq = 1; eq <= 3; ++eq){
+                    sol.set(i, j, k, eq, 0.0); // set momentum to zero
+                }
+            }
+        }
+    }
+}
+
+
+
+
+void CSolverEuler::preprocessSolution(FlowSolution &sol) {
+    
+    // update radial profiles for bcs
+    updateRadialProfiles(sol);
+
+    // if there are no slip wall impose zero velocity
+    if (_config.isViscosityActive()){
+        for (auto& bc : _boundaryTypes){
+            if (bc.second == BoundaryType::NO_SLIP_WALL){
+                setMomentumToZero(sol, bc.first);
+            }
+        }
+    }
+    
 }

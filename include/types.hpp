@@ -185,7 +185,8 @@ enum class BoundaryType {
     WEDGE = 7,
     PERIODIC = 8,
     THROTTLE = 9,
-    INLET_2D,
+    INLET_2D = 10,
+    NO_SLIP_WALL = 11,
 };
 
 
@@ -758,7 +759,6 @@ struct FlowSolution {
         return results;
     }
 
-
     void add(size_t i, size_t j, size_t k, const StateVector& delta) {
         _rho(i,j,k)   += delta[0];
         _rhoU(i,j,k)  += delta[1];
@@ -785,6 +785,29 @@ struct FlowSolution {
         _rhoV(i,j,k) = vals[2];
         _rhoW(i,j,k) = vals[3];
         _rhoE(i,j,k) = vals[4];
+    }
+
+    void set(size_t i, size_t j, size_t k, const size_t iVar, FloatType val) {
+        switch (iVar)
+        {
+        case 0:
+            _rho(i,j,k) = val;
+            break;
+        case 1:
+            _rhoU(i,j,k) = val;
+            break;
+        case 2:
+            _rhoV(i,j,k) = val;
+            break;
+        case 3:
+            _rhoW(i,j,k) = val;
+            break;
+        case 4:
+            _rhoE(i,j,k) = val;
+            break;
+        default:
+            break;
+        }
     }
 
     void resize(size_t i, size_t j, size_t k){
@@ -926,6 +949,7 @@ enum class SolutionNames {
     VELOCITY_Y=2,
     VELOCITY_Z=3,
     TOTAL_ENERGY=4,
+    TEMPERATURE=5
 };
 
 

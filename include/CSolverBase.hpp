@@ -92,6 +92,9 @@ class CSolverBase {
 
         std::string _inlet2DfilePath{""}; // name of the 2D inlet file
 
+        /* fetch indices for a 2D boundary slice depdending on boundary index */
+        void fetchBoundarySliceIndices(BoundaryIndices boundaryIdx, size_t &iStart, size_t &iLast, size_t &jStart, size_t &jLast, size_t &kStart, size_t &kLast) const;
+
         
 
 };

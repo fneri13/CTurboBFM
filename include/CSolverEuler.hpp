@@ -112,6 +112,14 @@ private:
     void computeAdvectionFlux(FluxDirection direction, const FlowSolution& solution, size_t itCounter, FlowSolution &residuals) const;
 
 
+    /** @brief compute the residuals contribution from viscous fluxes
+     * @param[in] direction The flux direction
+     * @param[in] solution The conservative variables solution
+     * @param[in] itCounter The iteration counter
+     * @param[out] residuals The residuals 3D matrix
+    */
+    void computeViscousFlux(FluxDirection direction, const FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>>& solutionGrad , size_t itCounter, FlowSolution &residuals) const;
+
     /** @brief update the conservative variables solution
      * @param[in] solOld The old conservative variables solution
      * @param[out] solNew The new conservative variables solution
@@ -123,7 +131,7 @@ private:
 
     /** @brief update the gradient of the solution
     */
-    void updateSolutionGradient(const FlowSolution &sol, std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad);
+    void computeSolutionGradient(const FlowSolution &sol, std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad);
 
 
     /** @brief print information about the residuals
@@ -241,4 +249,13 @@ private:
     StateVector computeGongSource(const FloatType& radius, const FloatType& theta, const FloatType& omega, const StateVector& primitive, 
                             const Vector3D& densityGrad, const Vector3D& velXGrad, const Vector3D& velYGrad, const Vector3D& velZGrad, 
                             const Vector3D& totEnergyGrad, const FloatType& volume) const;
+    
+    void setMomentumToZero(FlowSolution &residuals, const BoundaryIndices &boundaryIndices) const;
+
+    void preprocessSolution(FlowSolution &solution);
+
+
+    StateVector computeViscousFlux(const StateVector& conservative, const Vector3D& velXGrad, const Vector3D& velYGrad, 
+                                   const Vector3D& velZGrad, const Vector3D& tempGrad, const Vector3D& surface) const;
+
 };

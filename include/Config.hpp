@@ -95,6 +95,8 @@ public:
     
     FloatType getFluidKinematicViscosity() const {return parseFloat("FLUID_KINEMATIC_VISCOSITY");} 
 
+    FloatType getFluidPrandtlNumber() const {return parseFloat("FLUID_PRANDTL_NUMBER");}
+
     BoundaryType getBoundaryType(const BoundaryIndices) const;
 
     std::vector<FloatType> getInletBCValues() const { return parseVector<FloatType>("INLET_VALUE");}
@@ -209,4 +211,9 @@ public:
     FloatType getFixedTimeStep() const {return parseFloat("FIXED_TIME_STEP");} 
 
     OutputFields getOutputFields() const ;
+
+    bool isViscosityActive() const {return parseBool("VISCOSITY_ACTIVE", false);}
+
+    FloatType getFluidHeatCapacity() const {return parseFloat("FLUID_CP");}
+
 };

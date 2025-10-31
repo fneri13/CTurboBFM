@@ -278,6 +278,9 @@ BoundaryType Config::getBoundaryType(BoundaryIndices bcIndex) const{
     else if (boundaryString == "wall") {
         boundaryType = BoundaryType::WALL;
     } 
+    else if (boundaryString == "no_slip_wall") {
+        boundaryType = BoundaryType::NO_SLIP_WALL;
+    } 
     else if (boundaryString == "wedge") {
         boundaryType = BoundaryType::WEDGE;
     }

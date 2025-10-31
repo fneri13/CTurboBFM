@@ -92,7 +92,7 @@ void CSolverBase::readBoundaryConditions(){
 
     // instantiate boundary condition objects
     for (auto& bound : bounds) {
-        if (_boundaryTypes[bound] == BoundaryType::WALL){
+        if (_boundaryTypes[bound] == BoundaryType::WALL || _boundaryTypes[bound] == BoundaryType::NO_SLIP_WALL){
             _boundaryConditions[bound] = std::make_unique<CBoundaryConditionEulerWall>(_config, _mesh, *_fluid, bound);
         }
         else if (_boundaryTypes[bound] == BoundaryType::INLET){
@@ -136,3 +136,34 @@ const std::array<int, 3> CSolverBase::getStepMask(FluxDirection direction) const
     }
 }
 
+
+void CSolverBase::fetchBoundarySliceIndices(BoundaryIndices boundaryIdx, size_t &iStart, size_t &iLast, size_t &jStart, size_t &jLast, size_t &kStart, size_t &kLast) const{
+    iStart=0, 
+    iLast=_nPointsI, 
+    jStart=0, 
+    jLast=_nPointsJ, 
+    kStart=0, 
+    kLast=_nPointsK;
+    
+    switch (boundaryIdx)
+    {
+    case BoundaryIndices::I_START:
+        iLast = 1;
+        break;
+    case BoundaryIndices::I_END:
+        iStart = _nPointsI-1;
+        break;
+    case BoundaryIndices::J_START:
+        jLast = 1;
+        break;
+    case BoundaryIndices::J_END:
+        jStart = _nPointsJ-1;
+        break;
+    case BoundaryIndices::K_START:
+        kLast = 1;
+        break;
+    case BoundaryIndices::K_END:
+        kStart = _nPointsK-1;
+        break;
+    }
+}

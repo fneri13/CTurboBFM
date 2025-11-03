@@ -479,3 +479,37 @@ OutputFields Config::getOutputFields() const {
     
     return fields;
 }
+
+
+Vector3D Config::getNoSlipWallVelocity(BoundaryIndices boundary) const{
+    std::string cfgName{""};
+    
+    switch (boundary)
+    {
+    case BoundaryIndices::I_START:
+        cfgName = "BOUNDARY_I_START_VELOCITY";
+        break;
+    case BoundaryIndices::I_END:
+        cfgName = "BOUNDARY_I_END_VELOCITY";
+        break;
+    case BoundaryIndices::J_START:
+        cfgName = "BOUNDARY_J_START_VELOCITY";
+        break;
+    case BoundaryIndices::J_END:
+        cfgName = "BOUNDARY_J_END_VELOCITY";
+        break;
+    case BoundaryIndices::K_START:
+        cfgName = "BOUNDARY_K_START_VELOCITY";
+        break;
+    case BoundaryIndices::K_END:
+        cfgName = "BOUNDARY_K_END_VELOCITY";
+        break;
+    default:
+        break;
+    }
+
+    std::vector<FloatType> wallvel = parseVector<FloatType>(cfgName, {0.0, 0.0, 0.0});
+    Vector3D vel{wallvel[0], wallvel[1], wallvel[2]};
+    return vel;
+
+}

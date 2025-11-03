@@ -72,6 +72,8 @@ class CSolverBase {
 
         std::map<BoundaryIndices, std::vector<FloatType>> _boundaryValues;
 
+        std::map<BoundaryIndices, Vector3D> _boundaryVelocities;
+
         std::map<BoundaryIndices, std::unique_ptr<CBoundaryConditionBase>> _boundaryConditions;
 
         Topology _topology;

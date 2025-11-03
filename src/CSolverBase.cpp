@@ -85,6 +85,9 @@ void CSolverBase::readBoundaryConditions(){
                 periodicityChecked = true;
             }
         }
+        else if (_boundaryTypes[bound] == BoundaryType::NO_SLIP_WALL){
+            _boundaryVelocities[bound] = _config.getNoSlipWallVelocity(bound);
+        }
         else {
             _boundaryValues[bound] = std::vector<FloatType> {};
         }

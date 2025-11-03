@@ -250,7 +250,7 @@ private:
                             const Vector3D& densityGrad, const Vector3D& velXGrad, const Vector3D& velYGrad, const Vector3D& velZGrad, 
                             const Vector3D& totEnergyGrad, const FloatType& volume) const;
     
-    void setMomentumToZero(FlowSolution &residuals, const BoundaryIndices &boundaryIndices) const;
+    void setMomentumSolution(FlowSolution &residuals, const BoundaryIndices &boundaryIndices, const Vector3D &wallVelocity) const;
 
     void preprocessSolution(FlowSolution &solution);
 

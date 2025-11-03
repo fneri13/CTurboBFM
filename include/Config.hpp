@@ -64,6 +64,38 @@ private:
         return result;
     }
 
+    template <typename T>
+    std::vector<T> parseVector(const std::string& key, std::vector<T> defaultValue) const {
+        if (!has(key)) {
+            return defaultValue;
+        }
+
+        std::string value = get(key);
+        std::vector<T> result;
+        std::stringstream ss(value);
+        std::string item;
+
+        while (std::getline(ss, item, ',')) {
+            // Trim leading/trailing whitespace
+            item.erase(0, item.find_first_not_of(" \t\r\n"));
+            item.erase(item.find_last_not_of(" \t\r\n") + 1);
+
+            if (item.empty()) continue;
+
+            std::stringstream itemStream(item);
+            T val;
+            itemStream >> val;
+
+            if (itemStream.fail() || !itemStream.eof()) {
+                throw std::runtime_error("Invalid vector element for key \"" + key + "\": \"" + item + "\"");
+            }
+
+            result.push_back(val);
+        }
+
+        return result;
+    }
+
 public:
     Config () = default;
     Config (const std::string& filename);
@@ -130,6 +162,8 @@ public:
     std::string getInlet2DfilePath() const {return parseString("INLET_2D_FILEPATH");}
 
     std::string getChimaScalingFunctionsFile() const {return parseString("CHIMA_SCALING_FUNCTIONS_FILEPATH");}
+
+    Vector3D getNoSlipWallVelocity(BoundaryIndices boundary) const;
 
     FloatType getChimaReferenceMassFlow() const {return parseFloat("CHIMA_REFERENCE_MASS_FLOW");}
 

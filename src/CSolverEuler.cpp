@@ -683,10 +683,11 @@ void CSolverEuler::computeResiduals(const FlowSolution& solution, const std::map
     }
 
     // treat no-slip walls
+    Vector3D zeroWallVel{0.0, 0.0, 0.0}; // the momentum residuals must always been zeroed in the equation
     if (_config.isViscosityActive()){
             for (auto& bc : _boundaryTypes){
             if (bc.second == BoundaryType::NO_SLIP_WALL){
-                setMomentumToZero(residuals, bc.first);
+                setMomentumSolution(residuals, bc.first, zeroWallVel);
             }
         }
     }
@@ -1360,16 +1361,18 @@ void CSolverEuler::writeSolution(size_t iterationCounter, bool alsoGradients){
 
 
 
-void CSolverEuler::setMomentumToZero(FlowSolution &sol, const BoundaryIndices &boundaryIndex) const{
+void CSolverEuler::setMomentumSolution(FlowSolution &sol, const BoundaryIndices &boundaryIndex, const Vector3D& wallVelocity) const{
     
     size_t iStart, iLast, jStart, jLast, kStart, kLast;
     fetchBoundarySliceIndices(boundaryIndex, iStart, iLast, jStart, jLast, kStart, kLast);
 
+    FloatType density{0.0};
     for (size_t i = iStart; i < iLast; i++) {
         for (size_t j = jStart; j < jLast; j++) {
             for (size_t k = kStart; k < kLast; k++) {
+                density = sol.at(i, j, k)[0];
                 for (int eq = 1; eq <= 3; ++eq){
-                    sol.set(i, j, k, eq, 0.0); // set momentum to zero
+                    sol.set(i, j, k, eq, density * wallVelocity(eq-1)); // set momentum to zero
                 }
             }
         }
@@ -1385,10 +1388,12 @@ void CSolverEuler::preprocessSolution(FlowSolution &sol) {
     updateRadialProfiles(sol);
 
     // if there are no slip wall impose zero velocity
+    Vector3D wallVel(0.0, 0.0, 0.0);
     if (_config.isViscosityActive()){
         for (auto& bc : _boundaryTypes){
             if (bc.second == BoundaryType::NO_SLIP_WALL){
-                setMomentumToZero(sol, bc.first);
+                wallVel = _config.getNoSlipWallVelocity(bc.first);
+                setMomentumSolution(sol, bc.first, wallVel);
             }
         }
     }

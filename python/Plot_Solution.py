@@ -9,7 +9,7 @@ import os
 import matplotlib.pyplot as plt
 # from styles import *
 
-NLEVELS = 100
+NLEVELS = 30
 
 def GetSolutionDict(input_filename):
     # Read the first three lines to extract grid sizes

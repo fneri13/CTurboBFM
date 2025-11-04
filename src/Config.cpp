@@ -214,14 +214,12 @@ KindSolver Config::getKindSolver() const {
 Topology Config::getTopology() const {
     string value = parseString("TOPOLOGY");
     Topology topology = Topology::TWO_DIMENSIONAL;
-    if (value == "2D") {
+    if (value == "2D" || value == "2d") {
         topology = Topology::TWO_DIMENSIONAL;
-    } else if (value == "3D") {
+    } else if (value == "3D" || value == "3d") {
         topology = Topology::THREE_DIMENSIONAL;
-    } else if (value == "axisymmetric_2d") {
-        topology = Topology::AXISYMMETRIC_2D;
-    } else if (value == "axisymmetric_3d" || value == "axisymmetric") {
-        topology = Topology::AXISYMMETRIC_3D;
+    } else if (value == "axisymmetric" || value == "Axisymmetric" || value == "AXISYMMETRIC") {
+        topology = Topology::AXISYMMETRIC;
     } else {
         throw std::runtime_error("Invalid value for key \"TOPOLOGY\" in configuration.");
     }

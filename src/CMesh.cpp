@@ -15,7 +15,7 @@ CMesh::CMesh(Config& config) : _config(config) {
     allocateMemory();
     
     auto topology = config.getTopology();
-    if (topology == Topology::TWO_DIMENSIONAL || topology == Topology::AXISYMMETRIC_2D || topology == Topology::AXISYMMETRIC_3D) {
+    if (topology == Topology::TWO_DIMENSIONAL || topology == Topology::AXISYMMETRIC) {
         computeDualGrid2D();
     } 
     else if (topology == Topology::THREE_DIMENSIONAL) {
@@ -380,7 +380,7 @@ void CMesh::computeDualGrid2D() {
         nodes(_nDualPointsI-1, j) = (_vertices(_nPointsI-1, j-1, 0) + _vertices(_nPointsI-1, j, 0)) / 2.0;    
     }
 
-    if (_config.getTopology() == Topology::AXISYMMETRIC_3D) {
+    if (_config.getTopology() == Topology::AXISYMMETRIC) { // build a wedge of 1 degree in the circumferential (k) direction
         _wedgeAngle = 1.0 * M_PI / 180.0;
         for (size_t i = 0; i < _nDualPointsI; i++) {
             for (size_t j = 0; j < _nDualPointsJ; j++) {

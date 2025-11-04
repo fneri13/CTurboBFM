@@ -129,6 +129,11 @@ private:
     */
     void updateSolution(const FlowSolution &solOld, FlowSolution &solNew, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt);
 
+    /** @brief post process the solution, to account for periodic boundaries
+     * @param[out] sol The new conservative variables solution
+    */
+    void postprocessSolution(FlowSolution &sol);
+
     /** @brief update the gradient of the solution
     */
     void computeSolutionGradient(FlowSolution &sol, std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad);

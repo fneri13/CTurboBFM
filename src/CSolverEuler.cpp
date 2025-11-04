@@ -364,6 +364,7 @@ void CSolverEuler::solve(){
             computeSolutionGradient(solutionTmp, solutionGradTmp);
             computeResiduals(solutionTmp, solutionGradTmp, it, _time.back(), residuals);
             updateSolution(_conservativeVars, solutionTmp, residuals, integrationCoeff, timestep);   
+            postprocessSolution(solutionTmp);
         }
 
         // update the solution and prepare for next iteration
@@ -633,7 +634,6 @@ void CSolverEuler::computeResiduals(const FlowSolution& solution, const std::map
                                     const size_t it, const FloatType timePhysical, FlowSolution &residuals) {
     
     // the residual is defined on the LHS, so the fluxes must be added, and the sources must be subtracted
-
     residuals.setToZero(); // clear it
 
     // compute residuals contribution from advection fluxes
@@ -642,7 +642,6 @@ void CSolverEuler::computeResiduals(const FlowSolution& solution, const std::map
     if (_topology==Topology::THREE_DIMENSIONAL || _topology==Topology::AXISYMMETRIC){
         computeAdvectionFlux(FluxDirection::K, solution, it, residuals);
     }
-
 
     // viscous fluxes
     if (_config.isViscosityActive()){
@@ -653,10 +652,10 @@ void CSolverEuler::computeResiduals(const FlowSolution& solution, const std::map
         }
     }
 
-    // compute residuals contribution from sources. They don't need to be added again, since for periodic configurations their volume has already been increased
+    // compute residuals contribution from sources (of different origins)
     computeSourceTerms(solution, solutionGrad, it, residuals, _inviscidForce, _viscousForce, _deviationAngle, timePhysical);
 
-    // cure periodic cells (Blazek treatment, valid only for full-annulus at the moment). The volumetric and surface contributions must be avgd and combined
+    // cure periodic cells (Blazek method). The volumetric and surface contributions must be averaged and combined
     if (_mesh.applyPeriodicTreatment()){
         FloatType angle = _mesh.getPeriodicityAngleRad();
         for (size_t i=0; i<_nPointsI; i++){
@@ -960,6 +959,10 @@ void CSolverEuler::updateSolution(const FlowSolution &solOld, FlowSolution &solN
         }
     }
 
+}
+
+void CSolverEuler::postprocessSolution(FlowSolution &solNew){
+
     // apply periodic treatment if needed
     if (_mesh.applyPeriodicTreatment()){
         StateVector U1, U2, Uavg;
@@ -973,7 +976,9 @@ void CSolverEuler::updateSolution(const FlowSolution &solOld, FlowSolution &solN
             }
         }
     }
+
 }
+
 
 
 void CSolverEuler::writeLogResidualsToCSV() const {

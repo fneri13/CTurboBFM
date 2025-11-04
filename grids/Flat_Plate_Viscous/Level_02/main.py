@@ -11,7 +11,7 @@ Generate a 2D rectangular geometry, that will be used as verification
 OUTPUT_FOLDER = 'Grid'
 LX = 0.2
 H = 0.02
-NX = 65
+NX = 113
 NY = 113
 STRETCH = 1.083317311 # from hirsch
 
@@ -22,7 +22,7 @@ for j in range(2, NY):
     y[j] = y[j-1] + dy
 
 x = np.zeros(NX)
-x[1] = 0.1E-3
+x[1] = 0.02E-3
 for i in range(2, NX):
     dx = STRETCH * (x[i-1] - x[i-2])
     x[i] = x[i-1] + dx

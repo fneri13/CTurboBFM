@@ -131,7 +131,7 @@ private:
 
     /** @brief update the gradient of the solution
     */
-    void computeSolutionGradient(const FlowSolution &sol, std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad);
+    void computeSolutionGradient(FlowSolution &sol, std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad);
 
 
     /** @brief print information about the residuals
@@ -251,7 +251,11 @@ private:
                             const Vector3D& totEnergyGrad, const FloatType& volume) const;
     
     void setMomentumSolution(FlowSolution &residuals, const BoundaryIndices &boundaryIndices, const Vector3D &wallVelocity) const;
-
+    
+    /** @brief update the radial profiles (pressure) at the outlet, needed by boundary conditions
+     * and enforce strong conditions for no-slip walls
+     * @param[in,out] solution The reference to the conservative solution matrix
+    */
     void preprocessSolution(FlowSolution &solution);
 
 

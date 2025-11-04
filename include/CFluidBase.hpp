@@ -195,6 +195,9 @@ public:
     */
     virtual FloatType getGamma() const = 0;
 
+    virtual Matrix3D<FloatType> computeTemperature_conservative(Matrix3D<FloatType>& rho, Matrix3D<FloatType>& ux, Matrix3D<FloatType>& uy, 
+                                                                Matrix3D<FloatType>& uz, Matrix3D<FloatType>& et) const = 0;
+
 private:
     
 };

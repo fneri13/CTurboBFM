@@ -128,3 +128,10 @@ FloatType CFluidIdeal::computeEntropy_p_T(FloatType pressure, FloatType temperat
     FloatType entropy = _cp*log(temperature/288.15) - _R*log(pressure/101325);
     return entropy;
 }
+
+Matrix3D<FloatType> CFluidIdeal::computeTemperature_conservative(Matrix3D<FloatType>& rho, Matrix3D<FloatType>& ux, Matrix3D<FloatType>& uy, 
+                                                                 Matrix3D<FloatType>& uz, Matrix3D<FloatType>& et) const {
+    
+    Matrix3D<FloatType> temperature = (et - (ux * ux + uy * uy + uz * uz) * 0.5) * ((_gamma-1.0)/_R);
+    return temperature;
+}

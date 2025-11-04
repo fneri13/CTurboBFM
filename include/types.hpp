@@ -420,6 +420,26 @@ class Matrix3D {
             return *this;
         }
 
+        Matrix3D operator*(const Matrix3D& other) const {
+            assert(_ni == other._ni && "Matrix3D::operator* dimension mismatch on ni");
+            assert(_nj == other._nj && "Matrix3D::operator* dimension mismatch on nj");
+            assert(_nk == other._nk && "Matrix3D::operator* dimension mismatch on nk");
+
+            Matrix3D result(*this); // copy current matrix
+            result *= other;        // use your operator*=
+            return result;
+        }
+
+        Matrix3D operator+(const Matrix3D& other) const {
+            assert(_ni == other._ni && "Matrix3D::operator+ dimension mismatch on ni");
+            assert(_nj == other._nj && "Matrix3D::operator+ dimension mismatch on nj");
+            assert(_nk == other._nk && "Matrix3D::operator+ dimension mismatch on nk");
+
+            Matrix3D result(*this); // copy current matrix
+            result += other;        // use your operator*=
+            return result;
+        }
+
         // In-place division
         Matrix3D<T> operator/(const Matrix3D<FloatType>& other) const {
             assert(_ni == other._ni && "Matrix3D::operator+= dimension mismatch on ni");
@@ -444,6 +464,12 @@ class Matrix3D {
             return *this;
         }
 
+        Matrix3D operator*(T scalar) const {
+            Matrix3D result(*this);  // make a copy of the current matrix
+            result *= scalar;        // reuse your operator*=
+            return result;
+        }
+
         // In-place subtraction
         Matrix3D& operator-=(const Matrix3D& other) {
             assert(_ni == other._ni && "Matrix3D::operator+= dimension mismatch on ni");
@@ -453,6 +479,16 @@ class Matrix3D {
                 _data[idx] -= other._data[idx];
             }
             return *this;
+        }
+
+        Matrix3D operator-(const Matrix3D& other) const {
+            assert(_ni == other._ni && "Matrix3D::operator- dimension mismatch on ni");
+            assert(_nj == other._nj && "Matrix3D::operator- dimension mismatch on nj");
+            assert(_nk == other._nk && "Matrix3D::operator- dimension mismatch on nk");
+
+            Matrix3D result(*this);  // copy current matrix
+            result -= other;         // reuse your operator-=
+            return result;
         }
 
         std::vector<T> getData() const {return _data;}

@@ -1236,29 +1236,32 @@ void CSolverEuler::computeGradient(const Matrix3D<FloatType> &var, Matrix3D<Vect
 }
 
 
-void CSolverEuler::computeSolutionGradient(const FlowSolution &sol, std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad){
-
-    // primitive gradients needed by viscosity or Gong source terms
-    if (_config.isViscosityActive() || _config.isGongModelingActive()){
-        computeGradient(sol.getDensity(), solutionGrad[SolutionNames::DENSITY]);
-        computeGradient(sol.getVelocityX(), solutionGrad[SolutionNames::VELOCITY_X]);
-        computeGradient(sol.getVelocityY(), solutionGrad[SolutionNames::VELOCITY_Y]);
-        computeGradient(sol.getVelocityZ(), solutionGrad[SolutionNames::VELOCITY_Z]);
-        computeGradient(sol.getTotalEnergy(), solutionGrad[SolutionNames::TOTAL_ENERGY]);
+void CSolverEuler::computeSolutionGradient(FlowSolution &sol, std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad){
+    // don't compute gradients if not needed
+    if (!_config.isGongModelingActive() && !_config.isViscosityActive()){
+        return;
     }
-    
-    // temperature gradient needed only by viscous fluxes
-    if (_config.isViscosityActive()){
-        Matrix3D<FloatType> temperature(_mesh.getNumberPointsI(), _mesh.getNumberPointsJ(), _mesh.getNumberPointsK());
-        StateVector primitive;
-        for (size_t i = 0; i < _mesh.getNumberPointsI(); i++){
-            for (size_t j = 0; j < _mesh.getNumberPointsJ(); j++){
-                for (size_t k = 0; k < _mesh.getNumberPointsK(); k++){
-                    primitive = getEulerPrimitiveFromConservative(sol.at(i, j, k));
-                    temperature(i, j, k) = _fluid->computeTemperature_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
-                }
-            }
-        }
+
+    Matrix3D<FloatType> rho = sol.getDensity();
+    Matrix3D<FloatType> ux = sol.getVelocityX();
+    Matrix3D<FloatType> uy = sol.getVelocityY();
+    Matrix3D<FloatType> uz = sol.getVelocityZ();
+    Matrix3D<FloatType> et = sol.getTotalEnergy();
+
+    // Gong source terms need all the gradient of primitive
+    if (_config.isGongModelingActive()){
+        computeGradient(rho, solutionGrad[SolutionNames::DENSITY]);
+        computeGradient(ux, solutionGrad[SolutionNames::VELOCITY_X]);
+        computeGradient(uy, solutionGrad[SolutionNames::VELOCITY_Y]);
+        computeGradient(uz, solutionGrad[SolutionNames::VELOCITY_Z]);
+        computeGradient(et, solutionGrad[SolutionNames::TOTAL_ENERGY]);
+    }
+    // Viscous terms need velocity and temperature gradients
+    else if (_config.isViscosityActive()){
+        computeGradient(ux, solutionGrad[SolutionNames::VELOCITY_X]);
+        computeGradient(uy, solutionGrad[SolutionNames::VELOCITY_Y]);
+        computeGradient(uz, solutionGrad[SolutionNames::VELOCITY_Z]);
+        Matrix3D<FloatType> temperature = _fluid->computeTemperature_conservative(rho, ux, uy, uz, et);
         computeGradient(temperature, solutionGrad[SolutionNames::TEMPERATURE]);
     }
     

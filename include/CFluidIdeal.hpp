@@ -196,6 +196,9 @@ public:
     */
     FloatType computeTotalEfficiency_PRtt_TRt(FloatType pressureRatio, FloatType temperatureRatio) const override;
 
+    Matrix3D<FloatType> computeTemperature_conservative(Matrix3D<FloatType>& rho, Matrix3D<FloatType>& ux, Matrix3D<FloatType>& uy, 
+                                                        Matrix3D<FloatType>& uz, Matrix3D<FloatType>& et) const override;
+
 private:
     FloatType _gamma;  ///< Specific heat ratio
     FloatType _R;      ///< Specific gas constant [J/kgK]

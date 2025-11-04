@@ -47,6 +47,7 @@ CTurboBFM_Grad
 *.vts
 *.pyc
 *.pdf
+*.png
 
 # build files
 *cmake*

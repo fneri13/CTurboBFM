@@ -11,17 +11,22 @@ import matplotlib.pyplot as plt
 
 NLEVELS = 100
 
-
-def GetDataDict(input_filename, field):
+def GetSolutionDict(input_filename):
     # Read the first three lines to extract grid sizes
     with open(input_filename, 'r') as f:
         ni = int(f.readline().strip().split('=')[1])
         nj = int(f.readline().strip().split('=')[1])
         nk = int(f.readline().strip().split('=')[1])
     
-    
     df = pd.read_csv(input_filename, skiprows=3)
     data_dict = {col: df[col].to_numpy().reshape((ni, nj, nk)) for col in df.columns}
+    return data_dict
+
+
+
+def GetDataDict(input_filename, field):
+    
+    data_dict = GetSolutionDict(input_filename)
     
     if field not in data_dict.keys():
         # check if the field name with spaces exists in the dataset

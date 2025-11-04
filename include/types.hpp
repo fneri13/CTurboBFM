@@ -420,6 +420,17 @@ class Matrix3D {
             return *this;
         }
 
+        // In-place division
+        Matrix3D& operator/=(const Matrix3D& other) {
+            assert(_ni == other._ni && "Matrix3D::operator+= dimension mismatch on ni");
+            assert(_nj == other._nj && "Matrix3D::operator+= dimension mismatch on nj");
+            assert(_nk == other._nk && "Matrix3D::operator+= dimension mismatch on nk");
+            for (size_t idx = 0; idx < _data.size(); ++idx) {
+                _data[idx] /= other._data[idx];
+            }
+            return *this;
+        }
+
         Matrix3D operator*(const Matrix3D& other) const {
             assert(_ni == other._ni && "Matrix3D::operator* dimension mismatch on ni");
             assert(_nj == other._nj && "Matrix3D::operator* dimension mismatch on nj");
@@ -718,6 +729,14 @@ struct FlowSolution {
 
     FlowSolution() = default;
 
+    FlowSolution(const FlowSolution& other)
+        : _rho(other._rho),
+        _rhoU(other._rhoU),
+        _rhoV(other._rhoV),
+        _rhoW(other._rhoW),
+        _rhoE(other._rhoE)
+    {}
+
     FloatType norm(size_t iVar) const {
         switch (iVar)
         {
@@ -876,6 +895,15 @@ struct FlowSolution {
         _rhoV += other;
         _rhoW += other;
         _rhoE += other;
+        return *this;
+    }
+
+    FlowSolution& operator/(const Matrix3D<FloatType>& other) {
+        _rho  /= other;
+        _rhoU /= other;
+        _rhoV /= other;
+        _rhoW /= other;
+        _rhoE /= other;
         return *this;
     }
 

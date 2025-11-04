@@ -332,49 +332,47 @@ void CSolverEuler::readRestartFile(const std::string &restartFileName, size_t &N
 
 void CSolverEuler::solve(){
     size_t nIterMax = _config.getMaxIterations();
-    Matrix3D<FloatType> timestep(_nPointsI, _nPointsJ, _nPointsK);                          // place holder for time step array
-    std::vector<FloatType> timeIntegrationCoeffs = _config.getTimeIntegrationCoeffs();      // time integration coefficients (runge kutta)
-    FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK);                                // place holder for flux residuals
-    size_t updateMassFlowsFreq = _config.getSolutionOutputFrequency();                      // frequency to update the mass flows at the boundaries
+    Matrix3D<FloatType> timestep(_nPointsI, _nPointsJ, _nPointsK);                          
+    std::vector<FloatType> timeIntegrationCoeffs = _config.getTimeIntegrationCoeffs();      
+    FlowSolution residuals(_nPointsI, _nPointsJ, _nPointsK);                                
+    size_t updateMassFlowsFreq = _config.getSolutionOutputFrequency();                      
     size_t monitorOutputFreq = _config.getSolutionOutputFrequency();
-    size_t solutionOutputFreq = _config.getSolutionOutputFrequency();                       // frequency to output the solution
-    bool turboOutput = _config.saveTurboOutput();                                           // flag to save the solution in turbo format
-    bool monitorPointsActive = _config.isMonitorPointsActive();                             // flag to activate the monitor points
-    bool exitLoop = false;                                                                  // flag to exit the loop if convergence is reached
-    bool steadySimulation = _config.isSimulationSteady();                                   // flag to check if the simulation is steady
-    if (monitorPointsActive) initializeMonitorPoints();                                     // initialize the monitor points
+    size_t solutionOutputFreq = _config.getSolutionOutputFrequency();                       
+    bool turboOutput = _config.saveTurboOutput();                                           
+    bool monitorPointsActive = _config.isMonitorPointsActive();                             
+    bool exitLoop = false;                                                                  
+    bool steadySimulation = _config.isSimulationSteady();                                   
+    if (monitorPointsActive) initializeMonitorPoints();                                     
 
-    FlowSolution solutionOld(_nPointsI, _nPointsJ, _nPointsK);                              // place holder for the solution at the previous timestep
-    FlowSolution solutionTmp(_nPointsI, _nPointsJ, _nPointsK);                              // place holder for the solution at the next iteration
-    solutionTmp.copyFrom(_conservativeVars);                                                // copy the solution to the temporary solution
-
-    std::map<SolutionNames, Matrix3D<Vector3D>> solutionGradTmp = _solutionGrad;               // solution grad used in the iterations
+    // place holder for the solution
+    FlowSolution solutionTmp(_conservativeVars);                              
+    std::map<SolutionNames, Matrix3D<Vector3D>> solutionGradTmp = _solutionGrad;               
     
-    // time integration
+    // explict time-stepping
     for (size_t it=1; it<=nIterMax; it++){        
-        solutionOld.copyFrom(_conservativeVars);                                            // copy the solution to the old solution
-        updateMassFlows(solutionOld);
-        if (turboOutput) updateTurboPerformance(solutionOld);                               // extract the turbo performance
-        if (monitorPointsActive) updateMonitorPoints(solutionOld);                          // extract the monitor points data
-        computeTimestepArray(solutionOld, timestep);                                        // compute the physical time step
-        preprocessSolution(solutionOld);
+        updateMassFlows(solutionTmp);
+        
+        if (turboOutput) updateTurboPerformance(solutionTmp);                               
+        if (monitorPointsActive) updateMonitorPoints(solutionTmp);                          
+
+        computeTimestepArray(solutionTmp, timestep);                                        
+        preprocessSolution(solutionTmp);
         
         // runge-kutta steps
         for (const auto &integrationCoeff: timeIntegrationCoeffs){
             preprocessSolution(solutionTmp);
             computeSolutionGradient(solutionTmp, solutionGradTmp);
             computeResiduals(solutionTmp, solutionGradTmp, it, _time.back(), residuals);
-            updateSolution(solutionOld, solutionTmp, residuals, integrationCoeff, timestep);   
+            updateSolution(_conservativeVars, solutionTmp, residuals, integrationCoeff, timestep);   
         }
+
+        // update the solution and prepare for next iteration
+        _conservativeVars = solutionTmp;
         
         // update the physical time
         _time.push_back(_time.back() + timestep.min());
         
-        // update the solution
-        _conservativeVars.copyFrom(solutionTmp);
-        // _solutionGrad = solutionGradTmp;
-        
-        // print info on terminal
+        // print information on screen
         printInfoResiduals(residuals, it);
         if (it%updateMassFlowsFreq == 0) {
             printInfoMassFlows(it);
@@ -950,10 +948,14 @@ StateVector CSolverEuler::computeViscousFlux(const StateVector& conservative, co
 
 
 void CSolverEuler::updateSolution(const FlowSolution &solOld, FlowSolution &solNew, const FlowSolution &residuals, const FloatType &integrationCoeff, const Matrix3D<FloatType> &dt){
+    
+    // update solution matrix
+    StateVector newState({0,0,0,0,0});
     for (size_t i = 0; i < _nPointsI; i++) {
         for (size_t j = 0; j < _nPointsJ; j++) {
             for (size_t k = 0; k < _nPointsK; k++) {
-                solNew.set(i, j, k, solOld.at(i, j, k) - residuals.at(i, j, k) * integrationCoeff * dt(i, j, k) / _mesh.getVolume(i,j,k));
+                newState = solOld.at(i, j, k) - residuals.at(i, j, k) * integrationCoeff * dt(i, j, k) / _mesh.getVolume(i,j,k);
+                solNew.set(i, j, k, newState); // this method is needed to change object data
             }
         }
     }

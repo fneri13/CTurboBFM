@@ -53,6 +53,8 @@ class CMesh {
 
         const FloatType getVolume(size_t i, size_t j, size_t k) const {return _volumes(i,j,k);}
 
+        const Matrix3D<FloatType> getVolume() const {return _volumes;}
+
         const size_t getNumberDimensions() const {return _nDimensions;}
 
         const size_t getNumberPointsI() const {return _nPointsI;}

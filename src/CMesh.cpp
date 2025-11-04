@@ -513,25 +513,48 @@ void CMesh::computeInputGradients() {
 }
 
 
-void CMesh::checkPeriodicity(FloatType periodicityAngle) {
-    FloatType tolerance = 1E-3;
+void CMesh::checkPeriodicity(FloatType angle, FloatType translation) {
+    const FloatType tolerance = 1e-6;  // tighter tolerance, adjust as needed
+    const Vector3D& drag{0.0, 0.0, translation};
     
-    for (size_t i=0; i<_nPointsI; i++){
-        for (size_t j=0; j<_nPointsJ; j++){
-            Vector3D pointA = _vertices(i,j,0);
-            Vector3D pointB = _vertices(i,j,_nPointsK-1);
+    for (size_t i = 0; i < _nPointsI; ++i) {
+        for (size_t j = 0; j < _nPointsJ; ++j) {
 
-            FloatType thetaA = atan2_from0_to2pi(pointA.z(), pointA.y());
-            FloatType thetaB = atan2_from0_to2pi(pointB.z(), pointB.y());
+            
+            const Vector3D& pointA = _vertices(i, j, 0);
+            const Vector3D& pointB = _vertices(i, j, _nPointsK - 1) - drag;
 
-            FloatType deltaTheta = std::abs(thetaA-thetaB);
+            // Compute angular positions
+            const FloatType thetaA = atan2_from0_to2pi(pointA.z(), pointA.y());
+            const FloatType thetaB = atan2_from0_to2pi(pointB.z(), pointB.y());
 
-            if (std::abs(deltaTheta - periodicityAngle) > tolerance && std::abs(std::abs(deltaTheta - periodicityAngle)-2.0*M_PI) > tolerance){
-                throw std::invalid_argument("Periodicity check failed!");
+            // Compute minimal angular difference, modulo 2π
+            FloatType deltaTheta = std::fmod(thetaB - thetaA, 2.0 * M_PI);
+
+            // Check angular periodicity
+            if (std::abs(deltaTheta - angle) > tolerance) {
+                std::ostringstream msg;
+                msg << "Periodicity check failed at (i,j)=("
+                    << i << "," << j << "): "
+                    << "Δθ=" << deltaTheta << ", expected " << angle;
+                throw std::invalid_argument(msg.str());
+            }
+
+            // Optionally, check axial (x) periodicity if translation ≠ 0
+            if (std::abs(translation) > 1e-12 && angle==0.0) {
+                const FloatType dz = pointB.z() - pointA.z();
+                if (std::abs(dz) > tolerance) {
+                    std::ostringstream msg;
+                    msg << "Axial translation mismatch at (i,j)=("
+                        << i << "," << j << "): "
+                        << "Δz=" << dz << ", expected " << 0.0;
+                    throw std::invalid_argument(msg.str());
+                }
             }
         }
     }
 }
+
 
 
 void CMesh::computeUniformFlowDirection(Vector3D initDirection, Matrix3D<Vector3D> &flowDirection) const{
@@ -587,7 +610,8 @@ void CMesh::writeMeshQualityStats() const {
 }
 
 
-void CMesh::setPeriodicMesh(FloatType periodicityAngle) {
+void CMesh::setPeriodicMesh(FloatType periodicityAngle, FloatType periodicityTranslation) {
     _periodicityAngleRad = periodicityAngle;
+    _periodicityTranslation = periodicityTranslation;
     _periodicMesh = true;
 }

@@ -202,9 +202,13 @@ public:
 
     size_t getSolutionOutputFrequency() const {return getSaveIterationsInterval();}
 
-    FloatType getPeriodicityAngleRad() const {return parseFloat("PERIODICITY_ANGLE")*M_PI/180.0;} 
+    FloatType getPeriodicityAngleRad() const {return getPeriodicityAngleDeg()*M_PI/180.0;} 
 
-    FloatType getPeriodicityAngleDeg() const {return parseFloat("PERIODICITY_ANGLE");} 
+    FloatType getPeriodicityAngleDeg() const {return getPeriodicityInfo()[1];} 
+
+    FloatType getPeriodicityTranslation() const {return getPeriodicityInfo()[0];} 
+
+    std::vector<FloatType> getPeriodicityInfo() const;
 
     void printAllConfigValues() const;
 

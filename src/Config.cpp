@@ -511,3 +511,9 @@ Vector3D Config::getNoSlipWallVelocity(BoundaryIndices boundary) const{
     return vel;
 
 }
+
+std::vector<FloatType> Config::getPeriodicityInfo() const {
+    std::vector<FloatType> periodicityInfo = parseVector<FloatType>("PERIODICITY_INFO");
+    assert (periodicityInfo.size() == 2 && "PERIODICITY_INFO must have 2 components (translation along z and rotation along x)");
+    return periodicityInfo;
+}

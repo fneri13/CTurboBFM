@@ -77,11 +77,12 @@ void CSolverBase::readBoundaryConditions(){
             _hubStaticPressure = _boundaryValues[bound][0];
         }
         else if (_boundaryTypes[bound] == BoundaryType::PERIODIC){
-            _boundaryValues[bound].push_back(_config.getPeriodicityAngleRad());
+            _boundaryValues[bound] = _config.getPeriodicityInfo();
             if (!periodicityChecked) {
-                FloatType angle = _boundaryValues[bound].back();
-                _mesh.checkPeriodicity(angle);
-                _mesh.setPeriodicMesh(angle);
+                FloatType angle = _config.getPeriodicityAngleRad();
+                FloatType translation = _config.getPeriodicityTranslation();
+                _mesh.checkPeriodicity(angle, translation);
+                _mesh.setPeriodicMesh(angle, translation);
                 periodicityChecked = true;
             }
         }

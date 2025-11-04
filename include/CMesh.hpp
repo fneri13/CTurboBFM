@@ -82,9 +82,9 @@ class CMesh {
 
         void computeInputGradients();
 
-        void checkPeriodicity(FloatType periodicityAngle);
+        void checkPeriodicity(FloatType angle, FloatType translation);
 
-        void setPeriodicMesh(FloatType angle);
+        void setPeriodicMesh(FloatType angle, FloatType translation);
 
         /** \brief Compute the flow direction for each cell, following the mesh lines. It assumes that the inlet-outlet direction is the i-axis. Other directions not supported
          * \param[out] flowDirection The flow direction array
@@ -105,7 +105,7 @@ class CMesh {
     private:
         const Config& _config;
 
-        FloatType _periodicityAngleRad{0.0};
+        FloatType _periodicityAngleRad{0.0}, _periodicityTranslation{0.0};
 
         size_t _nPointsI, _nPointsJ, _nPointsK, _nPointsTotal;
 

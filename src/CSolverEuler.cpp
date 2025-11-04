@@ -345,6 +345,7 @@ void CSolverEuler::solve(){
     if (monitorPointsActive) initializeMonitorPoints();                                     
 
     // place holder for the solution
+    preprocessSolution(_conservativeVars);
     FlowSolution solutionTmp(_conservativeVars);                              
     std::map<SolutionNames, Matrix3D<Vector3D>> solutionGradTmp = _solutionGrad;               
     
@@ -356,7 +357,6 @@ void CSolverEuler::solve(){
         if (monitorPointsActive) updateMonitorPoints(solutionTmp);                          
 
         computeTimestepArray(solutionTmp, timestep);                                        
-        preprocessSolution(solutionTmp);
         
         // runge-kutta steps
         for (const auto &integrationCoeff: timeIntegrationCoeffs){

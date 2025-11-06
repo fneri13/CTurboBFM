@@ -345,7 +345,7 @@ void CSolverEuler::solve(){
     if (monitorPointsActive) initializeMonitorPoints();                                     
 
     // place holder for the solution
-    preprocessSolution(_conservativeVars);
+    preprocessSolution(_conservativeVars, false);
     FlowSolution solutionTmp(_conservativeVars);                              
     std::map<SolutionNames, Matrix3D<Vector3D>> solutionGradTmp = _solutionGrad;               
     
@@ -1363,10 +1363,10 @@ void CSolverEuler::setMomentumSolution(FlowSolution &sol, const BoundaryIndices 
 
 
 
-void CSolverEuler::preprocessSolution(FlowSolution &sol) {
+void CSolverEuler::preprocessSolution(FlowSolution &sol, bool updateRadialProf) {
     
     // update radial profiles for bcs
-    updateRadialProfiles(sol);
+    if (updateRadialProf) updateRadialProfiles(sol);
 
     // if there are no slip wall impose zero velocity
     Vector3D wallVel(0.0, 0.0, 0.0);

@@ -261,7 +261,7 @@ private:
      * and enforce strong conditions for no-slip walls
      * @param[in,out] solution The reference to the conservative solution matrix
     */
-    void preprocessSolution(FlowSolution &solution);
+    void preprocessSolution(FlowSolution &solution, bool updateRadialProf = true);
 
 
     StateVector computeViscousFlux(const StateVector& conservative, const Vector3D& velXGrad, const Vector3D& velYGrad, 

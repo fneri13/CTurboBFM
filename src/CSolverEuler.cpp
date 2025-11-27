@@ -568,9 +568,9 @@ void CSolverEuler::updateTurboPerformance(const FlowSolution&solution){
     if (_config.getTopology() == Topology::AXISYMMETRIC){
         massFlow *= 2.0 * M_PI / _mesh.getWedgeAngle();
     }
-    else {
-        massFlow *= 360.0 / _config.getPeriodicityAngleDeg();
-    }
+    // else {
+    //     massFlow *= 360.0 / _config.getPeriodicityAngleDeg();
+    // }
     _turboPerformance[TurboPerformance::MASS_FLOW].push_back(massFlow);
     
     // performance quantities

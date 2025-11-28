@@ -238,7 +238,8 @@ FloatType CSourceBFMBase::computeBodyForcePerturbationScaling(size_t i, size_t j
     }
 
     // if the rest is not true, compute the scaling factor of the body force, through RBF in space and time
-    FloatType variationMax = _perturbationScalingFactor - 1.0;
+    
+    FloatType variationMax = _perturbationScalingFactor; // a value of 1 means doubling the body force. -1 means setting it to 0
 
     Vector3D point = _mesh.getVertex(i,j,k);
     FloatType d = (point - _perturbationCenter).magnitude(); // distance of the point from the perturbation center
@@ -253,7 +254,7 @@ FloatType CSourceBFMBase::computeBodyForcePerturbationScaling(size_t i, size_t j
     FloatType sigma = _perturbationTimeDuration/2.0; // sharp rise and fall
     FloatType timeModulation = std::exp( - (std::pow(timePhysical-timeCentral, 2)) / std::pow(sigma,2)); // RBF in time
 
-    FloatType perturbationVariation = variationMax * spaceModulation * timeModulation;
+    FloatType perturbationVariation = variationMax * spaceModulation * timeModulation; // a value of 1 means doubling the body force. -1 means setting it to 0
 
     // }
 

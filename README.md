@@ -13,15 +13,6 @@ C++ Euler solver.
 * Build system based on Makefile tested for Mac OS and UNIX systems. Three commands (make clean, make debug, make release). Assuming standard compilers it should work
 
 
-### Results Example ###
-
-##### Schulz benchmark test case 3 #####
-Test case number 3 for shock-capturing properties of numerical schemes, taken from Schulz Riemann problems.
-The following picture shows the magnitude of the density gradient obtained with Roe scheme, 2nd MUSCL reconstruction and Van Leer limiter on a 400x400 grid:
-![Roe + MUSCL + Van Leer](images/schulz_roe2.png)
-
-
-
 ### Notes ###
 * The code has been written for Mac OS systems, so there are probably portability issues on Windows machines.
 

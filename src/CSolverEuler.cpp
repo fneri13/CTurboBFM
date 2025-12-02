@@ -565,12 +565,25 @@ void CSolverEuler::updateTurboPerformance(const FlowSolution&solution){
     
     // mass flow (complete per machine)
     FloatType massFlow = 0.5 * (_massFlows[BoundaryIndices::I_START] + _massFlows[BoundaryIndices::I_END]);
+
+    FloatType periodicAngle{0.0};
+    FloatType scalingFactor{1.0};
+
     if (_config.getTopology() == Topology::AXISYMMETRIC){
         massFlow *= 2.0 * M_PI / _mesh.getWedgeAngle();
     }
-    // else {
-    //     massFlow *= 360.0 / _config.getPeriodicityAngleDeg();
-    // }
+    else {
+        // fix the case of non-full annulus domain
+        periodicAngle = _config.getPeriodicityAngleDeg();
+        if (periodicAngle > 0.0) {
+            scalingFactor = 360.0 / periodicAngle;
+            massFlow *= scalingFactor;
+        }
+    }
+    
+    
+
+
     _turboPerformance[TurboPerformance::MASS_FLOW].push_back(massFlow);
     
     // performance quantities

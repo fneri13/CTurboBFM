@@ -19,6 +19,7 @@
 #include "CBoundaryConditionRadialEquilibrium.hpp"
 #include "CBoundaryConditionPeriodic.hpp"
 #include "CBoundaryConditionThrottle.hpp"
+#include "CBoundaryConditionTransparent.hpp"
 #include <memory>
 #include <vector>
 #include <array>

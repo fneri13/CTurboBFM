@@ -287,6 +287,9 @@ BoundaryType Config::getBoundaryType(BoundaryIndices bcIndex) const{
     else if (boundaryString == "periodic") {
         boundaryType = BoundaryType::PERIODIC;
     } 
+    else if (boundaryString == "transparent") {
+        boundaryType = BoundaryType::TRANSPARENT;
+    } 
     else {
         throw std::runtime_error("Invalid value for key \"BOUNDARY_TYPES\" in configuration.");
     }

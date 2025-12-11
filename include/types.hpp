@@ -187,6 +187,7 @@ enum class BoundaryType {
     THROTTLE = 9,
     INLET_2D = 10,
     NO_SLIP_WALL = 11,
+    TRANSPARENT
 };
 
 

@@ -126,6 +126,11 @@ void CSolverBase::readBoundaryConditions(){
         else if (_boundaryTypes[bound] == BoundaryType::PERIODIC){
             _boundaryConditions[bound] = std::make_unique<CBoundaryConditionPeriodic>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
         }
+        else if (_boundaryTypes[bound] == BoundaryType::TRANSPARENT){
+            assert (_mesh.getNumberPointsJ() == 1 && "Transparent boundary only valid for 1D meshes.");
+            assert (_mesh.getNumberPointsK() == 1 && "Transparent boundary only valid for 1D meshes.");
+            _boundaryConditions[bound] = std::make_unique<CBoundaryConditionTransparent>(_config, _mesh, *_fluid, bound, *_advectionScheme);
+        }
     }
 }
 

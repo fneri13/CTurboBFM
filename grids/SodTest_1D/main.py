@@ -10,7 +10,9 @@ RHO_L, RHO_R = 1.0, 0.125
 UX_L , UX_R = 0.0, 0.0
 UY_L , UY_R = 0.0, 0.0
 UZ_L , UZ_R = 0.0, 0.0
-T_L, T_R = 1.0/(RHO_L* 287), 0.1/(RHO_R* 287)
+P_L, P_R = 1.0, 0.1
+T_L, T_R = P_L/(RHO_L* 287.05), 0.1/(RHO_R* 287.05)
+ET_L, ET_R = 287.05/0.4*T_L, 287.05/0.4*T_R
 
 
 # generate grid and initial conditions
@@ -20,6 +22,7 @@ ux = np.where(x < X_INTERFACE, UX_L, UX_R)
 uy = np.where(x < X_INTERFACE, UY_L, UY_R)
 uz = np.where(x < X_INTERFACE, UZ_L, UZ_R)
 T = np.where(x < X_INTERFACE, T_L, T_R)
+totEn = np.where(x < X_INTERFACE, ET_L, ET_R)
 y = np.zeros_like(x)
 z = np.zeros_like(x)
 
@@ -33,11 +36,11 @@ with open('Grid' + '/grid_%02i_RestartData.csv' %(NX), 'w') as file:
     file.write(f"NI={NX}\n")
     file.write(f"NJ=1\n")
     file.write(f"NK=1\n")
-    file.write("x,y,z,Density,Velocity X,Velocity Y,Velocity Z,Temperature\n")
+    file.write("x,y,z,Density,Velocity X,Velocity Y,Velocity Z,Total Energy\n")
     for i in range(NX):
         for j in range(1):
             for k in range(1):
-                file.write(f"{x[i]:.6f},{y[i]:.6f},{z[i]:.6f},{rho[i]:.6f},{ux[i]:.6f},{uy[i]:.6f},{uz[i]:.6f},{T[i]:.6f}\n")
+                file.write(f"{x[i]:.6f},{y[i]:.6f},{z[i]:.6f},{rho[i]:.6f},{ux[i]:.6f},{uy[i]:.6f},{uz[i]:.6f},{totEn[i]:.6f}\n")
 
 
 # save only the grid

@@ -1144,6 +1144,7 @@ void CSolverEuler::computeSourceTerms(const FlowSolution& solution, const std::m
         for (size_t j = 0; j < _nPointsJ; j++) {
             for (size_t k = 0; k < _nPointsK; k++) {
                 Vector3D blockageGradient = _mesh.getInputFieldsGradient(FieldNames::BLOCKAGE, i, j, k); 
+                FloatType bladePresent = _mesh.getInputFields(FieldNames::BLADE_PRESENT, i, j, k);
                 if (blockageGradient.magnitude() > 1E-10){ // only in bladed rows
                     
                     // compute first the bfm source, composed by blockage effects plus blade forces
@@ -1153,7 +1154,7 @@ void CSolverEuler::computeSourceTerms(const FlowSolution& solution, const std::m
                     residuals.subtract(i, j, k, bfmSource);
 
                     // compute the additional terms due to Gong modeling (if they are positive, they must be subtracted from the residual vector)
-                    if (gongModelingActive){
+                    if (gongModelingActive && bladePresent > 0.5){
                         omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
                         radius = _mesh.getRadius(i, j, k);
                         theta = _mesh.getTheta(i, j, k);
@@ -1295,7 +1296,7 @@ StateVector CSolverEuler::computeGongSource(const FloatType& radius, const Float
     // omega term on the diagonal 
     Matrix2D<FloatType> omegaTerm(5, 5);
     for (size_t i = 0; i < 5; i++) {
-        omegaTerm(i, i) = omega;
+        omegaTerm(i, i) = omega * radius; // always zero for Gong model
     }
 
     // Jacobian Term
@@ -1303,13 +1304,12 @@ StateVector CSolverEuler::computeGongSource(const FloatType& radius, const Float
     Vector3D yDir = Vector3D(0, 1, 0);
     Vector3D zDir = Vector3D(0, 0, 1);
     Vector3D thetaDir = Vector3D(0, -std::sin(theta), std::cos(theta));
-    // dFy_dU = computeAdvectionFluxJacobian(primitive, yDir, *_fluid);
-    // dFz_dU = computeAdvectionFluxJacobian(primitive, zDir, *_fluid);
-    // jacobianTerm = dFy_dU * (- std::sin(theta)/radius) + dFz_dU * (std::cos(theta) / radius);
-    jacobianTerm = computeAdvectionFluxJacobian(primitive, thetaDir, *_fluid) * (1.0/radius);
+    dFy_dU = computeAdvectionFluxJacobian(primitive, yDir, *_fluid);
+    dFz_dU = computeAdvectionFluxJacobian(primitive, zDir, *_fluid);
+    jacobianTerm = dFy_dU * (- std::sin(theta)) + dFz_dU * (std::cos(theta));
 
     // Solution Gradient term
-    Matrix2D<FloatType> dU_dy(5, 1), dU_dz(5, 1), dU_dtheta(5, 1); // derivatives of the conservative solution
+    Matrix2D<FloatType> dU_dy(5, 1), dU_dz(5, 1), dU_rdtheta(5, 1); // derivatives of the conservative solution
     FloatType rho, u, v, w, et;
     rho = primitive[0];
     u = primitive[1];
@@ -1333,10 +1333,10 @@ StateVector CSolverEuler::computeGongSource(const FloatType& radius, const Float
     dU_dz(4,0) = densityGrad.z() * et + rho * totEnergyGrad.z();
 
     // project gradient in theta direction (theta_direction is = [0, -sin(theta), cos(theta)])
-    dU_dtheta = dU_dy * (-radius * std::sin(theta)) + dU_dz * (radius * std::cos(theta));
+    dU_rdtheta = dU_dy * (-std::sin(theta)) + dU_dz * (std::cos(theta));
 
     // compute the total source
-    Matrix2D<FloatType> sourceTerm = (jacobianTerm - omegaTerm) * dU_dtheta;
+    Matrix2D<FloatType> sourceTerm = (jacobianTerm - omegaTerm) * dU_rdtheta;
     
     StateVector source({0,0,0,0,0});
     for (size_t i = 0; i < 5; i++) {

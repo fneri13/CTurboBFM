@@ -355,8 +355,66 @@ void writeDataToCSV(const std::vector<FloatType>& data, const std::string& filen
 }
 
 
+// Matrix2D<FloatType> computeAdvectionFluxJacobian(const StateVector& primitive, const Vector3D& direction, const CFluidBase& fluid){
+//     // formulation taken from Blazek
+
+//     Matrix2D<FloatType> jacobian(5, 5);
+
+//     FloatType u = primitive[1];
+//     FloatType v = primitive[2];
+//     FloatType w = primitive[3];
+//     FloatType et = primitive[4];
+//     FloatType nx = direction(0);
+//     FloatType ny = direction(1);
+//     FloatType nz = direction(2);
+
+//     FloatType gmma = fluid.getGamma();
+//     FloatType umag2 = u*u + v*v + w*w; // square of velocity magnitude
+//     FloatType V = u*nx + v*ny + w*nz; // velocity along the required direction
+    
+//     FloatType phi = 0.5 * (gmma - 1) * umag2;
+//     FloatType a1 = gmma * et - phi;
+//     FloatType a2 = gmma - 1.0;
+//     FloatType a3 = gmma - 2.0;
+
+//     jacobian(0, 0) = 0.0;
+//     jacobian(0, 1) = nx;
+//     jacobian(0, 2) = ny;
+//     jacobian(0, 3) = nz;
+//     jacobian(0, 4) = 0.0;
+
+//     jacobian(1, 0) = nx * phi - u * V;
+//     jacobian(1, 1) = V - a3 * nx * u;
+//     jacobian(1, 2) = ny * u - a2 * nx * v;
+//     jacobian(1, 3) = nz * u - a2 * nx * w;
+//     jacobian(1, 4) = a2 * nx;
+
+//     jacobian(2, 0) = ny * phi - v * V;
+//     jacobian(2, 1) = nx * v - a2 * ny * u;
+//     jacobian(2, 2) = V - a3 * ny * v;
+//     jacobian(2, 3) = nz * v - a2 * ny * w;
+//     jacobian(2, 4) = a2 * ny;
+
+//     jacobian(3, 0) = nz * phi - w * V;
+//     jacobian(3, 1) = nx * w - a2 * nz * u;
+//     jacobian(3, 2) = ny * w - a2 * nz * v;
+//     jacobian(3, 3) = V - a3 * nz * w;
+//     jacobian(3, 4) = a2 * nz;
+
+//     jacobian(4, 0) = V * (phi - a1); 
+//     jacobian(4, 1) = nx * a1 - a2 * u * V;
+//     jacobian(4, 2) = ny * a1 - a2 * v * V;
+//     jacobian(4, 3) = nz * a1 - a2 * w * V;
+//     jacobian(4, 4) = gmma * V;
+
+//     return jacobian;
+
+// }
+
+
+
 Matrix2D<FloatType> computeAdvectionFluxJacobian(const StateVector& primitive, const Vector3D& direction, const CFluidBase& fluid){
-    // formulation taken from Blazek
+    // formulation taken from Hirsch book, as summation of A*nx + B*ny + C*nz
 
     Matrix2D<FloatType> jacobian(5, 5);
 
@@ -370,41 +428,44 @@ Matrix2D<FloatType> computeAdvectionFluxJacobian(const StateVector& primitive, c
 
     FloatType gmma = fluid.getGamma();
     FloatType umag2 = u*u + v*v + w*w; // square of velocity magnitude
-    FloatType V = u*nx + v*ny + w*nz; // velocity along the required direction
+    FloatType V = u*nx + v*ny + w*nz; // scalar product
     
+    // pre-compute commonly used terms
     FloatType phi = 0.5 * (gmma - 1) * umag2;
-    FloatType a1 = gmma * et - phi;
-    FloatType a2 = gmma - 1.0;
-    FloatType a3 = gmma - 2.0;
 
+    // first row
     jacobian(0, 0) = 0.0;
     jacobian(0, 1) = nx;
     jacobian(0, 2) = ny;
     jacobian(0, 3) = nz;
     jacobian(0, 4) = 0.0;
 
-    jacobian(1, 0) = nx * phi - u * V;
-    jacobian(1, 1) = V - a3 * nx * u;
-    jacobian(1, 2) = ny * u - a2 * nx * v;
-    jacobian(1, 3) = nz * u - a2 * nx * w;
-    jacobian(1, 4) = a2 * nx;
+    // second row
+    jacobian(1, 0) = (phi - u*u)*nx - u*v*ny - u*w*nz;
+    jacobian(1, 1) = (3.0 - gmma)*u*nx + v*ny + w*nz;
+    jacobian(1, 2) = -(gmma - 1.0)*v*nx + u*ny + 0.0*nz;
+    jacobian(1, 3) = -(gmma-1.0)*w*nx + 0.0*ny + u*nz;
+    jacobian(1, 4) = (gmma-1.0)*nx + 0.0*ny + 0.0*nz;
 
-    jacobian(2, 0) = ny * phi - v * V;
-    jacobian(2, 1) = nx * v - a2 * ny * u;
-    jacobian(2, 2) = V - a3 * ny * v;
-    jacobian(2, 3) = nz * v - a2 * ny * w;
-    jacobian(2, 4) = a2 * ny;
+    // third row
+    jacobian(2, 0) = -u*v*nx + (phi-v*v)*ny - v*w*nz;
+    jacobian(2, 1) = v*nx -(gmma-1.0)*u*ny + 0.0*nz;
+    jacobian(2, 2) = u*nx + (3.0-gmma)*v*ny + w*nz;
+    jacobian(2, 3) = 0.0*nx  - (gmma-1.0)*w*ny + v*nz;
+    jacobian(2, 4) = 0.0*nx + (gmma-1.0)*ny + 0.0*nz;
 
-    jacobian(3, 0) = nz * phi - w * V;
-    jacobian(3, 1) = nx * w - a2 * nz * u;
-    jacobian(3, 2) = ny * w - a2 * nz * v;
-    jacobian(3, 3) = V - a3 * nz * w;
-    jacobian(3, 4) = a2 * nz;
+    // fourth row
+    jacobian(3, 0) = -u*w*nx - v*w*ny + (phi - w*w)*nz;
+    jacobian(3, 1) = w*nx + 0.0*ny - (gmma-1.0)*u*nz;
+    jacobian(3, 2) = 0.0*nx + w*ny - (gmma-1.0)*v*nz;
+    jacobian(3, 3) = u*nx + v*ny + (3.0 - gmma)*w*nz;
+    jacobian(3, 4) = 0.0*nx + 0.0*ny + (gmma-1.0)*nz;
 
-    jacobian(4, 0) = V * (phi - a1); 
-    jacobian(4, 1) = nx * a1 - a2 * u * V;
-    jacobian(4, 2) = ny * a1 - a2 * v * V;
-    jacobian(4, 3) = nz * a1 - a2 * w * V;
+    // fifth row
+    jacobian(4, 0) = (-u*(gmma*et - 2.0*phi))*nx + (-v*(gmma*et - 2.0*phi))*ny + (-w*(gmma*et - 2.0*phi))*nz;
+    jacobian(4, 1) = (gmma*et - phi - (gmma-1.0)*u*u)*nx - (gmma-1.0)*u*v*ny - (gmma-1.0)*u*w*nz;
+    jacobian(4, 2) = -(gmma-1.0)*u*v*nx + (gmma*et - phi - (gmma-1.0)*v*v)*ny - (gmma-1.0)*v*w*nz;
+    jacobian(4, 3) = -(gmma-1.0)*u*w*nx - (gmma-1.0)*v*w*ny + (gmma*et - phi - (gmma-1.0)*w*w)*nz;
     jacobian(4, 4) = gmma * V;
 
     return jacobian;

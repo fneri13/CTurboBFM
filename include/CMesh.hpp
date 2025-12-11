@@ -152,6 +152,9 @@ class CMesh {
         // compute the dual grid coordinates for a 3d mesh
         void computeDualGrid3D();
 
+        // compute the dual grid coordinates for a 1d mesh
+        void computeDualGrid1D();
+
         // compute the surface normals and centers 
         void computeMeshInterfaces();
 

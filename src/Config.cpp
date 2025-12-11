@@ -220,6 +220,8 @@ Topology Config::getTopology() const {
         topology = Topology::THREE_DIMENSIONAL;
     } else if (value == "axisymmetric" || value == "Axisymmetric" || value == "AXISYMMETRIC") {
         topology = Topology::AXISYMMETRIC;
+    } else if (value == "1D" || value == "1d") {
+        topology = Topology::ONE_DIMENSIONAL;
     } else {
         throw std::runtime_error("Invalid value for key \"TOPOLOGY\" in configuration.");
     }

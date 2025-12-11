@@ -651,7 +651,11 @@ void CSolverEuler::computeResiduals(const FlowSolution& solution, const std::map
 
     // compute residuals contribution from advection fluxes
     computeAdvectionFlux(FluxDirection::I, solution, it, residuals);
+    
+    if (_topology!=Topology::ONE_DIMENSIONAL){
     computeAdvectionFlux(FluxDirection::J, solution, it, residuals);
+    }
+    
     if (_topology==Topology::THREE_DIMENSIONAL || _topology==Topology::AXISYMMETRIC){
         computeAdvectionFlux(FluxDirection::K, solution, it, residuals);
     }

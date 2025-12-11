@@ -168,7 +168,8 @@ enum class KindSolver {
 enum class Topology{
     TWO_DIMENSIONAL = 0,
     THREE_DIMENSIONAL = 1,
-    AXISYMMETRIC = 2
+    AXISYMMETRIC = 2,
+    ONE_DIMENSIONAL =3
 };
 
 

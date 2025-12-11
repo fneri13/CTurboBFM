@@ -44,8 +44,8 @@ StateVector CSourceBFMNeri::computeViscousComponent(size_t i, size_t j, size_t k
     // compute the magnitude
     FloatType deltaS_deltaM_ref = _mesh.getInputFields(FieldNames::DELTA_ENTROPY_DM, i, j, k);
     FloatType deltaS_deltaM = deltaS_deltaM_ref * _scalingLoss;
-    FloatType relVelMag = _relativeVelocityCylindric.magnitude();
-    FloatType temperature = _fluid.computeTemperature_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
+    // FloatType relVelMag = _relativeVelocityCylindric.magnitude();
+    // FloatType temperature = _fluid.computeTemperature_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
     FloatType forceMagOld = viscousForce(i, j, k).magnitude();
     StateVector conservativeAtTrailEdge = _conservativeSolution.at(_trailingEdgeIndex, j, k);
     StateVector primitiveAtTrailEdge = getEulerPrimitiveFromConservative(conservativeAtTrailEdge);

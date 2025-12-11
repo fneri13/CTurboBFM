@@ -21,6 +21,9 @@ CMesh::CMesh(Config& config) : _config(config) {
     else if (topology == Topology::THREE_DIMENSIONAL) {
         computeDualGrid3D();
     }
+    else if (topology == Topology::ONE_DIMENSIONAL) {
+        computeDualGrid1D();
+    }
     else {
         throw std::runtime_error("Unsupported topology.");
     }
@@ -50,7 +53,15 @@ void CMesh::readPoints() {
     _nPointsJ = _inputFile.getNumberPointsJ();
     _nPointsK = _inputFile.getNumberPointsK();
 
-    _nPointsK>1 ? _nDimensions = 3 : _nDimensions = 2;
+    if (_nPointsJ==1 && _nPointsK==1) {
+        _nDimensions = 1;
+    }
+    else if (_nPointsK==1) {
+        _nDimensions = 2;
+    }
+    else {
+        _nDimensions = 3;
+    }
 
     _nPointsTotal = _nPointsI * _nPointsJ * _nPointsK;
     
@@ -412,6 +423,48 @@ void CMesh::computeDualGrid2D() {
         }
             
     }
+}
+
+
+void CMesh::computeDualGrid1D() {
+    assert (_nDimensions == 1 && "Can only compute a 1D dual grid for a 1D mesh.");
+
+    std::cout << "Computing dual grid coordinates for 1D mesh\n";
+
+    Matrix2D<Vector3D> nodes(_nDualPointsI, 1); // use the same structure as 2D but with only one point in j direction
+
+    // find internal dual nodes on the straight line
+    for (size_t i = 1; i < _nDualPointsI-1; i++) {
+        nodes(i,0) = (_vertices(i-1,0,0) + _vertices(i,0,0)) / 2.0;
+    }
+    
+    // find the extreme nodes
+    nodes(0,0) = _vertices(0,0,0);
+    nodes(_nDualPointsI-1, 0) = _vertices(_nPointsI-1, 0, 0);
+
+
+    // now assign the coordinates
+    _cellThickness = 1.0;
+    for (size_t i = 0; i < _nDualPointsI; i++) {
+        // x-coords
+        _dualNodes(i,0,0).x() = nodes(i,0).x();
+        _dualNodes(i,1,0).x() = nodes(i,0).x();
+        _dualNodes(i,0,1).x() = nodes(i,0).x();
+        _dualNodes(i,1,1).x() = nodes(i,0).x();
+
+        // y-coords
+        _dualNodes(i,0,0).y() = -_cellThickness / 2.0;
+        _dualNodes(i,1,0).y() = +_cellThickness / 2.0;
+        _dualNodes(i,0,1).y() = -_cellThickness / 2.0;
+        _dualNodes(i,1,1).y() = +_cellThickness / 2.0;
+
+        // z-coords
+        _dualNodes(i,0,0).z() = -_cellThickness / 2.0;
+        _dualNodes(i,1,0).z() = -_cellThickness / 2.0;
+        _dualNodes(i,0,1).z() = +_cellThickness / 2.0;
+        _dualNodes(i,1,1).z() = +_cellThickness / 2.0;
+    }
+            
 }
 
 

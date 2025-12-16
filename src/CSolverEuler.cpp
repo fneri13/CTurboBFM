@@ -53,6 +53,9 @@ CSolverEuler::CSolverEuler(Config& config, CMesh& mesh)
     else {
         throw std::runtime_error("Unsupported BFM model selected.");
     }
+
+    _isBfmActive = _config.isBFMActive();
+    _isGongModelingActive = _config.isGongModelingActive();
     
 }
 
@@ -646,17 +649,16 @@ void CSolverEuler::updateTurboPerformance(const FlowSolution&solution){
 void CSolverEuler::computeResiduals(const FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad, 
                                     const size_t it, const FloatType timePhysical, FlowSolution &residuals) {
     
-    // the residual is defined on the LHS, so the fluxes must be added, and the sources must be subtracted
-    residuals.setToZero(); // clear it
+    // the residual is defined as positive on the LHS of the equations. So, the fluxes must be added, and the sources (positive on the RHS) must be subtracted
+    
+    residuals.setToZero(); 
 
     // compute residuals contribution from advection fluxes
     computeAdvectionFlux(FluxDirection::I, solution, it, residuals);
-    
     if (_topology!=Topology::ONE_DIMENSIONAL){
-    computeAdvectionFlux(FluxDirection::J, solution, it, residuals);
+        computeAdvectionFlux(FluxDirection::J, solution, it, residuals);
     }
-    
-    if (_topology==Topology::THREE_DIMENSIONAL || _topology==Topology::AXISYMMETRIC){
+    if (_topology==Topology::THREE_DIMENSIONAL){
         computeAdvectionFlux(FluxDirection::K, solution, it, residuals);
     }
 
@@ -664,12 +666,12 @@ void CSolverEuler::computeResiduals(const FlowSolution& solution, const std::map
     if (_config.isViscosityActive()){
         computeViscousFlux(FluxDirection::I, solution, solutionGrad, it, residuals);
         computeViscousFlux(FluxDirection::J, solution, solutionGrad, it, residuals);
-        if (_topology==Topology::THREE_DIMENSIONAL || _topology==Topology::AXISYMMETRIC){
+        if (_topology==Topology::THREE_DIMENSIONAL){
             computeViscousFlux(FluxDirection::K, solution, solutionGrad, it, residuals);
         }
     }
 
-    // compute residuals contribution from sources (of different origins)
+    // compute residuals contribution from sources (of all different origins)
     computeSourceTerms(solution, solutionGrad, it, residuals, _inviscidForce, _viscousForce, _deviationAngle, timePhysical);
 
     // cure periodic cells (Blazek method). The volumetric and surface contributions must be averaged and combined
@@ -755,6 +757,13 @@ void CSolverEuler::computeAdvectionFlux(FluxDirection direction, const FlowSolut
                     break;
                 default:
                     throw std::runtime_error("Invalid FluxDirection.");
+                }
+
+                if (direction == FluxDirection::K && _isBfmActive) {
+                    FloatType bladeIsPresent = _mesh.getInputFields(FieldNames::BLADE_PRESENT, iFace, jFace, 0);
+                    if (bladeIsPresent > 0.0) {
+                        continue; // dont compute the flux in the circumferential direction if the blade is present
+                    }
                 }
                 
                 // starting boundary fluxes
@@ -1133,46 +1142,95 @@ void CSolverEuler::computeSourceTerms(const FlowSolution& solution, const std::m
                                       const size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, 
                                       Matrix3D<FloatType> &deviationAngle, FloatType timePhysical) {
     
-
-    if (!_config.isBFMActive()){
-        return ;
+    // If the topology is 3D, the theta-fluxes have already been added -> no need for geometrical source terms. 
+    // If BFM is active nothing else must be done, so return
+    if (_topology == Topology::THREE_DIMENSIONAL && _isBfmActive == false) {
+        return;
     }
-
-    // Otherwise compute BFM and additional source terms (e.g. Gong)
-    StateVector primitive, conservative, bfmSource;
-    FloatType omega, radius, theta;
-    Vector3D densityGrad, velXGrad, velYGrad, velZGrad, totEnergyGrad;
+    
+    // Otherwise compute BFM and additional source terms (Gong and or geometrical terms)
+    StateVector primitive, conservative, bfmSource, sourceGeometrical;
+    FloatType omega, radius, theta, bladePresent, volume, pressure;
+    Vector3D densityGrad, velXGrad, velYGrad, velZGrad, totEnergyGrad, blockageGradient, velocityCart, velocityCyl, sourceCyl, sourceCart;
     StateVector gongSource;
-    bool gongModelingActive = _config.isGongModelingActive();
+    bool geomSourceFlag{false};
+    bool gongSourceFlag{false};
+
     for (size_t i = 0; i < _nPointsI; i++) {
         for (size_t j = 0; j < _nPointsJ; j++) {
             for (size_t k = 0; k < _nPointsK; k++) {
-                Vector3D blockageGradient = _mesh.getInputFieldsGradient(FieldNames::BLOCKAGE, i, j, k); 
-                FloatType bladePresent = _mesh.getInputFields(FieldNames::BLADE_PRESENT, i, j, k);
-                if (blockageGradient.magnitude() > 1E-10){ // only in bladed rows
-                    
-                    // compute first the bfm source, composed by blockage effects plus blade forces
-                    conservative = solution.at(i, j, k);
-                    primitive = getEulerPrimitiveFromConservative(conservative);
-                    bfmSource = _bfmSource->computeSource(i, j, k, primitive, inviscidForce, viscousForce, deviationAngle, timePhysical);
-                    residuals.subtract(i, j, k, bfmSource);
 
-                    // compute the additional terms due to Gong modeling (if they are positive, they must be subtracted from the residual vector)
-                    if (gongModelingActive && bladePresent > 0.5){
-                        omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
-                        radius = _mesh.getRadius(i, j, k);
-                        theta = _mesh.getTheta(i, j, k);
-                        densityGrad = solutionGrad.at(SolutionNames::DENSITY)(i, j, k);
-                        velXGrad = solutionGrad.at(SolutionNames::VELOCITY_X)(i, j, k);
-                        velYGrad = solutionGrad.at(SolutionNames::VELOCITY_Y)(i, j, k);
-                        velZGrad = solutionGrad.at(SolutionNames::VELOCITY_Z)(i, j, k);
-                        totEnergyGrad = solutionGrad.at(SolutionNames::TOTAL_ENERGY)(i, j, k);
-                        gongSource = computeGongSource(radius, theta, omega, primitive,
-                                                    densityGrad, velXGrad, velYGrad, velZGrad, totEnergyGrad, _mesh.getVolume(i, j, k));
-                        residuals.subtract(i, j, k, gongSource);
+                // compute general terms
+                conservative = solution.at(i, j, k);
+                primitive = getEulerPrimitiveFromConservative(conservative);
+                volume = _mesh.getVolume(i, j, k);
+                pressure = _fluid->computePressure_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
+                radius = _mesh.getRadius(i, j, k);
+                theta = _mesh.getTheta(i, j, k);
+                
+                // understand what to do with source terms
+                if (_topology == Topology::THREE_DIMENSIONAL && _isBfmActive) {
+                    bladePresent = _mesh.getInputFields(FieldNames::BLADE_PRESENT, i, j, k);
+                    if (bladePresent > 0.0) {
+                        geomSourceFlag = true;
+                        gongSourceFlag = true;
                     }
-                    
+                    else {
+                        geomSourceFlag = false;
+                        gongSourceFlag = false;
+                    }
                 }
+                else if (_topology == Topology::AXISYMMETRIC){
+                    geomSourceFlag = true;
+                    gongSourceFlag = false;
+                }
+                else {
+                    geomSourceFlag = false;
+                    gongSourceFlag = false;
+                }
+
+                if (geomSourceFlag) {
+                    velocityCart = {primitive[1], primitive[2], primitive[3]};
+                    velocityCyl = computeCylindricalVectorFromCartesian(velocityCart, theta);
+
+                    sourceCyl.x() = 0.0; // no axial contribution
+                    sourceCyl.y() = (+ primitive[0] * velocityCyl.z() * velocityCyl.z() + pressure) / radius; // + rho*theta^2/r + p/r in radial direction
+                    sourceCyl.z() = - primitive[0] * velocityCyl.y() * velocityCyl.z() / radius; // - rho*ur*utheta/r in tangential direction
+
+                    sourceCart = computeCartesianVectorFromCylindrical(sourceCyl, theta);
+                    sourceGeometrical[0] = 0.0;
+                    sourceGeometrical[1] = sourceCart.x();
+                    sourceGeometrical[2] = sourceCart.y();
+                    sourceGeometrical[3] = sourceCart.z();
+                    sourceGeometrical[4] = 0.0;
+                    
+                    residuals.subtract(i, j, k, sourceGeometrical*volume);
+                }
+
+                // BFM sources always active between blade rows
+                if (_isBfmActive){
+                    blockageGradient = _mesh.getInputFieldsGradient(FieldNames::BLOCKAGE, i, j, k); 
+                    bladePresent = _mesh.getInputFields(FieldNames::BLADE_PRESENT, i, j, k);
+                    if (blockageGradient.magnitude() > 1E-10){                     
+                        bfmSource = _bfmSource->computeSource(i, j, k, primitive, inviscidForce, viscousForce, deviationAngle, timePhysical);
+                        residuals.subtract(i, j, k, bfmSource);
+                    }
+                }
+                
+                // gong source
+                if (gongSourceFlag){
+                    // compute the additional terms due to Gong modeling (if they are positive, they must be subtracted from the residual vector)
+                    omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
+                    // densityGrad = solutionGrad.at(SolutionNames::DENSITY)(i, j, k);
+                    // velXGrad = solutionGrad.at(SolutionNames::VELOCITY_X)(i, j, k);
+                    // velYGrad = solutionGrad.at(SolutionNames::VELOCITY_Y)(i, j, k);
+                    // velZGrad = solutionGrad.at(SolutionNames::VELOCITY_Z)(i, j, k);
+                    // totEnergyGrad = solutionGrad.at(SolutionNames::TOTAL_ENERGY)(i, j, k);
+                    gongSource = computeGongSource(radius, theta, omega, i, j, k, volume);
+                    residuals.subtract(i, j, k, gongSource);
+                }
+                
+
             }
         }
     }
@@ -1263,7 +1321,7 @@ void CSolverEuler::computeGradient(const Matrix3D<FloatType> &var, Matrix3D<Vect
 
 void CSolverEuler::computeSolutionGradient(FlowSolution &sol, std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad){
     // don't compute gradients if not needed
-    if (!_config.isGongModelingActive() && !_config.isViscosityActive()){
+    if (!_config.isViscosityActive()){
         return;
     }
 
@@ -1340,11 +1398,88 @@ StateVector CSolverEuler::computeGongSource(const FloatType& radius, const Float
     dU_rdtheta = dU_dy * (-std::sin(theta)) + dU_dz * (std::cos(theta));
 
     // compute the total source
-    Matrix2D<FloatType> sourceTerm = (jacobianTerm - omegaTerm) * dU_rdtheta;
+    Matrix2D<FloatType> sourceTerm = (jacobianTerm*0.0 - omegaTerm) * dU_rdtheta; // keep only omega terms for the moment, since the theta flux should have been calculated properly
     
     StateVector source({0,0,0,0,0});
     for (size_t i = 0; i < 5; i++) {
         source[i] = sourceTerm(i, 0); // just convert the object
+    }
+
+    return source*volume;
+}
+
+
+
+StateVector CSolverEuler::computeGongSource(const FloatType& radius, const FloatType& theta, const FloatType& omega, 
+                                            const size_t i, const size_t j, const size_t k, const FloatType& volume) const{
+
+    
+    
+    // The term computed here is simply -Omega*dudtheta. Computed with upwind finite difference, to avoid computation of solution gradients
+    
+    
+    if (std::abs(omega)<1){ // stator case, no translation terms
+        return StateVector({0,0,0,0,0});
+    }
+
+    if (_config.getPeriodicityAngleDeg() != 0){
+        std::cerr << "Error: Periodicity angle different from full annulus is not supported for Gong model" << std::endl;
+    }
+
+    // calculation of conservative gradients
+    StateVector U0, U1, U2;
+    size_t nk = _mesh.getNumberPointsK();
+
+    if (omega > 0) {
+        if (k==0){ // first point
+            U0 = _conservativeVars.at(i, j, k);
+            U1 = _conservativeVars.at(i, j, nk-2);
+            U2 = _conservativeVars.at(i, j, nk-3);
+        }
+        else if (k==1){ // second point
+            U0 = _conservativeVars.at(i, j, k);
+            U1 = _conservativeVars.at(i, j, 0);
+            U2 = _conservativeVars.at(i, j, nk-2);
+        }
+        else { // internals
+            U0 = _conservativeVars.at(i, j, k);
+            U1 = _conservativeVars.at(i, j, k-1);
+            U2 = _conservativeVars.at(i, j, k-2);
+        }
+    } else {
+        if (k==nk-1){ // last point
+            U0 = _conservativeVars.at(i, j, 0);
+            U1 = _conservativeVars.at(i, j, 1);
+            U2 = _conservativeVars.at(i, j, 2);
+        }
+        else if (k==nk-2){ // second to last
+            U0 = _conservativeVars.at(i, j, k);
+            U1 = _conservativeVars.at(i, j, 0);
+            U2 = _conservativeVars.at(i, j, 1);
+        }
+        else {
+            U0 = _conservativeVars.at(i, j, k);
+            U1 = _conservativeVars.at(i, j, k+1);
+            U2 = _conservativeVars.at(i, j, k+2);
+        }
+    }
+
+    FloatType dTheta = (2 * M_PI / static_cast<FloatType>(nk-1));
+    
+    // upwinded 2nd order finite difference
+    StateVector dU_dTheta({0,0,0,0,0});
+
+    if (omega > 0.0) {
+        // backward stencil → backward derivative
+        dU_dTheta = ( U0*3.0 - U1*4.0 + U2 ) / (2*dTheta);
+    } else {
+        // forward stencil → forward derivative
+        dU_dTheta = ( U0*(-3.0) + U1*4.0 - U2 ) / (2*dTheta);
+    }
+
+    StateVector source({0,0,0,0,0});
+    for (size_t i = 0; i < 5; i++) {
+        source[i] = -dU_dTheta[i] * omega;
     }
 
     return source*volume;

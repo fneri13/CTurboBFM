@@ -93,6 +93,7 @@ FloatType CFluidIdeal::computeMachNumber_rho_u_et(FloatType rho, const Vector3D&
     return umag / a;
 }
 
+
 FloatType CFluidIdeal::computeTotalPressure_p_M(FloatType pressure, FloatType mach) const {
     return pressure * std::pow(1.0 + (_gamma - 1.0) / 2.0 * mach * mach, _gamma / (_gamma - 1));
 }

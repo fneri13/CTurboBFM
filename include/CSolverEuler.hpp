@@ -62,6 +62,9 @@ private:
     std::vector<unsigned int> _monitorPoints_idxI, _monitorPoints_idxJ, _monitorPoints_idxK;
     unsigned int _numberMonitorPoints = 0;
 
+    bool _isBfmActive{false};
+    bool _isGongModelingActive{false};
+
     /** @brief Initialize the solution arrays.*/
     void initializeSolutionArrays() override;
 
@@ -254,6 +257,9 @@ private:
     StateVector computeGongSource(const FloatType& radius, const FloatType& theta, const FloatType& omega, const StateVector& primitive, 
                             const Vector3D& densityGrad, const Vector3D& velXGrad, const Vector3D& velYGrad, const Vector3D& velZGrad, 
                             const Vector3D& totEnergyGrad, const FloatType& volume) const;
+    
+    StateVector computeGongSource(const FloatType& radius, const FloatType& theta, const FloatType& omega, const size_t i, const size_t j, const size_t k, 
+                                  const FloatType& volume) const;
     
     void setMomentumSolution(FlowSolution &residuals, const BoundaryIndices &boundaryIndices, const Vector3D &wallVelocity) const;
     

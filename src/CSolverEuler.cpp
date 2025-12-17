@@ -1242,8 +1242,9 @@ void CSolverEuler::initializeMonitorPoints(){
             return;
         }
 
-        FloatType deltaAngle = _mesh.getPeriodicityAngleDeg() / (circumferentialPoints);
-        std::cout << "Delta angle of monitor points is: " << deltaAngle << " degrees" << std::endl;
+        FloatType deltaAngle = _mesh.getPeriodicityAngleDeg();
+        if (deltaAngle==0.0) deltaAngle = 360.0;
+        std::cout << "Delta angle of monitor points is: " << deltaAngle / (circumferentialPoints) << " degrees" << std::endl;
 
         for (unsigned int k = 1; k < circumferentialPoints; k++){
             _monitorPoints_idxI.push_back(seedI);

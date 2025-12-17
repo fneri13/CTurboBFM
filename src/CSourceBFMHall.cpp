@@ -1,7 +1,8 @@
 #include "CSourceBFMHall.hpp"
 
-StateVector CSourceBFMHall::computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce) {
-    computeFlowState(i, j, k, primitive);
+StateVector CSourceBFMHall::computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, 
+    Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, FlowSolution &conservativeVars) {
+    computeFlowState(i, j, k, primitive, conservativeVars);
     
     FloatType volume = _mesh.getVolume(i, j, k);
 

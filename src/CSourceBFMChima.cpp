@@ -7,10 +7,11 @@ CSourceBFMChima::CSourceBFMChima(const Config &config, const CFluidBase &fluid, 
 {}
 
 
-StateVector CSourceBFMChima::computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce) {
+StateVector CSourceBFMChima::computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, 
+    Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, FlowSolution &conservativeVars) {
     
     // Update bfm state variables
-    computeFlowState(i, j, k, primitive);
+    computeFlowState(i, j, k, primitive, conservativeVars);
 
     // compute scaling coefficients
     FloatType currentMassFlow = _turboPerformance[TurboPerformance::MASS_FLOW].back();

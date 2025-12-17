@@ -16,7 +16,8 @@ public:
 
     virtual ~CSourceBFMBase() = default;  
 
-    virtual StateVector computeSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType &timePhysical);
+    virtual StateVector computeSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, 
+        Matrix3D<FloatType> &deviationAngle, FloatType &timePhysical, FlowSolution &conservativeVars);
 
 protected:
     const Config& _config;
@@ -27,7 +28,8 @@ protected:
 
     virtual StateVector computeBlockageSource(size_t i, size_t j, size_t k, const StateVector& primitive);
 
-    virtual StateVector computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce);
+    virtual StateVector computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, 
+                                            Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, FlowSolution &conservativeVars);
 
     Vector3D _point;
     FloatType _radius;
@@ -46,6 +48,11 @@ protected:
     Vector3D _inviscidForceDirectionCylindrical, _inviscidForceDirectionCartesian;
     Vector3D _viscousForceDirectionCylindrical, _viscousForceDirectionCartesian;
     bool _perturbationBodyForceActive = false;
+    size_t _leadingEdgeIdx = _config.getLeadingEdgeIndex();
+    size_t _trailingEdgeIdx = _config.getTrailingEdgeIndex();
+    FloatType _solidity;
+    Vector3D _relativeVelocityInlet, _relativeVelocityOutlet;
+    FloatType _diffusionFactor;
 
     // body force perturbation data
     FloatType _perturbationRadius = 0.0;
@@ -61,7 +68,7 @@ protected:
      * @param k z index
      * @param primitive primitive variables
     */
-    void computeFlowState(size_t i, size_t j, size_t k, const StateVector& primitive);
+    void computeFlowState(size_t i, size_t j, size_t k, const StateVector& primitive, FlowSolution &conservativeVars);
 
     /** Compute the deviation angle, using the relative velocity and the normal camber 
      * 

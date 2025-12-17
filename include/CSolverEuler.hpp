@@ -6,12 +6,7 @@
 #include "CSourceBFMBase.hpp"
 #include "CSourceBFMHall.hpp"
 #include "CSourceBFMThollet.hpp"
-#include "CSourceBFMLiftDrag.hpp"
-#include "CSourceBFMFrozenForce.hpp"
-#include "CSourceBFMFrozenGradient.hpp"
-#include "CSourceBFMNeri.hpp"
 #include "CSourceBFMChima.hpp"
-#include "CSourceBFMLamprakis.hpp"
 #include <unordered_map>
 
 #ifdef _OPENMP 
@@ -102,7 +97,7 @@ private:
      * @param[in] itCounter The iteration counter
      * @return The global residual 3D matrix
     */
-    void computeResiduals(const FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>>& solutionGrad, 
+    void computeResiduals(FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>>& solutionGrad, 
                             const size_t itCounter, const FloatType timePhysical, FlowSolution &residuals);
 
 
@@ -209,7 +204,7 @@ private:
      * \param[out] inviscidForce The reference to the inviscid force matrix to update
      * \param[out] viscousForce The reference to the viscous force matrix to update
      */
-    void computeSourceTerms(const FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>>& solutionGrad, 
+    void computeSourceTerms(FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>>& solutionGrad, 
                             size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, 
                             Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType timePhysical);
 

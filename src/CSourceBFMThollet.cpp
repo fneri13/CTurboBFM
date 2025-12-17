@@ -1,7 +1,9 @@
 #include "CSourceBFMThollet.hpp"
 
-StateVector CSourceBFMThollet::computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce) {
-    computeFlowState(i, j, k, primitive);
+StateVector CSourceBFMThollet::computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, 
+            Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, FlowSolution &conservativeVars) {
+
+    computeFlowState(i, j, k, primitive, conservativeVars);
     StateVector inviscidComponent = computeInviscidComponent(i, j, k, primitive, inviscidForce);
     StateVector viscousComponent = computeViscousComponent(i, j, k, primitive, viscousForce);
     return inviscidComponent + viscousComponent;
@@ -11,10 +13,16 @@ StateVector CSourceBFMThollet::computeBodyForceSource(size_t i, size_t j, size_t
 StateVector CSourceBFMThollet::computeInviscidComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce) {
     FloatType Kmach = computeCompressibilityCorrection(_relativeVelocityCylindric, primitive);
     FloatType forceMag = _Kn * Kmach * _relativeVelocityCylindric.dot(_relativeVelocityCylindric) * M_PI * _deviationAngle / _pitch / std::abs(_normalCamberTangential) / _blockage;
+    
+    if (_diffusionFactor > 0.6){
+        _inviscidForceDirectionCylindrical = _normalCamberCylindric; // approach used when a blade should be stalled -> apply only normal force perpendicular to the camber
+    }
+    
     Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceMag;
     Vector3D forceCartesianNew = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
 
     FloatType relaxFactor = _config.getBfmRelaxationFactor();
+
 
     // update the force according to equation 24 of Chima's paper
     Vector3D forceCartesian = inviscidForce(i, j, k) * (1.0 - relaxFactor) + forceCartesianNew * relaxFactor;
@@ -51,6 +59,10 @@ FloatType CSourceBFMThollet::computeCompressibilityCorrection(const Vector3D& re
 }
 
 StateVector CSourceBFMThollet::computeViscousComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &viscousForce) {
+    if (_diffusionFactor > 0.6){
+        return StateVector({0,0,0,0,0}); // no loss component when a blade is stalled. The normal term already thinks about it
+    }
+    
     FloatType nu = _config.getFluidKinematicViscosity();
     FloatType stwl = _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, i, j, k);
 

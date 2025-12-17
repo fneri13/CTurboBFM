@@ -26,23 +26,8 @@ CSolverEuler::CSolverEuler(Config& config, CMesh& mesh)
     else if (bfmModel == BFM_Model::HALL_THOLLET) {
         _bfmSource = std::make_unique<CSourceBFMThollet>(_config, *_fluid, _mesh);
     }
-    else if (bfmModel == BFM_Model::LIFT_DRAG) {
-        _bfmSource = std::make_unique<CSourceBFMLiftDrag>(_config, *_fluid, _mesh);
-    }
-    else if (bfmModel == BFM_Model::FROZEN_FORCE) {
-        _bfmSource = std::make_unique<CSourceBFMFrozenForce>(_config, *_fluid, _mesh);
-    }
-    else if (bfmModel == BFM_Model::FROZEN_GRADIENT) {
-        _bfmSource = std::make_unique<CSourceBFMFrozenGradient>(_config, *_fluid, _mesh);
-    }
-    else if (bfmModel == BFM_Model::NERI) {
-        _bfmSource = std::make_unique<CSourceBFMNeri>(_config, *_fluid, _mesh, _conservativeVars, _turboPerformance);
-    }
     else if (bfmModel == BFM_Model::CHIMA) {
         _bfmSource = std::make_unique<CSourceBFMChima>(_config, *_fluid, _mesh, _turboPerformance);
-    }
-    else if (bfmModel == BFM_Model::LAMPRAKIS) {
-        _bfmSource = std::make_unique<CSourceBFMLamprakis>(_config, *_fluid, _mesh, _turboPerformance);
     }
     else if (bfmModel == BFM_Model::ONLY_BLOCKAGE) {
         _bfmSource = std::make_unique<CSourceBFMBase>(_config, *_fluid, _mesh);
@@ -646,7 +631,7 @@ void CSolverEuler::updateTurboPerformance(const FlowSolution&solution){
     
 }
 
-void CSolverEuler::computeResiduals(const FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad, 
+void CSolverEuler::computeResiduals(FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad, 
                                     const size_t it, const FloatType timePhysical, FlowSolution &residuals) {
     
     // the residual is defined as positive on the LHS of the equations. So, the fluxes must be added, and the sources (positive on the RHS) must be subtracted
@@ -1138,7 +1123,7 @@ void CSolverEuler::updateRadialProfiles(FlowSolution &solution){
 }
 
 
-void CSolverEuler::computeSourceTerms(const FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad, 
+void CSolverEuler::computeSourceTerms(FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad, 
                                       const size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, 
                                       Matrix3D<FloatType> &deviationAngle, FloatType timePhysical) {
     
@@ -1212,7 +1197,7 @@ void CSolverEuler::computeSourceTerms(const FlowSolution& solution, const std::m
                     blockageGradient = _mesh.getInputFieldsGradient(FieldNames::BLOCKAGE, i, j, k); 
                     bladePresent = _mesh.getInputFields(FieldNames::BLADE_PRESENT, i, j, k);
                     if (blockageGradient.magnitude() > 1E-10){                     
-                        bfmSource = _bfmSource->computeSource(i, j, k, primitive, inviscidForce, viscousForce, deviationAngle, timePhysical);
+                        bfmSource = _bfmSource->computeSource(i, j, k, primitive, inviscidForce, viscousForce, deviationAngle, timePhysical, solution);
                         residuals.subtract(i, j, k, bfmSource);
                     }
                 }
@@ -1230,7 +1215,7 @@ void CSolverEuler::computeSourceTerms(const FlowSolution& solution, const std::m
                     residuals.subtract(i, j, k, gongSource);
                 }
                 
-
+ 
             }
         }
     }

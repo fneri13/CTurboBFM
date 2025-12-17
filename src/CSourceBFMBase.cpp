@@ -27,7 +27,8 @@ CSourceBFMBase::CSourceBFMBase(const Config &config, const CFluidBase &fluid, co
 
 
 StateVector CSourceBFMBase::computeSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, 
-                                        Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType &timePhysical) {
+                                        Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType &timePhysical,
+                                        FlowSolution &conservativeVars) {
 
     StateVector blockageSource({0,0,0,0,0});
     
@@ -41,7 +42,7 @@ StateVector CSourceBFMBase::computeSource(size_t i, size_t j, size_t k, const St
         return blockageSource;
     }
 
-    StateVector bodyForceSource = computeBodyForceSource(i, j, k, primitive, inviscidForce, viscousForce);
+    StateVector bodyForceSource = computeBodyForceSource(i, j, k, primitive, inviscidForce, viscousForce, conservativeVars);
     
     FloatType bodyForceVariation = computeBodyForcePerturbationScaling(i, j, k, timePhysical);
 
@@ -82,7 +83,8 @@ StateVector CSourceBFMBase::computeBlockageSource(size_t i, size_t j, size_t k, 
 }
 
 
-StateVector CSourceBFMBase::computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce) {
+StateVector CSourceBFMBase::computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, 
+    Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, FlowSolution &conservativeVars) {
     
     inviscidForce(i, j, k) = {0, 0, 0};
     
@@ -91,71 +93,80 @@ StateVector CSourceBFMBase::computeBodyForceSource(size_t i, size_t j, size_t k,
     return StateVector({0, 0, 0, 0, 0});
 }
 
-void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateVector& primitive){
+
+void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateVector& primitive, FlowSolution &conservativeVars) {
     
     // element location
     _point = _mesh.getVertex(i, j, k);
-    
     _radius = std::sqrt(_point.z() * _point.z() + _point.y() * _point.y());
-    
     _theta = std::atan2(_point.z(), _point.y());
     
     // flow kinematics
     _velocityCartesian = {primitive[1], primitive[2], primitive[3]};
-    
     _velocityCylindrical = computeCylindricalVectorFromCartesian(_velocityCartesian, _theta);
     
     // relative flow kinematics
     _omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
-    
     _dragVelocityCylindrical = {0, 0, _omega * _radius};
-    
     _relativeVelocityCylindric = _velocityCylindrical - _dragVelocityCylindrical;
-    
     _relativeVelocityCartesian = computeCartesianVectorFromCylindrical(_relativeVelocityCylindric, _theta);
-    
     _velMeridional = std::sqrt(_velocityCylindrical.x() * _velocityCylindrical.x() + 
                                 _velocityCylindrical.y() * _velocityCylindrical.y());
 
     // blade properties
     _numberBlades = _mesh.getInputFields(FieldNames::NUMBER_BLADES, i, j, k);
-    
     _pitch = 2.0 * M_PI * _radius / _numberBlades;
-    
     _normalCamberAxial = _mesh.getInputFields(FieldNames::NORMAL_AXIAL, i, j, k);
-    
     _normalCamberRadial = _mesh.getInputFields(FieldNames::NORMAL_RADIAL, i, j, k);
-    
     _normalCamberTangential = _mesh.getInputFields(FieldNames::NORMAL_TANGENTIAL, i, j, k);
-    
     _normalCamberCylindric = {_normalCamberAxial, _normalCamberRadial, _normalCamberTangential};
-    
     _blockage = _mesh.getInputFields(FieldNames::BLOCKAGE, i, j, k);
-    
     _bladeIsPresent = _mesh.getInputFields(FieldNames::BLADE_PRESENT, i, j, k);
     
     // characteristic angles
-    
     // _leanAngle = _mesh.getInputFields(FieldNames::BLADE_LEAN_ANGLE, i, j, k);
-    
     // _gaspathAngle = _mesh.getInputFields(FieldNames::BLADE_GAS_PATH_ANGLE, i, j, k);
-    
     // _metalAngle = _mesh.getInputFields(FieldNames::BLADE_METAL_ANGLE, i, j, k);
-    
     _flowAngle = std::atan2(_relativeVelocityCylindric.z(), _velMeridional);
-    
     _deviationAngle = computeDeviationAngle(_relativeVelocityCylindric, _normalCamberCylindric);
-    
     // _deviationAngle = _flowAngle - _metalAngle;
 
     // Directions of the force components (the inviscid one is considered positive from suction to pressure side, when the blade is pushing the flow)
     _inviscidForceDirectionCylindrical = computeInviscidForceDirection(_relativeVelocityCylindric, _normalCamberCylindric);
-    
     _inviscidForceDirectionCartesian = computeCartesianVectorFromCylindrical(_inviscidForceDirectionCylindrical, _theta);
-    
     _viscousForceDirectionCylindrical = - _relativeVelocityCylindric.normalized();
-    
     _viscousForceDirectionCartesian = - _relativeVelocityCartesian.normalized();
+
+
+    // quantities related to inlet-outlet
+    _solidity = (_mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, _trailingEdgeIdx, j, k) - 
+                 _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, _leadingEdgeIdx, j, k)) / _pitch;
+    
+    StateVector conservativeInlet = conservativeVars.at(_leadingEdgeIdx, j, k);
+    StateVector conservativeOutlet = conservativeVars.at(_trailingEdgeIdx, j, k);
+
+    StateVector primitiveInlet = getEulerPrimitiveFromConservative(conservativeInlet);
+    StateVector primitiveOutlet = getEulerPrimitiveFromConservative(conservativeOutlet);
+
+    Vector3D velocityInlet = {primitiveInlet[1], primitiveInlet[2], primitiveInlet[3]};
+    Vector3D velocityOutlet = {primitiveOutlet[1], primitiveOutlet[2], primitiveOutlet[3]};
+
+    Vector3D velocityInletCyl = computeCylindricalVectorFromCartesian(velocityInlet, _theta);
+    Vector3D velocityOutletCyl = computeCylindricalVectorFromCartesian(velocityOutlet, _theta);
+
+    FloatType radiusInlet = _mesh.getRadius(_leadingEdgeIdx, j, k);
+    FloatType radiusOutlet = _mesh.getRadius(_trailingEdgeIdx, j, k);
+
+    Vector3D dragVelocityInlet = {0.0, 0.0, _omega * radiusInlet};
+    Vector3D dragVelocityOutlet = {0.0, 0.0, _omega * radiusOutlet};
+    
+    _relativeVelocityInlet = velocityInletCyl - dragVelocityInlet;
+    _relativeVelocityOutlet = velocityOutletCyl - dragVelocityOutlet;
+
+    _diffusionFactor = 1.0 - _relativeVelocityOutlet.magnitude() / _relativeVelocityInlet.magnitude() + std::abs(
+                                _relativeVelocityInlet.z() - _relativeVelocityOutlet.z()) / (2.0 * _solidity * _relativeVelocityInlet.magnitude());
+
+
 }
 
 

@@ -51,11 +51,8 @@ N_levels_fine = 100
 N_fine = 100
 
 # set colormap for contourf plots
-color_map = cm.turbo
+color_map = cm.RdBu_r
 
-# number of chars for the banners
-total_chars = 100
-total_chars_mid = total_chars//2
 
 
 # Set font size for different elements

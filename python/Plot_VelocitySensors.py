@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import os
 import re
-# from styles import *
+from styles import *
 import argparse
 from Plot_MonitorPoints import read_monitor_points_data
 from Plot_PressureSensors import plot_normalized_sensors_oscillation

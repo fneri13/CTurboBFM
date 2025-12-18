@@ -5,25 +5,44 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import os
 import re
-# from styles import *
+from styles import *
 import argparse
 from Plot_MonitorPoints import read_monitor_points_data
 
 
 
-def scale_oscillations(pressure, deltaTheta, reduction=1.5):
-        y = (pressure-pressure.min())/(pressure.max()-pressure.min())*deltaTheta/reduction
-        y = y-y[0]
-        return y
+def scale_oscillations(pressure, pressureRef, deltaTheta, reduction=1.5):
+    """scale the oscillations to be nicely presented in the plot
+
+    Args:
+        pressure (array): values to scale
+        pressureRef (array): reference values used to scale equivalently all the signals
+        deltaTheta (float): offset to give in the value
+        reduction (float, optional): factor that divides deltaTheta, to scale the peak-to-peak variations
+
+    Returns:
+        array: scaled signal
+    """
+    y = (pressure-pressureRef.min())/(pressureRef.max()-pressureRef.min())*deltaTheta/reduction
+    y = y-y[0]
+    return y
 
 
 def plot_normalized_sensors_oscillation(sensors, time, time_per_revolution, name):
+    """Plot the traces
+
+    Args:
+        sensors (list): list of arrays contaning the signal values
+        time (array): time values
+        time_per_revolution (float): used to find the equivalent revs
+        name (string): name of the signal quantities
+    """
     nSensors = len(sensors)
     plt.figure()
     for i in range(0, len(sensors)):
         deltaTheta = 360 / (nSensors)
         theta = i * 360 / (nSensors)
-        plt.plot(time/time_per_revolution, scale_oscillations(sensors[i], deltaTheta) + theta, label=f"probe {i}")
+        plt.plot(time/time_per_revolution, scale_oscillations(sensors[i], sensors[-1], deltaTheta) + theta, label=f"probe {i}")
 
     if time_per_revolution != 1:
         plt.xlabel("Revs [-]")

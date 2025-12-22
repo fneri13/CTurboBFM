@@ -254,4 +254,5 @@ public:
 
     FloatType getFluidHeatCapacity() const {return parseFloat("FLUID_CP");}
 
+    FloatType getKnCorrelationBfmCoefficient() const {return parseFloat("KN_CORRELATION_BFM_COEFFICIENT");}
 };

@@ -53,6 +53,9 @@ protected:
     FloatType _solidity;
     Vector3D _relativeVelocityInlet, _relativeVelocityOutlet;
     FloatType _diffusionFactor;
+    FloatType _flowAngleInletDeg;
+    FloatType _streamBladeLength;
+    FloatType _camberAngleDegAbs;
 
     // body force perturbation data
     FloatType _perturbationRadius = 0.0;

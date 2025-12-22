@@ -7,6 +7,7 @@
 #include "CSourceBFMHall.hpp"
 #include "CSourceBFMThollet.hpp"
 #include "CSourceBFMChima.hpp"
+#include "CSourceBFMCorrelations.hpp"
 #include <unordered_map>
 
 #ifdef _OPENMP 

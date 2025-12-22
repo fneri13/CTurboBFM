@@ -135,7 +135,8 @@ enum class BFM_Model {
     NERI = 7,
     CHIMA = 8,
     ONLY_BLOCKAGE = 9,
-    LAMPRAKIS = 10
+    LAMPRAKIS = 10,
+    CORRELATIONS = 11,
 };
 
 

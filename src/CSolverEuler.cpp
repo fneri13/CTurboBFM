@@ -32,6 +32,9 @@ CSolverEuler::CSolverEuler(Config& config, CMesh& mesh)
     else if (bfmModel == BFM_Model::ONLY_BLOCKAGE) {
         _bfmSource = std::make_unique<CSourceBFMBase>(_config, *_fluid, _mesh);
     }
+    else if (bfmModel == BFM_Model::CORRELATIONS){
+        _bfmSource = std::make_unique<CSourceBFMCorrelations>(_config, *_fluid, _mesh);
+    }
     else if (bfmModel == BFM_Model::NONE) {
         _bfmSource = std::make_unique<CSourceBFMBase>(_config, *_fluid, _mesh);
     }

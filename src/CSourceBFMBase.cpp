@@ -165,7 +165,15 @@ void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateV
 
     _diffusionFactor = 1.0 - _relativeVelocityOutlet.magnitude() / _relativeVelocityInlet.magnitude() + std::abs(
                                 _relativeVelocityInlet.z() - _relativeVelocityOutlet.z()) / (2.0 * _solidity * _relativeVelocityInlet.magnitude());
+    
+    FloatType velMeridionalInlet = std::sqrt(_relativeVelocityInlet.x() * _relativeVelocityInlet.x() + 
+                                             _relativeVelocityInlet.y() * _relativeVelocityInlet.y());
 
+    _flowAngleInletDeg = std::atan2(_relativeVelocityInlet.z(), velMeridionalInlet) * 180.0 / M_PI;
+    
+    _streamBladeLength = _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, _trailingEdgeIdx, j, k) - _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, _leadingEdgeIdx, j, k);
+
+    _camberAngleDegAbs = std::abs(_mesh.getInputFields(FieldNames::BLADE_METAL_ANGLE, _trailingEdgeIdx, j, k) - _mesh.getInputFields(FieldNames::BLADE_METAL_ANGLE, _leadingEdgeIdx, j, k))  * 180 / M_PI;
 
 }
 

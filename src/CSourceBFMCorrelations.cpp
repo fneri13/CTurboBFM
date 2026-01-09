@@ -4,8 +4,6 @@ StateVector CSourceBFMCorrelations::computeBodyForceSource(size_t i, size_t j, s
             Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, FlowSolution &conservativeVars) {
 
     computeFlowState(i, j, k, primitive, conservativeVars);
-
-
     StateVector inviscidComponent = computeInviscidComponent(i, j, k, primitive, inviscidForce);
     StateVector viscousComponent = computeViscousComponent(i, j, k, primitive, viscousForce);
     return inviscidComponent + viscousComponent;
@@ -42,22 +40,20 @@ StateVector CSourceBFMCorrelations::computeInviscidComponent(size_t i, size_t j,
 
     FloatType istar = Ksh*Kti*_incidenceZeroTenThkStar + n*_camberAngleDegAbs;
     
-    // correction by Cetin
     FloatType inletMach = _relativeVelocityCartesian.magnitude() / _fluid.computeSoundSpeed_rho_u_et(primitive[0], _relativeVelocityCartesian, primitive[4]);
-    // FloatType istarCorrected = istar; // no correction
-    FloatType istarCorrected = istar + 1.3026*inletMach + 5.7380;
+    FloatType istarCorrected = istar + 1.3026*inletMach + 5.7380; // mach correction by Cetin
+    // istarCorrected = istar;
 
-    // compute deviation now
     FloatType deviation10OutStar = 0.01*_solidity*_flowAngleInletDegAbs + (0.74*std::pow(_solidity,1.9) + 3.0*_solidity) * std::pow(_flowAngleInletDegAbs/90.0, 1.67+1.09*_solidity);
     FloatType Ktd = 6.25*tcRatio + 37.5*tcRatio*tcRatio;
-    FloatType acRatio = 0.5; // max thickness location / chord length
+    FloatType acRatio = 0.3; // max thickness location / chord length
     FloatType deviationStar = (0.92*acRatio*acRatio + 0.002*std::abs(kappa2Deg))/(1-0.002*_camberAngleDegAbs/std::sqrt(_solidity)) * _camberAngleDegAbs/std::sqrt(_solidity) + (Ksh*Ktd-1.0)*deviation10OutStar;
     
-    // correction by Cetin
-    // FloatType deviationStarCorrected = deviationStar + 0.0*inletMach + 0.0; // no correction
+    // correction by Cetin for high mach
     FloatType deviationStarCorrected = -1.099379 + 3.0186*deviationStar - 0.1988*deviationStar*deviationStar;
+    // deviationStarCorrected = deviationStar;
 
-    // off-design by aungier
+    // off-design calculation taken by aungier
     FloatType dd_distar = (1.0 + (_solidity+0.25*std::pow(_solidity, 4.0)) * std::pow((_flowAngleInletDegAbs/53.0), 2.5)) / std::exp(3.1*_solidity);
     FloatType umInlet = std::sqrt(_relativeVelocityInlet.x()*_relativeVelocityInlet.x() + _relativeVelocityInlet.y()*_relativeVelocityInlet.y());
     FloatType umOutlet = std::sqrt(_relativeVelocityOutlet.x()*_relativeVelocityOutlet.x() + _relativeVelocityOutlet.y()*_relativeVelocityOutlet.y());
@@ -72,13 +68,17 @@ StateVector CSourceBFMCorrelations::computeInviscidComponent(size_t i, size_t j,
     FloatType deviationOutletDeg = deviationStarCorrected + dd_distar*(incidenceInletDegMag - istarCorrected) + 10.0*(1.0 - umOutlet/umInlet);
 
     // curvature radius
-    FloatType curvatureRadius = std::abs(1.0/_mesh.getInputFields(FieldNames::D_BLADE_METAL_ANGLE_DM, i, j, k)); // this always positive i would say
+    FloatType camberCurvature = std::abs(1.0/_mesh.getInputFields(FieldNames::BLADE_CAMBER_CURVATURE, i, j, k)); 
+    FloatType curvatureRadius = 1.0 / camberCurvature;
+    if (curvatureRadius>2) {
+        curvatureRadius = 2.0; // upper limit to curvature radius at 2 meters, even if not big problems in theory
+    }
     FloatType meridionalNormalized = (_mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, i,j,k) - _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, _leadingEdgeIdx,j,k)) /(
                                       _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, _trailingEdgeIdx,j,k) - _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, _leadingEdgeIdx,j,k));
     
-    
     FloatType deviationExpectedDeg = incidenceInletDegMag + meridionalNormalized * (deviationOutletDeg - incidenceInletDegMag);
     FloatType deviationExpectedRad = deviationExpectedDeg * M_PI / 180.0;
+    // deviationExpectedRad /= 2.0;
 
     FloatType uThetaCurrent = _relativeVelocityCylindric.z();
     FloatType kappa = _mesh.getInputFields(FieldNames::BLADE_METAL_ANGLE, i, j, k); // this is with sign
@@ -95,18 +95,10 @@ StateVector CSourceBFMCorrelations::computeInviscidComponent(size_t i, size_t j,
     }
     
     FloatType KN = _config.getKnCorrelationBfmCoefficient(); // coeff to change for feeeback control
-    FloatType fnMag = KN * primitive[0] * _velMeridional * Wn / _pitch  + primitive[0] * _relativeVelocityCylindric.magnitude() * _relativeVelocityCylindric.magnitude() / curvatureRadius;
-    
+    // FloatType fnMag = KN * _velMeridional * Wn / _pitch  + std::pow(_relativeVelocityCylindric.magnitude(), 2) / curvatureRadius;
+    FloatType fnMag = KN * _velMeridional * Wn / (_pitch * std::abs(std::cos(_metalAngle)))  ;
 
-    if (std::isnan(fnMag)) {
-        FloatType a = 0.0;   
-    }
-    else if (fnMag < 0.0) {
-        FloatType a = 0.0;   
-    }
-    else {
-        FloatType a = 0.0;   
-    }
+    // if (fnMag<0.0) fnMag = 0.0;
 
     // compute forces now
     Vector3D forceCartesian = _inviscidForceDirectionCartesian * fnMag;
@@ -124,11 +116,13 @@ StateVector CSourceBFMCorrelations::computeInviscidComponent(size_t i, size_t j,
     
     FloatType volume = _mesh.getVolume(i, j, k);
 
-    return source*volume;
+    return source*volume*primitive[0];
 }
 
 
 StateVector CSourceBFMCorrelations::computeViscousComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &viscousForce) {
+    
+    // zero losses for the moment
     Vector3D forceCartesian = {0,0,0};
     Vector3D forceCylindrical = {0,0,0};
     

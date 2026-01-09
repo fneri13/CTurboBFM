@@ -8,19 +8,12 @@ CSourceBFMBase::CSourceBFMBase(const Config &config, const CFluidBase &fluid, co
             _perturbationBodyForceActive = _config.isPerturbationBodyForceActive();
             
             if (_perturbationBodyForceActive){
-                
-                std::vector<FloatType> perturbationCenterCoords = _config.getPerturbationCenter();
-            
+                std::vector<FloatType> perturbationCenterCoords = _config.getPerturbationCenter();        
                 _perturbationCenter = {perturbationCenterCoords[0], perturbationCenterCoords[1], perturbationCenterCoords[2]};
-            
                 _perturbationRadius = _config.getPerturbationRadialExtension();
-            
                 _perturbationScalingFactor = _config.getPerturbationScalingFactor();
-            
                 _perturbationTimeStart = _config.getPerturbationStartTime();
-            
                 _perturbationTimeDuration = _config.getPerturbationTimeDuration();
-                
             }
   
         };
@@ -55,27 +48,17 @@ StateVector CSourceBFMBase::computeSource(size_t i, size_t j, size_t k, const St
 StateVector CSourceBFMBase::computeBlockageSource(size_t i, size_t j, size_t k, const StateVector& primitive) {
 
     Vector3D velocity({primitive[1], primitive[2], primitive[3]});
-
     FloatType totalEnthalpy = _fluid.computeTotalEnthalpy_rho_u_et(primitive[0], velocity, primitive[4]);
-
     FloatType blockage = _mesh.getInputFields(FieldNames::BLOCKAGE, i, j, k);
-
     Vector3D blockageGrad = _mesh.getInputFieldsGradient(FieldNames::BLOCKAGE, i, j, k);
-
     FloatType volume = _mesh.getVolume(i, j, k);
-
     StateVector source({0,0,0,0,0});
-
     FloatType commonTerm = -1.0 / blockage * primitive[0] * velocity.dot(blockageGrad);
 
     source[0] = commonTerm;
-
     source[1] = commonTerm * velocity.x();
-
     source[2] = commonTerm * velocity.y();
-
     source[3] = commonTerm * velocity.z();
-
     source[4] = commonTerm * totalEnthalpy;
 
     return source*volume;
@@ -85,11 +68,8 @@ StateVector CSourceBFMBase::computeBlockageSource(size_t i, size_t j, size_t k, 
 
 StateVector CSourceBFMBase::computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, 
     Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, FlowSolution &conservativeVars) {
-    
     inviscidForce(i, j, k) = {0, 0, 0};
-    
     viscousForce(i, j, k) = {0, 0, 0};
-    
     return StateVector({0, 0, 0, 0, 0});
 }
 
@@ -98,8 +78,8 @@ void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateV
     
     // element location
     _point = _mesh.getVertex(i, j, k);
-    _radius = std::sqrt(_point.z() * _point.z() + _point.y() * _point.y());
-    _theta = std::atan2(_point.z(), _point.y());
+    _radius = _mesh.getRadius(i, j, k);
+    _theta = _mesh.getTheta(i, j, k);
     
     // flow kinematics
     _velocityCartesian = {primitive[1], primitive[2], primitive[3]};
@@ -126,10 +106,18 @@ void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateV
     // characteristic angles
     // _leanAngle = _mesh.getInputFields(FieldNames::BLADE_LEAN_ANGLE, i, j, k);
     // _gaspathAngle = _mesh.getInputFields(FieldNames::BLADE_GAS_PATH_ANGLE, i, j, k);
-    // _metalAngle = _mesh.getInputFields(FieldNames::BLADE_METAL_ANGLE, i, j, k);
+    _metalAngle = _mesh.getInputFields(FieldNames::BLADE_METAL_ANGLE, i, j, k);
     _flowAngle = std::atan2(_relativeVelocityCylindric.z(), _velMeridional);
     _deviationAngle = computeDeviationAngle(_relativeVelocityCylindric, _normalCamberCylindric);
-    // _deviationAngle = _flowAngle - _metalAngle;
+    
+    // stick to the convention that the deviation angle is positive when the blade is pushing the flow (or the flow is underturned)
+    if (_omega > 0.0){
+        _deviationAngle = - _flowAngle + _metalAngle;
+    }
+    else {
+        _deviationAngle = + _flowAngle - _metalAngle;
+    }
+    
 
     // Directions of the force components (the inviscid one is considered positive from suction to pressure side, when the blade is pushing the flow)
     _inviscidForceDirectionCylindrical = computeInviscidForceDirection(_relativeVelocityCylindric, _normalCamberCylindric);
@@ -163,6 +151,7 @@ void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateV
     _relativeVelocityInlet = velocityInletCyl - dragVelocityInlet;
     _relativeVelocityOutlet = velocityOutletCyl - dragVelocityOutlet;
 
+    // lieblein diffusion factor
     _diffusionFactor = 1.0 - _relativeVelocityOutlet.magnitude() / _relativeVelocityInlet.magnitude() + std::abs(
                                 _relativeVelocityInlet.z() - _relativeVelocityOutlet.z()) / (2.0 * _solidity * _relativeVelocityInlet.magnitude());
     
@@ -178,40 +167,35 @@ void CSourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateV
 }
 
 
-FloatType CSourceBFMBase::computeDeviationAngle(Vector3D relativeVelocity, Vector3D normalCamber){
+FloatType CSourceBFMBase::computeDeviationAngle(Vector3D relativeVelocityCyl, Vector3D normalCamber){
     Vector3D normal = normalCamber / normalCamber.magnitude();
-    
-    FloatType normalVelocity = relativeVelocity.dot(normal);
+    Vector3D velRelMeridional = {relativeVelocityCyl.x(), relativeVelocityCyl.y(), .0};
+    Vector3D spanwiseDir = {-velRelMeridional.y(), velRelMeridional.x(), .0};
+    spanwiseDir = spanwiseDir / spanwiseDir.magnitude();
 
+    Vector3D velInPlane = relativeVelocityCyl - spanwiseDir * relativeVelocityCyl.dot(spanwiseDir);
+    FloatType Wmn = velInPlane.dot(normal);
     // the deviation angle is positive when the blade should push, and negative when the blade should pull
-    FloatType deviationAngle = -std::asin(normalVelocity / relativeVelocity.magnitude());
+    FloatType deviationAngle = -std::asin(Wmn / velInPlane.magnitude());
     
     return deviationAngle;
 }
 
 Vector3D CSourceBFMBase::computeInviscidForceDirection(const Vector3D& relativeVelocity, const Vector3D& normalCamber){
-    Vector3D relativeVelocityPlus = {relativeVelocity.x(), relativeVelocity.y(), relativeVelocity.z()};
-    
-    Vector3D wDir = relativeVelocityPlus.normalized();
-    
-    Vector3D normal = normalCamber.normalized();
-    
     // method based on versor projection
     // the idea is that the loading versor is found be subtracting from the normal camber versor its projection on the relative velocity versor
-    Vector3D versor = normal - wDir * normal.dot(wDir);
-    
-    versor = versor.normalized();
 
+    Vector3D relativeVelocityPlus = {relativeVelocity.x(), relativeVelocity.y(), relativeVelocity.z()};
+    Vector3D wDir = relativeVelocityPlus.normalized();
+    Vector3D normal = normalCamber.normalized();
+    Vector3D versor = normal - wDir * normal.dot(wDir);
+    versor = versor.normalized();
 
     // ADDITIONAL NOTE: if we want to remove every effect in the spanwise direction, we can also remove the projection in the direction of orthogonal meridional velocity
     Vector3D velMeridional{relativeVelocity.x(), relativeVelocity.y(), .0};
-    
     Vector3D spanDirection = {velMeridional.y(), -velMeridional.x(), .0};
-
     spanDirection = spanDirection.normalized();
-    
     versor = versor - spanDirection * versor.dot(spanDirection);
-    
     versor = versor.normalized();
 
     return versor;

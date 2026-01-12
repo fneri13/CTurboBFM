@@ -1340,65 +1340,6 @@ void CSolverEuler::computeSolutionGradient(FlowSolution &sol, std::map<SolutionN
 }
 
 
-StateVector CSolverEuler::computeGongSource(const FloatType& radius, const FloatType& theta, const FloatType& omega, const StateVector& primitive, 
-                            const Vector3D& densityGrad, const Vector3D& velXGrad, const Vector3D& velYGrad, const Vector3D& velZGrad, 
-                            const Vector3D& totEnergyGrad, const FloatType& volume) const{
-
-    // omega term on the diagonal 
-    Matrix2D<FloatType> omegaTerm(5, 5);
-    for (size_t i = 0; i < 5; i++) {
-        omegaTerm(i, i) = omega * radius; // always zero for Gong model
-    }
-
-    // Jacobian Term
-    Matrix2D<FloatType> dFy_dU(5, 5), dFz_dU(5, 5), jacobianTerm(5, 5);
-    Vector3D yDir = Vector3D(0, 1, 0);
-    Vector3D zDir = Vector3D(0, 0, 1);
-    Vector3D thetaDir = Vector3D(0, -std::sin(theta), std::cos(theta));
-    dFy_dU = computeAdvectionFluxJacobian(primitive, yDir, *_fluid);
-    dFz_dU = computeAdvectionFluxJacobian(primitive, zDir, *_fluid);
-    jacobianTerm = dFy_dU * (- std::sin(theta)) + dFz_dU * (std::cos(theta));
-
-    // Solution Gradient term
-    Matrix2D<FloatType> dU_dy(5, 1), dU_dz(5, 1), dU_rdtheta(5, 1); // derivatives of the conservative solution
-    FloatType rho, u, v, w, et;
-    rho = primitive[0];
-    u = primitive[1];
-    v = primitive[2];
-    w = primitive[3];
-    et = primitive[4];
-
-    dU_dy(0,0) = densityGrad.y();
-    dU_dz(0,0) = densityGrad.z();
-
-    dU_dy(1,0) = densityGrad.y() * u + rho * velXGrad.y();
-    dU_dz(1,0) = densityGrad.z() * u + rho * velXGrad.z();
-
-    dU_dy(2,0) = densityGrad.y() * v + rho * velYGrad.y();
-    dU_dz(2,0) = densityGrad.z() * v + rho * velYGrad.z();
-
-    dU_dy(3,0) = densityGrad.y() * w + rho * velZGrad.y();
-    dU_dz(3,0) = densityGrad.z() * w + rho * velZGrad.z();
-
-    dU_dy(4,0) = densityGrad.y() * et + rho * totEnergyGrad.y();
-    dU_dz(4,0) = densityGrad.z() * et + rho * totEnergyGrad.z();
-
-    // project gradient in theta direction (theta_direction is = [0, -sin(theta), cos(theta)])
-    dU_rdtheta = dU_dy * (-std::sin(theta)) + dU_dz * (std::cos(theta));
-
-    // compute the total source
-    Matrix2D<FloatType> sourceTerm = (jacobianTerm*0.0 - omegaTerm) * dU_rdtheta; // keep only omega terms for the moment, since the theta flux should have been calculated properly
-    
-    StateVector source({0,0,0,0,0});
-    for (size_t i = 0; i < 5; i++) {
-        source[i] = sourceTerm(i, 0); // just convert the object
-    }
-
-    return source*volume;
-}
-
-
-
 StateVector CSolverEuler::computeGongSource(const FloatType& radius, const FloatType& theta, const FloatType& omega, 
                                             const size_t i, const size_t j, const size_t k, const FloatType& volume) const{
 

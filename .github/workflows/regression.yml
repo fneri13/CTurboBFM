@@ -16,14 +16,25 @@ jobs:
 
       # 2. Install compiler tools
       - name: Install build tools
-        run: sudo apt-get update && sudo apt-get install -y build-essential cmake
+        run: |
+          echo ">>> Installing build tools..."
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
+          echo ">>> Build tools installed."
 
       # 3. Build release version
       - name: Build CFD solver (release)
-        run: make release
+        run: |
+          echo ">>> Starting solver compilation..."
+          set -e                 # exit immediately if any command fails
+          make release
+          echo ">>> Compilation finished successfully."
 
       # 4. Run regression tests
       - name: Run regression tests
         run: |
+          echo ">>> Running regression tests..."
+          set -e                 # stop immediately if any test fails
           cd regression
           ./run_all_tests.sh
+          echo ">>> All regression tests completed successfully."

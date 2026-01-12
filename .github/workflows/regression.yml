@@ -36,5 +36,5 @@ jobs:
           echo ">>> Running regression tests..."
           set -e                 # stop immediately if any test fails
           cd regression
-          ./run_all_tests.sh
+          ./run_all.sh
           echo ">>> All regression tests completed successfully."

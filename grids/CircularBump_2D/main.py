@@ -14,8 +14,8 @@ The Fundamentals of Computational Fluid Dynamics (Second Edition) by Charles Hir
 
 OUTPUT_FOLDER = 'Grid'
 L = 1
-NX = 128
-NY = 64
+NX = 24
+NY = 12
 SPAN = L/32
 STREAMWISE_COEFF = 1
 SPANWISE_COEFF = 1

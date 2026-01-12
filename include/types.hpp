@@ -1007,6 +1007,7 @@ enum class FieldNames {
     INLET_NX=49,
     INLET_NY=50,
     INLET_NZ=51,
+    BLADE_DANGLE_DMERIDIONAL=52,
 };
 
 enum class SolutionNames {
@@ -1075,6 +1076,7 @@ public:
             {"nx", FieldNames::INLET_NX},
             {"ny", FieldNames::INLET_NY},
             {"nz", FieldNames::INLET_NZ},
+            {"dbladeMetalAngle_dm", FieldNames::BLADE_DANGLE_DMERIDIONAL},
         };
         return map;
     }
@@ -1133,6 +1135,7 @@ public:
             {FieldNames::INLET_NX, "nx"},
             {FieldNames::INLET_NY, "ny"},
             {FieldNames::INLET_NZ, "nz"},
+            {FieldNames::BLADE_DANGLE_DMERIDIONAL, "dbladeMetalAngle_dm"},
         };
         return map;
     }

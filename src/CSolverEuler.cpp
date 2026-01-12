@@ -18,7 +18,7 @@ CSolverEuler::CSolverEuler(Config& config, CMesh& mesh)
     // Initialize csv output handler
     _output = std::make_unique<COutputCSV>(_config, _mesh, _conservativeVars, *_fluid, _inviscidForce, _viscousForce, _deviationAngle);
 
-    // Initialize BFM source term if needed
+    // Initialize BFM source term
     BFM_Model bfmModel = _config.getBFMModel();
     if (bfmModel == BFM_Model::HALL) {
         _bfmSource = std::make_unique<CSourceBFMHall>(_config, *_fluid, _mesh);

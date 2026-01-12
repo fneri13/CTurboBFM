@@ -48,8 +48,8 @@ protected:
     Vector3D _inviscidForceDirectionCylindrical, _inviscidForceDirectionCartesian;
     Vector3D _viscousForceDirectionCylindrical, _viscousForceDirectionCartesian;
     bool _perturbationBodyForceActive = false;
-    size_t _leadingEdgeIdx = _config.getLeadingEdgeIndex();
-    size_t _trailingEdgeIdx = _config.getTrailingEdgeIndex();
+    size_t _leadingEdgeIdx;
+    size_t _trailingEdgeIdx;
     FloatType _solidity;
     Vector3D _relativeVelocityInlet, _relativeVelocityOutlet;
     FloatType _diffusionFactor;

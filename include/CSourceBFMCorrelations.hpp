@@ -6,8 +6,10 @@
 class CSourceBFMCorrelations : public CSourceBFMBase {
 public:
 
-    CSourceBFMCorrelations(const Config &config, const CFluidBase &fluid, const CMesh &mesh) 
-        : CSourceBFMBase(config, fluid, mesh) {}
+    CSourceBFMCorrelations(const Config &config, const CFluidBase &fluid, const CMesh &mesh) : CSourceBFMBase(config, fluid, mesh) {
+        _leadingEdgeIdx = _config.getLeadingEdgeIndex();
+        _trailingEdgeIdx = _config.getTrailingEdgeIndex();
+    }
 
     virtual ~CSourceBFMCorrelations() = default;  
 

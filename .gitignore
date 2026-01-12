@@ -42,7 +42,6 @@ CTurboBFM_Grad
 *.json
 *.csv
 *.plist
-*.yml
 *.dSYM
 *.vts
 *.pyc

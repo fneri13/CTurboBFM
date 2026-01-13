@@ -31,8 +31,8 @@
 *.out
 *.app
 .a
-turbobfm
-turbobfm_grad
+*bin/*
+
 
 # weird files
 *DS_Store

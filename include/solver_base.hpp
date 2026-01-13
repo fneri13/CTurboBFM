@@ -38,7 +38,7 @@ class SolverBase {
         
         virtual ~SolverBase() {}
 
-        void readBoundaryConditions();
+        void readBoundaryConditions() ;
 
         virtual void initializeSolutionArrays() = 0;
 
@@ -51,6 +51,9 @@ class SolverBase {
         virtual void checkConvergence(bool &exitLoop, bool &skip) const = 0;
 
         virtual void writeSolution(size_t iterationCounter, bool alsoGradients=false) = 0;
+
+        /* fetch indices for a 2D boundary slice depdending on boundary index */
+        void getBoundarySliceIndices(BoundaryIndices boundaryIdx, size_t &iStart, size_t &iLast, size_t &jStart, size_t &jLast, size_t &kStart, size_t &kLast) const;
 
     protected:
         const Config& _config;
@@ -95,8 +98,7 @@ class SolverBase {
 
         std::string _inlet2DfilePath{""}; // name of the 2D inlet file
 
-        /* fetch indices for a 2D boundary slice depdending on boundary index */
-        void fetchBoundarySliceIndices(BoundaryIndices boundaryIdx, size_t &iStart, size_t &iLast, size_t &jStart, size_t &jLast, size_t &kStart, size_t &kLast) const;
+        
 
         
 

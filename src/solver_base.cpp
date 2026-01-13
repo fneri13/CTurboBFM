@@ -8,6 +8,7 @@ SolverBase::SolverBase(Config& config, Mesh& mesh)
     _nPointsI = _mesh.getNumberPointsI();
     _nPointsJ = _mesh.getNumberPointsJ();
     _nPointsK = _mesh.getNumberPointsK();
+
     _timeStep.resize(_nPointsI, _nPointsJ, _nPointsK);
     _time.push_back(0.0);
 
@@ -28,7 +29,6 @@ SolverBase::SolverBase(Config& config, Mesh& mesh)
     }
 
     ConvectionScheme advScheme = _config.getConvectionScheme();
-
     switch (advScheme)
     {
     case ConvectionScheme::JST:
@@ -146,7 +146,7 @@ const std::array<int, 3> SolverBase::getStepMask(FluxDirection direction) const 
 }
 
 
-void SolverBase::fetchBoundarySliceIndices(BoundaryIndices boundaryIdx, size_t &iStart, size_t &iLast, size_t &jStart, size_t &jLast, size_t &kStart, size_t &kLast) const{
+void SolverBase::getBoundarySliceIndices(BoundaryIndices boundaryIdx, size_t &iStart, size_t &iLast, size_t &jStart, size_t &jLast, size_t &kStart, size_t &kLast) const{
     iStart=0, 
     iLast=_nPointsI, 
     jStart=0, 

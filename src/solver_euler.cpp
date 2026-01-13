@@ -1427,7 +1427,7 @@ void SolverEuler::writeSolution(size_t iterationCounter, bool alsoGradients){
 void SolverEuler::setMomentumSolution(FlowSolution &sol, const BoundaryIndices &boundaryIndex, const Vector3D& wallVelocity) const{
     
     size_t iStart, iLast, jStart, jLast, kStart, kLast;
-    fetchBoundarySliceIndices(boundaryIndex, iStart, iLast, jStart, jLast, kStart, kLast);
+    getBoundarySliceIndices(boundaryIndex, iStart, iLast, jStart, jLast, kStart, kLast);
 
     FloatType density{0.0};
     for (size_t i = iStart; i < iLast; i++) {

@@ -31,8 +31,8 @@
 *.out
 *.app
 .a
-CTurboBFM
-CTurboBFM_Grad
+turbobfm
+turbobfm_grad
 
 # weird files
 *DS_Store

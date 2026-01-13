@@ -53,14 +53,15 @@ private:
     Matrix3D<FloatType> _deviationAngle;
 
     std::vector<unsigned int> _monitorPoints_idxI, _monitorPoints_idxJ, _monitorPoints_idxK;
+
     unsigned int _numberMonitorPoints = 0;
 
     bool _isBfmActive{false};
+    
     bool _isGongModelingActive{false};
 
     /** @brief Initialize the solution arrays.*/
     void initializeSolutionArrays() override;
-
 
     /** \brief compute the time-step array corresponding to the CFL condition 
      * \param[in] solution The conservative variables solution.
@@ -246,10 +247,6 @@ private:
     
 
     void computeGradient(const Matrix3D<FloatType> &var, Matrix3D<Vector3D> &grad) const;
-
-    StateVector computeGongSource(const FloatType& radius, const FloatType& theta, const FloatType& omega, const StateVector& primitive, 
-                            const Vector3D& densityGrad, const Vector3D& velXGrad, const Vector3D& velYGrad, const Vector3D& velZGrad, 
-                            const Vector3D& totEnergyGrad, const FloatType& volume) const;
     
     StateVector computeGongSource(const FloatType& radius, const FloatType& theta, const FloatType& omega, const size_t i, const size_t j, const size_t k, 
                                   const FloatType& volume) const;

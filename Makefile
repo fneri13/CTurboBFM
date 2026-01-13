@@ -29,8 +29,8 @@ BUILD_TYPE := debug
 SOURCES := $(wildcard $(SRC_DIR)/*.cpp)
 
 # Define main and grad entry points
-MAIN_SRC := $(SRC_DIR)/CTurboBFM.cpp
-GRAD_SRC := $(SRC_DIR)/CTurboBFM_Grad.cpp
+MAIN_SRC := $(SRC_DIR)/turbobfm.cpp
+GRAD_SRC := $(SRC_DIR)/turbobfm_grad.cpp
 
 # Common (shared) sources
 COMMON_SOURCES := $(filter-out $(MAIN_SRC) $(GRAD_SRC), $(SOURCES))
@@ -41,8 +41,8 @@ MAIN_OBJECTS   := $(COMMON_OBJECTS) $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o,
 GRAD_OBJECTS   := $(COMMON_OBJECTS) $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(GRAD_SRC))
 
 # Output binaries
-MAIN_TARGET := $(BIN_DIR)/CTurboBFM
-GRAD_TARGET := $(BIN_DIR)/CTurboBFM_Grad
+MAIN_TARGET := $(BIN_DIR)/turbobfm
+GRAD_TARGET := $(BIN_DIR)/turbobfm_grad
 
 # ==========================================================
 # Default rules

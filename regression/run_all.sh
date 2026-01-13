@@ -28,7 +28,7 @@ for dir in */ ; do
     cd "$dir" || { echo "  Failed to enter $dir"; continue; }
     
     # Run solver
-    "$BASE_DIR"/../bin/CTurboBFM input.ini
+    "$BASE_DIR"/../bin/turbobfm input.ini
     EXIT_CODE=$?
     
     # Check exit code

@@ -6,7 +6,7 @@
 
 TEST(CMeshTest, TestComputeVolumes3D) {
     Config config("input.ini");
-    CMesh mesh(config);
+    Mesh mesh(config);
 
     auto volumes = mesh.getVolumes();
 
@@ -27,7 +27,7 @@ TEST(CMeshTest, TestComputeVolumes3D) {
 
 TEST(CMeshTest, TestReadMesh3D) {
     Config config("input.ini");
-    CMesh mesh(config);
+    Mesh mesh(config);
     
     auto vertices = mesh.getVertices();
 
@@ -48,7 +48,7 @@ TEST(CMeshTest, TestReadMesh3D) {
 
 TEST(CMeshTest, TestDualGrid3DCartesian) {
     Config config("input.ini");
-    CMesh mesh(config);
+    Mesh mesh(config);
     
     auto dualNodes = mesh.getDualNodes();
 
@@ -74,7 +74,7 @@ TEST(CMeshTest, TestDualGrid3DCartesian) {
 
 TEST(CMeshTest, TestComputeInterfaces3D) {
     Config config("input.ini");
-    CMesh mesh(config);
+    Mesh mesh(config);
 
     // check the i surfaces
     auto surfacesI = mesh.getSurfacesI();
@@ -109,7 +109,7 @@ TEST(CMeshTest, TestComputeInterfaces3D) {
 
 TEST(CMeshTest, TestComputeBoundaryAreas3D){
     Config config("input.ini");
-    CMesh mesh(config);
+    Mesh mesh(config);
 
     ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::I_START), 35.0);
     ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::I_END), 35.0);
@@ -121,7 +121,7 @@ TEST(CMeshTest, TestComputeBoundaryAreas3D){
 
 TEST(CMeshTest, TestComputeSurfaceAndCenters) {
     Config config("input.ini");
-    CMesh mesh(config);
+    Mesh mesh(config);
     
     // define test points, every new element is a new test
     std::vector<Vector3D> points1 = {Vector3D(0.0, 0.0, 0.0),

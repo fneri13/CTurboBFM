@@ -48,6 +48,7 @@ bin/
 *.pdf
 *.png
 *.pik
+*.txt
 
 # build files
 *cmake*

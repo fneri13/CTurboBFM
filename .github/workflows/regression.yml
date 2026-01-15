@@ -8,7 +8,7 @@ on:
 
 jobs:
   regression:
-    if: false  # Disable the job temporarily
+    # if: false  # Disable the job temporarily
     
     runs-on: ubuntu-latest
 

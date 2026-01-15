@@ -20,13 +20,18 @@ StateVector BoundaryInlet::computeBoundaryFlux(
     }
 
     if (flowDirection.x() == 1.0 && flowDirection.y() == 1.0 && flowDirection.z() == 1.0) {
-        // in this case the direction is normal to the surface
+        // in this case the direction is normal to the surface (just code convention)
         flowDirection = -surface;
     }
 
     flowDirection /= flowDirection.magnitude();
 
-    StateVector flux = computeSubsonicInletFlux(internalConservative, surface, totPressure, totTemperature, flowDirection);
+    StateVector flux = computeSubsonicInletFlux(
+        internalConservative, 
+        surface, 
+        totPressure, 
+        totTemperature, 
+        flowDirection);
     
     return flux;
 }

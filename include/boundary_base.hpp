@@ -32,14 +32,21 @@ public:
 
 protected:
 
-    /** Common interface for subsonic inlet types. */
+    /** Common interface for subsonic inlet boundary types. */
     StateVector computeSubsonicInletFlux(
         const StateVector& internalConservative, 
         const Vector3D& surface, 
-        const FloatType& totPressure, 
-        const FloatType& totTemperature, 
+        const FloatType& totPressureBoundary, 
+        const FloatType& totTemperatureBoundary, 
         const Vector3D& flowDirection);
     
+    /** Common interface for outlet boundary types. */
+    StateVector computeOutletFlux(
+        const StateVector& internalConservative, 
+        const Vector3D& surface, 
+        const FloatType& boundaryPressure,
+        const size_t& iterCounter);
+
 protected:
 
     const Config& _config;

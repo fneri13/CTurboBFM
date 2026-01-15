@@ -4,8 +4,8 @@
 StateVector BoundaryBase::computeSubsonicInletFlux(
     const StateVector& internalConservative, 
     const Vector3D& surface, 
-    const FloatType& totPressure, 
-    const FloatType& totTemperature, 
+    const FloatType& totPressureBoundary, 
+    const FloatType& totTemperatureBoundary, 
     const Vector3D& flowDirection){
 
     // properties of internal point
@@ -25,8 +25,8 @@ StateVector BoundaryBase::computeSubsonicInletFlux(
     // reconstruct the boundary state                                     
     FloatType velocityBoundMag = 2.0*soundSpeedBound / (_fluid.getGamma() - 1.0) - Jm;
     FloatType normalMachBound = velocityBoundMag / soundSpeedBound;
-    FloatType pressureBound = _fluid.computeStaticPressure_pt_M(totPressure, normalMachBound);
-    FloatType temperatureBound = _fluid.computeStaticTemperature_Tt_M(totTemperature, normalMachBound);
+    FloatType pressureBound = _fluid.computeStaticPressure_pt_M(totPressureBoundary, normalMachBound);
+    FloatType temperatureBound = _fluid.computeStaticTemperature_Tt_M(totTemperatureBoundary, normalMachBound);
     FloatType densityBound = _fluid.computeDensity_p_T(pressureBound, temperatureBound);
     FloatType energyBound = _fluid.computeStaticEnergy_p_rho(pressureBound, densityBound);
     Vector3D velocityBound = flowDirection * velocityBoundMag;
@@ -44,3 +44,38 @@ StateVector BoundaryBase::computeSubsonicInletFlux(
     return flux;
 
 }
+
+StateVector BoundaryBase::computeOutletFlux(
+    const StateVector& internalConservative, 
+    const Vector3D& surface, 
+    const FloatType& boundaryPressure,
+    const size_t& iterCounter){
+
+    auto primitive = getEulerPrimitiveFromConservative(internalConservative);
+    Vector3D velocity = {primitive[1], primitive[2], primitive[3]};
+    auto density = primitive[0];
+    auto pressure = _fluid.computePressure_rho_u_et(density, velocity, primitive[4]);
+    auto soundSpeed = _fluid.computeSoundSpeed_p_rho(pressure, primitive[0]);
+    
+    if (velocity.magnitude() >= soundSpeed) {
+        auto flux = computeEulerFluxFromPrimitive(primitive, surface, _fluid);
+        return flux;
+    }
+    else {
+        FloatType pressureBoundary = _config.computeRampedOutletPressure(iterCounter, boundaryPressure);
+        FloatType densityBoundary = pressureBoundary * density / pressure;
+        Vector3D velocityBoundary = velocity;
+        FloatType energyBoundary = _fluid.computeStaticEnergy_p_rho(pressureBoundary, densityBoundary);
+        FloatType totEnergyBoundary = energyBoundary + 0.5 * velocityBoundary.dot(velocityBoundary);
+        StateVector primitiveBoundary({
+            densityBoundary, 
+            velocityBoundary.x(), 
+            velocityBoundary.y(), 
+            velocityBoundary.z(), 
+            totEnergyBoundary});
+        auto flux = computeEulerFluxFromPrimitive(primitiveBoundary, surface, _fluid);
+        return flux;
+    }
+
+}
+

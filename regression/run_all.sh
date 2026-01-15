@@ -51,6 +51,9 @@ echo "Succeeded: $SUCCESS"
 echo "Failed: $FAILURE"
 echo "==============================="
 
+echo "NOTE: a successful test only means that the solver ran without errors and the residuals decreased by 4 orders of magnitude."
+echo "It does NOT guarantee that the results are physically correct."
+
 if [[ $FAILURE -eq 0 ]]; then
     exit 0
 else

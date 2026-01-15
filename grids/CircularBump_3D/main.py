@@ -15,10 +15,10 @@ The Fundamentals of Computational Fluid Dynamics (Second Edition) by Charles Hir
 OUTPUT_FOLDER = 'Grid'
 L = 1
 HUB_RADIUS = L/3
-NX = 60
-NY = 20
-NK = 1
-PERIODICITY_THETA_DEG = 0
+NX = 16
+NY = 12
+NK = 5
+PERIODICITY_THETA_DEG = 45
 THETA_MAX = PERIODICITY_THETA_DEG*np.pi/180
 STREAMWISE_COEFF = 1.1
 SPANWISE_COEFF = 1.0

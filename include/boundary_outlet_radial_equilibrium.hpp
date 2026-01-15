@@ -19,8 +19,10 @@ public:
         const FluidBase &fluid, 
         BoundaryIndices boundIndex, 
         std::vector<FloatType>& pressure)
-        : BoundaryBase(config, mesh, fluid, boundIndex), _radialPressureProfile(pressure){}        
-        virtual ~BoundaryOutletRadialEquilibrium() {}
+        : BoundaryBase(config, mesh, fluid, boundIndex), 
+        _radialPressureProfile(pressure){}        
+        
+    virtual ~BoundaryOutletRadialEquilibrium() {}
     
     virtual StateVector computeBoundaryFlux(
         const StateVector& internalConservative, 

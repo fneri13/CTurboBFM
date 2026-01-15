@@ -7,27 +7,27 @@
   */
 class BoundaryTransparent : public BoundaryBase {
     
-    public:
+public:
 
-        BoundaryTransparent(const Config &config, 
-            const Mesh &mesh, 
-            const FluidBase &fluid, 
-            BoundaryIndices boundIndex, 
-            AdvectionBase &advScheme)
-            : BoundaryBase(config, mesh, fluid, boundIndex), 
-            _advScheme(advScheme) {}            
+    BoundaryTransparent(const Config &config, 
+        const Mesh &mesh, 
+        const FluidBase &fluid, 
+        BoundaryIndices boundIndex, 
+        AdvectionBase &advScheme)
+        : BoundaryBase(config, mesh, fluid, boundIndex), 
+        _advScheme(advScheme) {}            
 
-        virtual ~BoundaryTransparent() {}
+    virtual ~BoundaryTransparent() {}
 
-        virtual StateVector computeBoundaryFlux(
-            const StateVector& internalConservative, 
-            const Vector3D& surface, 
-            const Vector3D& midPoint, 
-            const std::array<size_t, 3>& indices, 
-            const FlowSolution& flowSolution, 
-            const size_t& iterCounter) override;
+    virtual StateVector computeBoundaryFlux(
+        const StateVector& internalConservative, 
+        const Vector3D& surface, 
+        const Vector3D& midPoint, 
+        const std::array<size_t, 3>& indices, 
+        const FlowSolution& flowSolution, 
+        const size_t& iterCounter) override;
 
-    private:
-        AdvectionBase &_advScheme;
+private:
+    AdvectionBase &_advScheme;
         
 };

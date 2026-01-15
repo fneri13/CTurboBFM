@@ -173,20 +173,8 @@ BFM_Model Config::getBFMModel() const {
         model = BFM_Model::HALL_THOLLET;
     } else if (value == "Hall") {
         model = BFM_Model::HALL;
-    } else if (value == "Lift-Drag") {
-        model = BFM_Model::LIFT_DRAG;
-    } else if (value == "Frozen-Force") {
-        model = BFM_Model::FROZEN_FORCE;
-    } else if (value == "Frozen-Gradient") {
-        model = BFM_Model::FROZEN_GRADIENT;
-    } else if (value == "Gong") {
-        model = BFM_Model::GONG;
-    } else if (value == "Neri") {
-        model = BFM_Model::NERI;
     } else if (value == "Chima") {
         model = BFM_Model::CHIMA;
-    } else if (value == "Lamprakis") {
-        model = BFM_Model::LAMPRAKIS;
     } else if (value == "None") {
         model = BFM_Model::NONE;
     } else if (value == "Blockage") {
@@ -441,7 +429,7 @@ FluxLimiter Config::getFluxLimiter() const {
 FloatType Config::getBfmRelaxationFactor() const {
     bool bfmLagActive = isBfmLagActive();
     if (bfmLagActive) {
-        return parseFloat("BFM_RELAXATION_FACTOR", 0.001);
+        return parseFloat("BFM_RELAXATION_FACTOR", 0.1);
     }
     else {
         return 1.0;
@@ -521,6 +509,6 @@ Vector3D Config::getNoSlipWallVelocity(BoundaryIndices boundary) const{
 
 std::vector<FloatType> Config::getPeriodicityInfo() const {
     std::vector<FloatType> periodicityInfo = parseVector<FloatType>("PERIODICITY_INFO");
-    assert (periodicityInfo.size() == 2 && "PERIODICITY_INFO must have 2 components (translation along z and rotation along x)");
+    assert (periodicityInfo.size() == 2 && "PERIODICITY_INFO must indicate 2 values (translation along z and rotation along x)");
     return periodicityInfo;
 }

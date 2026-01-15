@@ -20,7 +20,7 @@ private:
     /**
      * @brief Return the string file corresponding to a certain entry.
      * @param value option to read from config file.
-     * @param defaultNoneValue if true return None string if the option is not present, otherwise throw an error
+     * @param defaultNoneValue if true return a string 'None' if the option is not present. Otherwise throws an error
      */
     std::string parseString(const std::string& value, bool defaultNoneValue=false) const;
     
@@ -98,7 +98,9 @@ private:
 
 public:
     Config () = default;
+
     Config (const std::string& filename);
+    
     ~Config () = default;
     
     std::string get(const std::string& key) const;
@@ -195,7 +197,7 @@ public:
 
     ConvectionScheme getConvectionScheme() const;
 
-    // get the coefficients for the Runge-Kutta time integration, taken from Simon thesis (page 64)
+    // get the coefficients for the Runge-Kutta time integration. (Taken from Simon thesis, page 64)
     std::vector<FloatType> getTimeIntegrationCoeffs() const ;
 
     size_t getMassFlowUpdateFrequency() const {return massFlowUpdateFrequency;}

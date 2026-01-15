@@ -1,8 +1,12 @@
 #include "boundary_base.hpp"
 #include "math_utils.hpp"
 
-StateVector BoundaryBase::computeSubsonicsInletFlux(StateVector internalConservative, Vector3D surface, 
-    FloatType totPressure, FloatType totTemperature, Vector3D flowDirection){
+StateVector BoundaryBase::computeSubsonicInletFlux(
+    const StateVector& internalConservative, 
+    const Vector3D& surface, 
+    const FloatType& totPressure, 
+    const FloatType& totTemperature, 
+    const Vector3D& flowDirection){
 
     // properties of internal point
     StateVector primitive = getEulerPrimitiveFromConservative(internalConservative);
@@ -29,7 +33,13 @@ StateVector BoundaryBase::computeSubsonicsInletFlux(StateVector internalConserva
     FloatType totEnergyBound = energyBound + 0.5 * velocityBound.dot(velocityBound);
 
     // compute boundary flux
-    StateVector primitiveBoundary({densityBound, velocityBound.x(), velocityBound.y(), velocityBound.z(), totEnergyBound});
+    StateVector primitiveBoundary({
+        densityBound, 
+        velocityBound.x(), 
+        velocityBound.y(), 
+        velocityBound.z(), 
+        totEnergyBound});
+        
     StateVector flux = computeEulerFluxFromPrimitive(primitiveBoundary, surface, _fluid);
     return flux;
 

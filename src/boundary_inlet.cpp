@@ -1,14 +1,13 @@
 #include "boundary_inlet.hpp"
 #include "math_utils.hpp"
 
-BoundaryInlet::BoundaryInlet(const Config &config, const Mesh &mesh, FluidBase &fluid, BoundaryIndices boundIndex, std::vector<FloatType> inletValues)
-    : BoundaryBase(config, mesh, fluid, boundIndex) {
-        _boundaryValues = inletValues;
-        _referenceFrame = config.getInletReferenceFrame();
-    }
-
-
-StateVector BoundaryInlet::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution, const size_t iterCounter) {
+StateVector BoundaryInlet::computeBoundaryFlux(
+    const StateVector& internalConservative, 
+    const Vector3D& surface, 
+    const Vector3D& midPoint, 
+    const std::array<size_t, 3> &indices, 
+    const FlowSolution& flowSolution, 
+    const size_t& iterCounter) {
     
     // gather boundary values from config
     FloatType totPressure = _boundaryValues[0];
@@ -27,7 +26,7 @@ StateVector BoundaryInlet::computeBoundaryFlux(StateVector internalConservative,
 
     flowDirection /= flowDirection.magnitude();
 
-    StateVector flux = computeSubsonicsInletFlux(internalConservative, surface, totPressure, totTemperature, flowDirection);
+    StateVector flux = computeSubsonicInletFlux(internalConservative, surface, totPressure, totTemperature, flowDirection);
     
     return flux;
 }

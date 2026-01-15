@@ -5,42 +5,39 @@
 #include "input.hpp"
 
 /**
- * @brief Class for inlet defined by 2D grids for boundary condition flux calculation.
- * Provides a common interface for it.
+ * @brief Class for non-uniform inlets defined by 2D distributions.
  */
 class BoundaryInlet2D : public BoundaryBase {
+public:
+
+    /**
+     * @brief Constructs the object with given references.
+     * @param config The configuration object.
+     * @param mesh The mesh object.
+     * @param fluid The fluid object.
+     * @param boundIndex The boundary index.
+     * @param inletFilePath The path to the inlet file.
+     */
+    BoundaryInlet2D(
+        const Config &config, 
+        const Mesh &mesh, 
+        const FluidBase &fluid, 
+        BoundaryIndices boundIndex, 
+        std::string inletFilePath);
+        
+    virtual ~BoundaryInlet2D() {}
+
+    virtual StateVector computeBoundaryFlux(
+        const StateVector& internalConservative, 
+        const Vector3D& surface, 
+        const Vector3D& midPoint, 
+        const std::array<size_t, 3>& indices, 
+        const FlowSolution& flowSolution, 
+        const size_t& iterCounter) override;
     
-    public:
-
-        /**
-         * @brief Constructs the object with given references.
-         * @param config The configuration object.
-         * @param mesh The mesh object.
-         * @param fluid The fluid object.
-         * @param boundIndex The boundary index.
-         * @param inletValues The inlet values (total pressure, total temperature, flow direction).
-         */
-        BoundaryInlet2D(const Config &config, const Mesh &mesh, FluidBase &fluid, BoundaryIndices boundIndex, std::string inletFilePath);
-            
-        virtual ~BoundaryInlet2D() {}
-
-        /**
-         * @brief Compute the boundary flux.
-         * Formulation taken from 'Formulation and Implementation of Inflow/Outflow Boundary Conditions to Simulate Propulsive Effects', Rodriguez et al.
-         * @param internalConservative The internal point conservative variables.
-         * @param surface The surface normal vector (also not normalized).
-         * @param midPoint The midpoint of the boundary face.
-         * @param indices The indices (i,j,k) of the boundary face.
-         * @return The boundary flux.
-         */
-        virtual StateVector computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution, const size_t iterCounter) override;
-        
-    protected:
+protected:
         std::string _inletFilePath;
-        
         ReferenceFrame _referenceFrame;
-
         Input _inputGrid;
-
         size_t _inputNi, _inputNj, _inputNk;
 };

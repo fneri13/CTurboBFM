@@ -1,20 +1,21 @@
 #pragma once
+
 #include "boundary_base.hpp"
 
-class BoundaryOutletSupersonic : public BoundaryBase {
-    
+/**
+ * @brief Class for fake boundaries whose flux is not needed
+ */
+class BoundaryFake : public BoundaryBase {
 public:
 
-    BoundaryOutletSupersonic(
+    BoundaryFake(
         const Config &config, 
         const Mesh &mesh, 
         const FluidBase &fluid, 
-        BoundaryIndices boundIndex, 
-        std::vector<FloatType> inletValues)
-        : BoundaryBase(config, mesh, fluid, boundIndex), 
-        _boundaryValues(inletValues) {}            
+        BoundaryIndices boundIndex)
+        : BoundaryBase(config, mesh, fluid, boundIndex) {}     
 
-    virtual ~BoundaryOutletSupersonic() = default;
+    virtual ~BoundaryFake()  = default;
 
     virtual StateVector computeBoundaryFlux(
         const StateVector& internalConservative, 
@@ -23,7 +24,5 @@ public:
         const std::array<size_t, 3>& indices, 
         const FlowSolution& flowSolution, 
         const size_t& iterCounter) override;
-    
-protected:
-    std::vector<FloatType> _boundaryValues;
+
 };

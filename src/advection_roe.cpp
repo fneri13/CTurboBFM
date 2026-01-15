@@ -25,14 +25,13 @@ StateVector AdvectionRoe::computeFlux(
     StateVector WnormL = computeRotatedPrimitive(Wl);
     StateVector WnormR = computeRotatedPrimitive(Wr);
 
-    computeRoeAVG(WnormL, WnormR);
+    computeRoeAvgVariables(WnormL, WnormR);
     computeEigenvalues();
     computeEigenvectors();
     computeWaveStrengths(WnormL, WnormR);
 
     StateVector flux({0.0, 0.0, 0.0, 0.0, 0.0});
-
-    computeRoeFlux(S, WnormL, WnormR, flux);
+    assembleTotalFlux(S, WnormL, WnormR, flux);
 
     return flux;
 }
@@ -40,15 +39,10 @@ StateVector AdvectionRoe::computeFlux(
 
 void AdvectionRoe::computeNormalTriad(const Vector3D& S){
     
-    _x1 = {1.0, 0.0, 0.0}; // default x1 vector
-    _x2 = {0.0, 1.0, 0.0}; // default x2 vector
-    _x3 = {0.0, 0.0, 1.0}; // default x3 vector
-
     // the first is the surface normal direction
     _n1 = S.normalized();
     
     // the second is simply taken orthogonal to the first
-
     if (_n1.x() == 0 && _n1.y() == 0){
         _n2 = Vector3D(1, 0, 0);
     }
@@ -70,7 +64,7 @@ StateVector AdvectionRoe::computeRotatedPrimitive(const StateVector& W) const {
 }
 
 
-void AdvectionRoe::computeRoeAVG(const StateVector& Wl, const StateVector& Wr) {
+void AdvectionRoe::computeRoeAvgVariables(const StateVector& Wl, const StateVector& Wr) {
 
     FloatType rhoL = Wl[0];
     FloatType rhoR = Wr[0];
@@ -84,15 +78,15 @@ void AdvectionRoe::computeRoeAVG(const StateVector& Wl, const StateVector& Wr) {
     FloatType htR = _fluid.computeTotalEnthalpy_rho_u_et(Wr[0], {Wr[1], Wr[2], Wr[3]}, Wr[4]);
 
     _rhoAVG = std::sqrt(rhoL * rhoR);
-    _u1AVG = roeAVG(rhoL, rhoR, u1L, u1R);
-    _u2AVG = roeAVG(rhoL, rhoR, u2L, u2R);
-    _u3AVG = roeAVG(rhoL, rhoR, u3L, u3R);
-    _htAVG = roeAVG(rhoL, rhoR, htL, htR);
+    _u1AVG = roeAverage(rhoL, rhoR, u1L, u1R);
+    _u2AVG = roeAverage(rhoL, rhoR, u2L, u2R);
+    _u3AVG = roeAverage(rhoL, rhoR, u3L, u3R);
+    _htAVG = roeAverage(rhoL, rhoR, htL, htR);
     _aAVG = std::sqrt((_fluid.getGamma() -1.0) * (_htAVG - 0.5 * (_u1AVG*_u1AVG + _u2AVG*_u2AVG + _u3AVG*_u3AVG)));
 }
 
 
-FloatType AdvectionRoe::roeAVG(FloatType& rhoL, FloatType& rhoR, FloatType& phiL, FloatType& phiR) const {
+FloatType AdvectionRoe::roeAverage(FloatType& rhoL, FloatType& rhoR, FloatType& phiL, FloatType& phiR) const {
     FloatType avg = (std::sqrt(rhoL) * phiL + std::sqrt(rhoR) * phiR) / (std::sqrt(rhoL) + std::sqrt(rhoR));
     return avg;
 }
@@ -123,7 +117,6 @@ void AdvectionRoe::computeWaveStrengths(const StateVector& WnormL, const StateVe
     FloatType pR = _fluid.computePressure_rho_u_et(WnormR[0], {WnormR[1], WnormR[2], WnormR[3]}, WnormR[4]);
     FloatType deltaP = pR - pL;
     
-
     _waveStrengths[0] = 1.0 / (2.0 * _aAVG * _aAVG) * (deltaP - _rhoAVG * _aAVG * deltaU1);
     _waveStrengths[1] = deltaRho - deltaP / (_aAVG * _aAVG);
     _waveStrengths[2] = _rhoAVG * deltaU2;
@@ -132,15 +125,20 @@ void AdvectionRoe::computeWaveStrengths(const StateVector& WnormL, const StateVe
 }
 
 
-void AdvectionRoe::computeRoeFlux(const Vector3D& S, const StateVector& WnormL, const StateVector& WnormR, StateVector& flux) const {
+void AdvectionRoe::assembleTotalFlux(
+    const Vector3D& S, 
+    const StateVector& WnormL, 
+    const StateVector& WnormR, 
+    StateVector& flux) const {
 
-    // fluxes in normal reference frame
+    // Compute flux in normal reference frame (n1, n2, n3).
+    // The direction is (1, 0, 0) because the state has been aligned to the normal triad
     StateVector fluxL = computeEulerFluxFromPrimitive(WnormL, {1.0, 0.0, 0.0}, _fluid);
     StateVector fluxR = computeEulerFluxFromPrimitive(WnormR, {1.0, 0.0, 0.0}, _fluid);
 
-    // compute the absolute values of the eigenvalues with the entropy fix coefficient
+    // Entropy fix of the eigenvalues
     StateVector fixedEigenvalues({0.0, 0.0, 0.0, 0.0, 0.0});
-    for (size_t i = 0; i < 5; ++i) {
+    for (size_t i = 0; i < fixedEigenvalues.size(); ++i) {
         if (std::abs(_eigenvalues[i]) < _entropyFixCoefficient) {
             fixedEigenvalues[i] = _entropyFixCoefficient;
         } else {
@@ -149,16 +147,16 @@ void AdvectionRoe::computeRoeFlux(const Vector3D& S, const StateVector& WnormL, 
     }
 
     StateVector fluxRoe = (fluxL + fluxR) * 0.5;
-    for (size_t i = 0; i < 5; ++i) {
-        for (size_t j = 0; j < 5; ++j) {
+    for (size_t i = 0; i < fixedEigenvalues.size(); ++i) {
+        for (size_t j = 0; j < fixedEigenvalues.size(); ++j) {
             fluxRoe[i] -= 0.5 * _waveStrengths[j] * fixedEigenvalues[j] *_eigenvectors[j][i];
         }
     }
 
-    // compute the flux in the original cartesian reference frame
+    // project the flux back to the original cartesian reference frame (x,y,z)
     flux[0] = fluxRoe[0];
-    flux[1] = fluxRoe[1] * (_n1.dot(_x1)) + fluxRoe[2] * (_n2.dot(_x1)) + fluxRoe[3] * (_n3.dot(_x1));
-    flux[2] = fluxRoe[1] * (_n1.dot(_x2)) + fluxRoe[2] * (_n2.dot(_x2)) + fluxRoe[3] * (_n3.dot(_x2));
-    flux[3] = fluxRoe[1] * (_n1.dot(_x3)) + fluxRoe[2] * (_n2.dot(_x3)) + fluxRoe[3] * (_n3.dot(_x3));
+    flux[1] = fluxRoe[1] * (_n1.dot(_xVersor)) + fluxRoe[2] * (_n2.dot(_xVersor)) + fluxRoe[3] * (_n3.dot(_xVersor));
+    flux[2] = fluxRoe[1] * (_n1.dot(_yVersor)) + fluxRoe[2] * (_n2.dot(_yVersor)) + fluxRoe[3] * (_n3.dot(_yVersor));
+    flux[3] = fluxRoe[1] * (_n1.dot(_zVersor)) + fluxRoe[2] * (_n2.dot(_zVersor)) + fluxRoe[3] * (_n3.dot(_zVersor));
     flux[4] = fluxRoe[4];
 }

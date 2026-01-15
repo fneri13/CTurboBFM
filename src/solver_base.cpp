@@ -121,10 +121,10 @@ void SolverBase::readBoundaryConditions(){
             _boundaryConditions[bound] = std::make_unique<BoundaryOutletThrottle>(_config, _mesh, *_fluid, bound, _radialProfilePressure);
         }
         else if (_boundaryTypes[bound] == BoundaryType::WEDGE){
-            _boundaryConditions[bound] = std::make_unique<BoundaryWedge>(_config, _mesh, *_fluid, bound);
+            _boundaryConditions[bound] = std::make_unique<BoundaryFake>(_config, _mesh, *_fluid, bound);
         }
         else if (_boundaryTypes[bound] == BoundaryType::PERIODIC){
-            _boundaryConditions[bound] = std::make_unique<BoundaryPeriodic>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
+            _boundaryConditions[bound] = std::make_unique<BoundaryFake>(_config, _mesh, *_fluid, bound);
         }
         else if (_boundaryTypes[bound] == BoundaryType::TRANSPARENT){
             assert (_mesh.getNumberPointsJ() == 1 && "Transparent boundary only valid for 1D meshes.");

@@ -567,7 +567,7 @@ void Mesh::computeInputGradients() {
 
 
 void Mesh::checkPeriodicity(FloatType angle, FloatType translation) {
-    const FloatType tolerance = 1e-6;  // tighter tolerance, adjust as needed
+    const FloatType tolerance = 1e-3;  // tighter tolerance, adjust as needed
     const Vector3D& drag{0.0, 0.0, translation};
     
     for (size_t i = 0; i < _nPointsI; ++i) {

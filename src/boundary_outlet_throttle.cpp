@@ -1,11 +1,15 @@
 #include "boundary_outlet_throttle.hpp"
 #include "math_utils.hpp"
 
-BoundaryOutletThrottle::BoundaryOutletThrottle(const Config &config, const Mesh &mesh, FluidBase &fluid, BoundaryIndices boundIndex, std::vector<FloatType>& pressure)
-    : BoundaryBase(config, mesh, fluid, boundIndex), _radialPressureProfile(pressure){}
 
+StateVector BoundaryOutletThrottle::computeBoundaryFlux(
+            const StateVector& internalConservative, 
+            const Vector3D& surface, 
+            const Vector3D& midPoint, 
+            const std::array<size_t, 3>& indices, 
+            const FlowSolution& flowSolution, 
+            const size_t& iterCounter) {
 
-StateVector BoundaryOutletThrottle::computeBoundaryFlux(StateVector internalConservative, Vector3D surface, Vector3D midPoint, std::array<size_t, 3> indices, const FlowSolution &flowSolution, const size_t iterCounter) {
     auto primitive = getEulerPrimitiveFromConservative(internalConservative);
     Vector3D velocity = {primitive[1], primitive[2], primitive[3]};
     auto density = primitive[0];
@@ -23,7 +27,12 @@ StateVector BoundaryOutletThrottle::computeBoundaryFlux(StateVector internalCons
         Vector3D velocityBoundary = velocity;
         FloatType energyBoundary = _fluid.computeStaticEnergy_p_rho(pressureBoundary, densityBoundary);
         FloatType totEnergyBoundary = energyBoundary + 0.5 * velocityBoundary.dot(velocityBoundary);
-        StateVector primitiveBoundary({densityBoundary, velocityBoundary.x(), velocityBoundary.y(), velocityBoundary.z(), totEnergyBoundary});
+        StateVector primitiveBoundary({
+            densityBoundary, 
+            velocityBoundary.x(), 
+            velocityBoundary.y(), 
+            velocityBoundary.z(), 
+            totEnergyBoundary});
         auto flux = computeEulerFluxFromPrimitive(primitiveBoundary, surface, _fluid);
         return flux;
     }

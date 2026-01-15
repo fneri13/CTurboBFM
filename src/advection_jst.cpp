@@ -13,20 +13,20 @@ StateVector AdvectionJst::computeFlux(
     auto Wl = getEulerPrimitiveFromConservative(Ul);
     auto Wr = getEulerPrimitiveFromConservative(Ur);
     auto Wrr = getEulerPrimitiveFromConservative(Urr);
-    auto Wavg = (Wl + Wr) * 0.5; // element-wise addition
+    auto Wavg = (Wl + Wr) * 0.5; 
 
-    FloatType r_factors[2] = {
+    FloatType rCoeff[2] = {
         computeRFactor(Wl),
         computeRFactor(Wr)
     };
 
-    FloatType s_factors[2] = {
+    FloatType sCoeff[2] = {
         computeSFactor(Wll, Wl, Wr),
         computeSFactor(Wl, Wr, Wrr)
     };
 
-    FloatType r = std::max(r_factors[0], r_factors[1]);
-    FloatType s = std::max(s_factors[0], s_factors[1]);
+    FloatType r = std::max(rCoeff[0], rCoeff[1]);
+    FloatType s = std::max(sCoeff[0], sCoeff[1]);
 
     FloatType psi2 = _kappa2 * s * r;
     FloatType psi4 = std::max(0.0, _kappa4 * r - _c4 * psi2);
@@ -45,10 +45,14 @@ FloatType AdvectionJst::computeRFactor(const StateVector primitive) const {
     return (velMag+soundSpeed);
 }
 
-FloatType AdvectionJst::computeSFactor(const StateVector prim1, const StateVector prim2, const StateVector prim3) const {
+FloatType AdvectionJst::computeSFactor(
+    const StateVector prim1, 
+    const StateVector prim2, 
+    const StateVector prim3) const {
+
     FloatType p1 = _fluid.computePressure_primitive(prim1);
     FloatType p2 = _fluid.computePressure_primitive(prim2);
     FloatType p3 = _fluid.computePressure_primitive(prim3);
-    FloatType sFactor = std::abs((p1-2*p2+p3)/(p1+2*p2+p3));
+    FloatType sFactor = std::abs((p1 - 2*p2 + p3) / (p1 + 2*p2 + p3));
     return sFactor;
 }

@@ -612,6 +612,8 @@ class StateVector {
     
         // Constructor from std::array
         explicit StateVector(const std::array<FloatType, Size>& arr) : _data(arr) {}
+
+        size_t size() const { return Size; }
     
         // Access operators
         FloatType& operator[](std::size_t idx) { return _data[idx]; }

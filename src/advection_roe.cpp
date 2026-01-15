@@ -16,8 +16,8 @@ StateVector AdvectionRoe::computeFlux(
     StateVector Wrr = getEulerPrimitiveFromConservative(Urr);
     StateVector Wll = getEulerPrimitiveFromConservative(Ull);
 
-    if (_MUSCL){
-        reconstructMUSCL(Wll, Wl, Wr, Wrr, _fluxLimiter);
+    if (_isMusclActive){
+        musclReconstructLeftRight(Wll, Wl, Wr, Wrr, _fluxLimiter);
     }
 
     computeNormalTriad(S);

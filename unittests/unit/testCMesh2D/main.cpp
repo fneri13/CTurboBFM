@@ -109,7 +109,7 @@ TEST(CMeshTest, TestComputeSurfaceAndCenters) {
     std::vector<Vector3D> computedSurfaces(points1.size());
     std::vector<Vector3D> computedCenters(points1.size()); 
     for (size_t i = 0; i < points1.size(); ++i) {
-        mesh.computeSurfaceVectorAndCG(points1[i], points2[i], points3[i], points4[i], computedSurfaces[i], computedCenters[i]);
+        mesh.computeSurfaceVectorAndCenter(points1[i], points2[i], points3[i], points4[i], computedSurfaces[i], computedCenters[i]);
     }
 
     // check the results

@@ -11,37 +11,31 @@
 Mesh::Mesh(Config& config) : _config(config) {
     
     readPoints();
-    
     allocateMemory();
-    
     auto topology = config.getTopology();
     if (topology == Topology::TWO_DIMENSIONAL || topology == Topology::AXISYMMETRIC) {
-        computeDualGrid2D();
+        computeDualGrid2dTopology();
     } 
     else if (topology == Topology::THREE_DIMENSIONAL) {
-        computeDualGrid3D();
+        computeDualGrid3dTopology();
     }
     else if (topology == Topology::ONE_DIMENSIONAL) {
-        computeDualGrid1D();
+        computeDualGrid1dTopology();
     }
     else {
         throw std::runtime_error("Unsupported topology.");
     }
     
     computeMeshInterfaces();
-    
-    computeMeshVolumes();
-    
-    computeMeshQuality();
-    
+    computeFiniteVolumes();
+    computeMeshQualityStatistics();
     computeBoundaryAreas();
-    
     computeInputGradients();
-    
+
     printMeshInfo();
 
     if (_config.saveMeshQualityStats()) {
-        writeMeshQualityStats();
+        writeMeshQualityStatistics();
     }
 }
 
@@ -52,7 +46,7 @@ void Mesh::readPoints() {
     _nPointsI = _inputFile.getNumberPointsI();
     _nPointsJ = _inputFile.getNumberPointsJ();
     _nPointsK = _inputFile.getNumberPointsK();
-
+    _nPointsTotal = _nPointsI * _nPointsJ * _nPointsK;
     if (_nPointsJ==1 && _nPointsK==1) {
         _nDimensions = 1;
     }
@@ -62,17 +56,13 @@ void Mesh::readPoints() {
     else {
         _nDimensions = 3;
     }
-
-    _nPointsTotal = _nPointsI * _nPointsJ * _nPointsK;
     
     _nDualPointsI = _nPointsI + 1;
     _nDualPointsJ = _nPointsJ + 1;
     _nDualPointsK = _nPointsK + 1;
-    
     _nDualPointsTotal = _nDualPointsI * _nDualPointsJ * _nDualPointsK;
 
     _vertices.resize(_nPointsI, _nPointsJ, _nPointsK);
-
     for (size_t i = 0; i < _nPointsI; i++) {
         for (size_t j = 0; j < _nPointsJ; j++) {
             for (size_t k = 0; k < _nPointsK; k++) {
@@ -95,7 +85,6 @@ void Mesh::allocateMemory() {
     _centersK.resize(_nDualPointsI-1, _nDualPointsJ-1, _nDualPointsK);
 
     _volumes.resize(_nPointsI, _nPointsJ, _nPointsK);
-
 }
 
 
@@ -131,7 +120,13 @@ void Mesh::computeMeshInterfaces() {
     for (size_t i = 0; i < _nDualPointsI; i++) {
         for (size_t j = 0; j < _nDualPointsJ-1; j++) {
             for (size_t k = 0; k < _nDualPointsK-1; k++) {
-                computeSurfaceVectorAndCG(_dualNodes(i,j,k), _dualNodes(i,j+1,k), _dualNodes(i,j+1,k+1), _dualNodes(i,j,k+1), _surfacesI(i,j,k), _centersI(i,j,k));
+                computeSurfaceVectorAndCenter(
+                    _dualNodes(i,j,k), 
+                    _dualNodes(i,j+1,k), 
+                    _dualNodes(i,j+1,k+1), 
+                    _dualNodes(i,j,k+1), 
+                    _surfacesI(i,j,k), 
+                    _centersI(i,j,k));
             }
         }
     }
@@ -140,7 +135,13 @@ void Mesh::computeMeshInterfaces() {
     for (size_t i = 0; i < _nDualPointsI-1; i++) {
         for (size_t j = 0; j < _nDualPointsJ; j++) {
             for (size_t k = 0; k < _nDualPointsK-1; k++) {
-                computeSurfaceVectorAndCG(_dualNodes(i,j,k), _dualNodes(i,j,k+1), _dualNodes(i+1,j,k+1), _dualNodes(i+1,j,k), _surfacesJ(i,j,k), _centersJ(i,j,k));
+                computeSurfaceVectorAndCenter(
+                    _dualNodes(i,j,k), 
+                    _dualNodes(i,j,k+1), 
+                    _dualNodes(i+1,j,k+1), 
+                    _dualNodes(i+1,j,k), 
+                    _surfacesJ(i,j,k), 
+                    _centersJ(i,j,k));
             }
         }
     }
@@ -149,15 +150,26 @@ void Mesh::computeMeshInterfaces() {
     for (size_t i = 0; i < _nDualPointsI-1; i++) {
         for (size_t j = 0; j < _nDualPointsJ-1; j++) {
             for (size_t k = 0; k < _nDualPointsK; k++) {
-                computeSurfaceVectorAndCG(_dualNodes(i,j,k), _dualNodes(i+1,j,k), _dualNodes(i+1,j+1,k), _dualNodes(i,j+1,k), _surfacesK(i,j,k), _centersK(i,j,k));
+                computeSurfaceVectorAndCenter(
+                    _dualNodes(i,j,k), 
+                    _dualNodes(i+1,j,k), 
+                    _dualNodes(i+1,j+1,k), 
+                    _dualNodes(i,j+1,k), 
+                    _surfacesK(i,j,k), 
+                    _centersK(i,j,k));
             }
         }
     }
-
-
 }
 
-void Mesh::computeSurfaceVectorAndCG(const Vector3D &p1, const Vector3D &p2, const Vector3D &p3, const Vector3D &p4, Vector3D &normal, Vector3D &center){
+void Mesh::computeSurfaceVectorAndCenter(
+    const Vector3D &p1, 
+    const Vector3D &p2, 
+    const Vector3D &p3, 
+    const Vector3D &p4, 
+    Vector3D &normal, 
+    Vector3D &center){
+
     // sides used to compute areas
     Vector3D a1, b1, a2, b2;
     a1 = p2 - p1;
@@ -165,21 +177,22 @@ void Mesh::computeSurfaceVectorAndCG(const Vector3D &p1, const Vector3D &p2, con
     a2 = p3 - p1;
     b2 = p4 - p3;
 
-    // compute areas
+    // compute areas dividing the rectangle in two triangles
     Vector3D surf1, surf2;
     surf1 = a1.cross(b1) / 2.0;
     surf2 = a2.cross(b2) / 2.0;
     normal = surf1 + surf2;
 
-    // compute centers
     Vector3D center1, center2;
     center1 = (p1 + p2 + p3) / 3.0;
     center2 = (p1 + p3 + p4) / 3.0;
     center = (center1 * surf1.magnitude() + center2 * surf2.magnitude()) / (surf1.magnitude() + surf2.magnitude());
 }
 
-FloatType Mesh::computeElementVolume(const std::vector<Vector3D> &boundSurfaces, const std::vector<Vector3D> &boundCenters) {
-    // Compute the volume using the Green-Gauss theorem
+FloatType Mesh::computeElementVolume(
+    const std::vector<Vector3D> &boundSurfaces, 
+    const std::vector<Vector3D> &boundCenters) {
+        
     FloatType volume {0.0};
     for (size_t i = 0; i < boundSurfaces.size(); ++i) {
         volume += boundSurfaces[i].x() * boundCenters[i].x();
@@ -187,7 +200,7 @@ FloatType Mesh::computeElementVolume(const std::vector<Vector3D> &boundSurfaces,
     return volume;
 }
 
-void Mesh::computeMeshVolumes() {
+void Mesh::computeFiniteVolumes() {
     std::cout << "Compute element volumes\n";
 
     for (size_t i = 0; i< _nPointsI; i++) {
@@ -202,6 +215,7 @@ void Mesh::computeMeshVolumes() {
                 boundSurfaces[3] = _surfacesI(i+1,j,k);
                 boundSurfaces[4] = _surfacesJ(i,j+1,k);
                 boundSurfaces[5] = _surfacesK(i,j,k+1);
+
                 boundCenters[0] = _centersI(i,j,k);
                 boundCenters[1] = _centersJ(i,j,k);
                 boundCenters[2] = _centersK(i,j,k); 
@@ -209,27 +223,23 @@ void Mesh::computeMeshVolumes() {
                 boundCenters[4] = _centersJ(i,j+1,k);
                 boundCenters[5] = _centersK(i,j,k+1);
 
-                // Compute the volume using the Green-Gauss theorem
                 _volumes(i,j,k) = computeElementVolume(boundSurfaces, boundCenters);
             }
         }
     }
 }
 
-void Mesh::computeMeshQuality() {
+void Mesh::computeMeshQualityStatistics() {
     _aspectRatio = computeAspectRatio();
-    
     _aspectRatioStats = Statistics(_aspectRatio);
 
     computeSkewnessAndOrthogonality(_skewness, _orthogonality);
-    
     _skewnessStats = Statistics(_skewness);
-    
     _orthogonalityStats = Statistics(_orthogonality);
 }
 
 void Mesh::computeSkewnessAndOrthogonality(std::vector<FloatType> &skewness, std::vector<FloatType> &orthogonality){
-    // internal faces along i --> do it in a single function???
+
     for (size_t i=1; i<_nPointsI-1; i++){
         for (size_t j=0; j<_nPointsJ; j++){
             for (size_t k=0; k<_nPointsK; k++){
@@ -317,14 +327,6 @@ Matrix3D<FloatType> Mesh::computeAspectRatio() {
 
 
 void Mesh::computeBoundaryAreas() {
-    std::array<BoundaryIndices, 6> BoundaryIndicesArray = {
-        BoundaryIndices::I_START,
-        BoundaryIndices::I_END,
-        BoundaryIndices::J_START,
-        BoundaryIndices::J_END,
-        BoundaryIndices::K_START,
-        BoundaryIndices::K_END
-    };
 
     _boundarySurfaces[BoundaryIndices::I_START] = _surfacesI.getBoundarySlice(BoundaryIndices::I_START);
     _boundarySurfaces[BoundaryIndices::I_END] = _surfacesI.getBoundarySlice(BoundaryIndices::I_END);
@@ -333,7 +335,14 @@ void Mesh::computeBoundaryAreas() {
     _boundarySurfaces[BoundaryIndices::K_START] = _surfacesK.getBoundarySlice(BoundaryIndices::K_START);
     _boundarySurfaces[BoundaryIndices::K_END] = _surfacesK.getBoundarySlice(BoundaryIndices::K_END);
 
-    // compute the areas for each boundary
+    std::array<BoundaryIndices, 6> BoundaryIndicesArray = {
+        BoundaryIndices::I_START,
+        BoundaryIndices::I_END,
+        BoundaryIndices::J_START,
+        BoundaryIndices::J_END,
+        BoundaryIndices::K_START,
+        BoundaryIndices::K_END
+    };
     for (const auto& index : BoundaryIndicesArray) {
         _boundaryAreas[index] = computeTotalSurfaceArea(_boundarySurfaces[index]);
     }
@@ -361,27 +370,26 @@ const Matrix3D<Vector3D>& Mesh::getMidPoints(FluxDirection direction) const {
 }
 
 
-void Mesh::computeDualGrid2D() {
+void Mesh::computeDualGrid2dTopology() {
     assert (_nDimensions == 2 && "Can only compute a 2D dual grid for a 2D mesh.");
-
     std::cout << "Computing dual grid coordinates for 2D mesh\n";
-
+    
     Matrix2D<Vector3D> nodes(_nDualPointsI, _nDualPointsJ);
 
-    // find internal dual nodes
+    // dual nodes internal to the volume
     for (size_t i = 1; i < _nDualPointsI-1; i++) {
         for (size_t j = 1; j < _nDualPointsJ-1; j++) {
             nodes(i,j) = (_vertices(i-1,j-1,0) + _vertices(i,j-1,0) + _vertices(i,j,0) + _vertices(i-1,j,0)) / 4.0;
         }
     }
     
-    // find the corner dual nodes
+    // on the corners
     nodes(0,0) = _vertices(0,0,0);
     nodes(0, _nDualPointsJ-1) = _vertices(0, _nPointsJ-1, 0);
     nodes(_nDualPointsI-1, 0) = _vertices(_nPointsI-1, 0, 0);
     nodes(_nDualPointsI-1, _nDualPointsJ-1) = _vertices(_nPointsI-1, _nPointsJ-1, 0);
 
-    // find dual nodes on edges
+    // on the edges
     for (size_t i = 1; i < _nDualPointsI-1; i++) {
         nodes(i, 0) = (_vertices(i-1,0,0) + _vertices(i,0,0)) / 2.0;
         nodes(i, _nDualPointsJ-1) = (_vertices(i-1, _nPointsJ-1, 0) + _vertices(i, _nPointsJ-1, 0)) / 2.0;
@@ -391,7 +399,8 @@ void Mesh::computeDualGrid2D() {
         nodes(_nDualPointsI-1, j) = (_vertices(_nPointsI-1, j-1, 0) + _vertices(_nPointsI-1, j, 0)) / 2.0;    
     }
 
-    if (_config.getTopology() == Topology::AXISYMMETRIC) { // build a wedge of 1 degree in the circumferential (k) direction
+    if (_config.getTopology() == Topology::AXISYMMETRIC) { 
+        // build a wedge of 1 degree in the circumferential (k) direction
         _wedgeAngle = 1.0 * M_PI / 180.0;
         for (size_t i = 0; i < _nDualPointsI; i++) {
             for (size_t j = 0; j < _nDualPointsJ; j++) {
@@ -406,8 +415,8 @@ void Mesh::computeDualGrid2D() {
             }
         }
     }
-    // for 2D and axisymmetric 2D use a unitary thickness in the third direction
     else {
+        // for 2D use a unitary thickness in the third direction
         _cellThickness = 1.0;
         for (size_t i = 0; i < _nDualPointsI; i++) {
             for (size_t j = 0; j < _nDualPointsJ; j++) {
@@ -426,24 +435,22 @@ void Mesh::computeDualGrid2D() {
 }
 
 
-void Mesh::computeDualGrid1D() {
+void Mesh::computeDualGrid1dTopology() {
     assert (_nDimensions == 1 && "Can only compute a 1D dual grid for a 1D mesh.");
-
     std::cout << "Computing dual grid coordinates for 1D mesh\n";
 
     Matrix2D<Vector3D> nodes(_nDualPointsI, 1); // use the same structure as 2D but with only one point in j direction
 
-    // find internal dual nodes on the straight line
+    // internal dual nodes
     for (size_t i = 1; i < _nDualPointsI-1; i++) {
         nodes(i,0) = (_vertices(i-1,0,0) + _vertices(i,0,0)) / 2.0;
     }
     
-    // find the extreme nodes
+    // extremes
     nodes(0,0) = _vertices(0,0,0);
     nodes(_nDualPointsI-1, 0) = _vertices(_nPointsI-1, 0, 0);
 
-
-    // now assign the coordinates
+    // build elements
     _cellThickness = 1.0;
     for (size_t i = 0; i < _nDualPointsI; i++) {
         // x-coords
@@ -468,7 +475,7 @@ void Mesh::computeDualGrid1D() {
 }
 
 
-void Mesh::computeDualGrid3D() {
+void Mesh::computeDualGrid3dTopology() {
     assert (_nDimensions == 3 && "Can only compute a 3D dual grid for a 3D mesh.");
     std::cout << "Computing dual grid coordinates for 3D mesh\n";
 
@@ -476,13 +483,14 @@ void Mesh::computeDualGrid3D() {
     for (size_t i = 1; i < _nDualPointsI-1; i++) {
         for (size_t j = 1; j < _nDualPointsJ-1; j++) {
             for (size_t k = 1; k < _nDualPointsK-1; k++){
-                _dualNodes(i,j,k) = (_vertices(i-1,j-1,k-1) + _vertices(i,j-1,k-1) + _vertices(i-1,j,k-1) + _vertices(i-1,j-1,k) + \
-                                     _vertices(i  ,j,  k-1) + _vertices(i,j-1,k)   + _vertices(i-1,j,k)   + _vertices(i  ,j  ,k) ) / 8.0;
+                _dualNodes(i,j,k) = (
+                    _vertices(i-1,j-1,k-1) + _vertices(i,j-1,k-1) + _vertices(i-1,j,k-1) + _vertices(i-1,j-1,k) + \
+                    _vertices(i  ,j,  k-1) + _vertices(i,j-1,k)   + _vertices(i-1,j,k)   + _vertices(i  ,j  ,k) ) / 8.0;
             }
         }
     }
     
-    // corner dual nodes
+    // corners
     _dualNodes(0,0,0) = _vertices(0,0,0);
     _dualNodes(_nDualPointsI-1, 0, 0) = _vertices(_nPointsI-1, 0, 0);
     _dualNodes(0, _nDualPointsJ-1, 0) = _vertices(0, _nPointsJ-1, 0);
@@ -492,55 +500,60 @@ void Mesh::computeDualGrid3D() {
     _dualNodes(0, _nDualPointsJ-1, _nDualPointsK-1) = _vertices(0, _nPointsJ-1, _nPointsK-1);
     _dualNodes(_nDualPointsI-1, _nDualPointsJ-1, _nDualPointsK-1) = _vertices(_nPointsI-1, _nPointsJ-1, _nPointsK-1);
 
-
     // edges
     // i-oriented
     for (size_t i=1; i<_nDualPointsI-1; i++) {
         _dualNodes(i,0,0) = (_vertices(i-1,0,0) + _vertices(i,0,0)) / 2.0;
         _dualNodes(i,_nDualPointsJ-1,0) = (_vertices(i-1,_nPointsJ-1,0) + _vertices(i,_nPointsJ-1,0)) / 2.0;
         _dualNodes(i,0,_nDualPointsK-1) = (_vertices(i-1,0,_nPointsK-1) + _vertices(i,0,_nPointsK-1)) / 2.0;
-        _dualNodes(i,_nDualPointsJ-1,_nDualPointsK-1) = (_vertices(i-1,_nPointsJ-1,_nPointsK-1) + _vertices(i,_nPointsJ-1,_nPointsK-1)) / 2.0;
+        _dualNodes(i,_nDualPointsJ-1,_nDualPointsK-1) = (
+            _vertices(i-1,_nPointsJ-1,_nPointsK-1) + _vertices(i,_nPointsJ-1,_nPointsK-1)) / 2.0;
     }
     // j-oriented
     for (size_t j=1; j<_nDualPointsJ-1; j++) {
         _dualNodes(0,j,0) = (_vertices(0,j-1,0) + _vertices(0,j,0)) / 2.0;
         _dualNodes(_nDualPointsI-1,j,0) = (_vertices(_nPointsI-1,j-1,0) + _vertices(_nPointsI-1,j,0)) / 2.0;
         _dualNodes(0,j,_nDualPointsK-1) = (_vertices(0,j-1,_nPointsK-1) + _vertices(0,j,_nPointsK-1)) / 2.0;
-        _dualNodes(_nDualPointsI-1,j,_nDualPointsK-1) = (_vertices(_nPointsI-1,j-1,_nPointsK-1) + _vertices(_nPointsI-1,j,_nPointsK-1)) / 2.0;
+        _dualNodes(_nDualPointsI-1,j,_nDualPointsK-1) = (
+            _vertices(_nPointsI-1,j-1,_nPointsK-1) + _vertices(_nPointsI-1,j,_nPointsK-1)) / 2.0;
     }
     // k-oriented
     for (size_t k=1; k<_nDualPointsK-1; k++) {
         _dualNodes(0,0,k) = (_vertices(0,0,k-1) + _vertices(0,0,k)) / 2.0;
         _dualNodes(_nDualPointsI-1,0,k) = (_vertices(_nPointsI-1,0,k-1) + _vertices(_nPointsI-1,0,k)) / 2.0;
         _dualNodes(0,_nDualPointsJ-1,k) = (_vertices(0,_nPointsJ-1,k-1) + _vertices(0,_nPointsJ-1,k)) / 2.0;
-        _dualNodes(_nDualPointsI-1,_nDualPointsJ-1,k) = (_vertices(_nPointsI-1,_nPointsJ-1,k-1) + _vertices(_nPointsI-1,_nPointsJ-1,k)) / 2.0;
+        _dualNodes(_nDualPointsI-1,_nDualPointsJ-1,k) = (
+            _vertices(_nPointsI-1,_nPointsJ-1,k-1) + _vertices(_nPointsI-1,_nPointsJ-1,k)) / 2.0;
     }
     
-
-    //boundaries
+    // external boundaries
     // i-faces
     for (size_t j=1; j<_nDualPointsJ-1; j++) {
         for (size_t k=1; k<_nDualPointsK-1; k++) {
             _dualNodes(0,j,k) = (_vertices(0,j-1,k-1) + _vertices(0,j,k-1) + _vertices(0,j-1,k) + _vertices(0,j,k)) / 4.0;
-            _dualNodes(_nDualPointsI-1,j,k) = (_vertices(_nPointsI-1,j-1,k-1) + _vertices(_nPointsI-1,j,k-1) + _vertices(_nPointsI-1,j-1,k) + _vertices(_nPointsI-1,j,k)) / 4.0;
+            _dualNodes(_nDualPointsI-1,j,k) = (
+                _vertices(_nPointsI-1,j-1,k-1) + _vertices(_nPointsI-1,j,k-1) + 
+                _vertices(_nPointsI-1,j-1,k) + _vertices(_nPointsI-1,j,k)) / 4.0;
         }
     }
     // j-faces
     for (size_t i=1; i<_nDualPointsI-1; i++) {
         for (size_t k=1; k<_nDualPointsK-1; k++) {
             _dualNodes(i,0,k) = (_vertices(i-1,0,k-1) + _vertices(i,0,k-1) + _vertices(i-1,0,k) + _vertices(i,0,k)) / 4.0;
-            _dualNodes(i,_nDualPointsJ-1,k) = (_vertices(i-1,_nPointsJ-1,k-1) + _vertices(i,_nPointsJ-1,k-1) + _vertices(i-1,_nPointsJ-1,k) + _vertices(i,_nPointsJ-1,k)) / 4.0;
+            _dualNodes(i,_nDualPointsJ-1,k) = (
+                _vertices(i-1,_nPointsJ-1,k-1) + _vertices(i,_nPointsJ-1,k-1) +
+                 _vertices(i-1,_nPointsJ-1,k) + _vertices(i,_nPointsJ-1,k)) / 4.0;
         }
     }
     // k-faces
     for (size_t i=1; i<_nDualPointsI-1; i++) {
         for (size_t j=1; j<_nDualPointsJ-1; j++) {
             _dualNodes(i,j,0) = (_vertices(i-1,j-1,0) + _vertices(i,j-1,0) + _vertices(i-1,j,0) + _vertices(i,j,0)) / 4.0;
-            _dualNodes(i,j,_nDualPointsK-1) = (_vertices(i-1,j-1,_nPointsK-1) + _vertices(i,j-1,_nPointsK-1) + _vertices(i-1,j,_nPointsK-1) + _vertices(i,j,_nPointsK-1)) / 4.0;
+            _dualNodes(i,j,_nDualPointsK-1) = (
+                _vertices(i-1,j-1,_nPointsK-1) + _vertices(i,j-1,_nPointsK-1) +
+                 _vertices(i-1,j,_nPointsK-1) + _vertices(i,j,_nPointsK-1)) / 4.0;
         }
     }
-
-    
 }
 
 void Mesh::getElementEdges(size_t i, size_t j, size_t k, Vector3D &iEdge, Vector3D &jEdge, Vector3D &kEdge) const {
@@ -559,32 +572,28 @@ void Mesh::computeInputGradients() {
     if (_config.isBFMActive()){
         _gradientsMap[FieldNames::BLOCKAGE] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
         auto blockage = getInputFields(FieldNames::BLOCKAGE);
-        computeGradientGreenGauss(_surfacesI, _surfacesJ, _surfacesK, 
-                                    _centersI, _centersJ, _centersK, 
-                                    _vertices, _volumes, blockage, _gradientsMap[FieldNames::BLOCKAGE]);
+        computeGradientGreenGauss(
+            _surfacesI, _surfacesJ, _surfacesK, 
+            _centersI, _centersJ, _centersK, 
+            _vertices, _volumes, blockage, 
+            _gradientsMap[FieldNames::BLOCKAGE]);
     }
 }
 
 
 void Mesh::checkPeriodicity(FloatType angle, FloatType translation) {
-    const FloatType tolerance = 1e-3;  // tighter tolerance, adjust as needed
+    const FloatType tolerance = 1E-4;  
     const Vector3D& drag{0.0, 0.0, translation};
     
     for (size_t i = 0; i < _nPointsI; ++i) {
         for (size_t j = 0; j < _nPointsJ; ++j) {
-
-            
             const Vector3D& pointA = _vertices(i, j, 0);
             const Vector3D& pointB = _vertices(i, j, _nPointsK - 1) - drag;
 
-            // Compute angular positions
             const FloatType thetaA = atan2FromZeroTo2pi(pointA.z(), pointA.y());
             const FloatType thetaB = atan2FromZeroTo2pi(pointB.z(), pointB.y());
-
-            // Compute minimal angular difference, modulo 2π
             FloatType deltaTheta = std::fmod(thetaB - thetaA, 2.0 * M_PI);
 
-            // Check angular periodicity
             if (std::abs(deltaTheta - angle) > tolerance) {
                 std::ostringstream msg;
                 msg << "Periodicity check failed at (i,j)=("
@@ -593,8 +602,7 @@ void Mesh::checkPeriodicity(FloatType angle, FloatType translation) {
                 throw std::invalid_argument(msg.str());
             }
 
-            // Optionally, check axial (x) periodicity if translation ≠ 0
-            if (std::abs(translation) > 1e-12 && angle==0.0) {
+            if (std::abs(translation) > 1e-6 && angle==0.0) {
                 const FloatType dz = pointB.z() - pointA.z();
                 if (std::abs(dz) > tolerance) {
                     std::ostringstream msg;
@@ -625,6 +633,7 @@ void Mesh::computeUniformFlowDirection(Vector3D initDirection, Matrix3D<Vector3D
 void Mesh::computeAdaptiveFlowDirection(Matrix3D<Vector3D> &flowDirection) const{
     std::cout << "Adaptive flow direction initialization" << std::endl;
 
+    // up to last-1 point in the streamwise direction
     for (size_t i=0; i<_nPointsI-1; i++){
         for (size_t j=0; j<_nPointsJ; j++){
             for (size_t k=0; k<_nPointsK; k++){
@@ -646,9 +655,8 @@ void Mesh::computeAdaptiveFlowDirection(Matrix3D<Vector3D> &flowDirection) const
 }
 
 
-void Mesh::writeMeshQualityStats() const {
+void Mesh::writeMeshQualityStatistics() const {
     std::string _meshQualityFolderName = "Mesh_Quality";
-    // Create directory if it doesn't exist
     try {
         if (!std::filesystem::exists(_meshQualityFolderName))
             std::filesystem::create_directories(_meshQualityFolderName);
@@ -656,12 +664,10 @@ void Mesh::writeMeshQualityStats() const {
         std::cerr << "Error creating directory: " << e.what() << std::endl;
         return;
     }
-
     writeDataToCsv(_skewness, _meshQualityFolderName + "/skewness.csv");
     writeDataToCsv(_orthogonality, _meshQualityFolderName + "/orthogonality.csv");
     writeDataToCsv(_aspectRatio.getData(), _meshQualityFolderName + "/aspect_ratio.csv");
 }
-
 
 void Mesh::setPeriodicMesh(FloatType periodicityAngle, FloatType periodicityTranslation) {
     _periodicityAngleRad = periodicityAngle;

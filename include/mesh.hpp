@@ -6,173 +6,194 @@
 #include "input.hpp"
 #include <filesystem>
 
-/** 
-  *  \brief     Class handling mesh capabilities.
-  *  \details   It computes the finite volume mesh.
-  *  \author    Francesco Neri
-  */
 class Mesh {
     
-    public:
-        Mesh(Config &config);
-        ~Mesh() {};
+public:
+    Mesh(Config &config);
+    
+    ~Mesh() {};
 
-        FloatType computeElementVolume(const std::vector<Vector3D> &boundSurfaces, const std::vector<Vector3D> &boundCenters);
+    FloatType computeElementVolume(
+        const std::vector<Vector3D> &boundSurfaces, 
+        const std::vector<Vector3D> &boundCenters);
 
-        const Matrix3D<Vector3D>& getSurfaces(FluxDirection direction) const;
+    const Matrix3D<Vector3D>& getSurfaces(FluxDirection direction) const;
 
-        const Matrix3D<Vector3D>& getMidPoints(FluxDirection direction) const;
+    const Matrix3D<Vector3D>& getMidPoints(FluxDirection direction) const;
 
-        const Matrix3D<Vector3D>& getSurfacesI() const {return _surfacesI;}
+    const Matrix3D<Vector3D>& getSurfacesI() const {
+        return _surfacesI;
+    }
 
-        FloatType getPeriodicityAngleRad() {return _periodicityAngleRad;}
+    FloatType getPeriodicityAngleRad() {
+        return _periodicityAngleRad;
+    }
 
-        FloatType getPeriodicityAngleDeg() {return _periodicityAngleRad * 180.0 / M_PI;}
-        
-        const Matrix3D<Vector3D>& getMidPointsI() const {return _centersI;}
+    FloatType getPeriodicityAngleDeg() {
+        return _periodicityAngleRad * 180.0 / M_PI;
+    }
+    
+    const Matrix3D<Vector3D>& getMidPointsI() const {
+        return _centersI;
+    }
 
-        const Matrix3D<Vector3D>& getSurfacesJ() const {return _surfacesJ;}
-        
-        const Matrix3D<Vector3D>& getMidPointsJ() const {return _centersJ;}
+    const Matrix3D<Vector3D>& getSurfacesJ() const {
+        return _surfacesJ;
+    }
+    
+    const Matrix3D<Vector3D>& getMidPointsJ() const {
+        return _centersJ;
+    }
 
-        const Matrix3D<Vector3D>& getSurfacesK() const {return _surfacesK;}
+    const Matrix3D<Vector3D>& getSurfacesK() const {
+        return _surfacesK;
+    }
 
-        const Matrix3D<Vector3D>& getMidPointsK() const {return _centersK;}
-        
-        const Matrix3D<Vector3D> getVertices() const {return _vertices;}
+    const Matrix3D<Vector3D>& getMidPointsK() const {
+        return _centersK;
+    }
+    
+    const Matrix3D<Vector3D> getVertices() const {
+        return _vertices;
+    }
 
-        const Vector3D& getVertex(size_t i, size_t j, size_t k) const {return _vertices(i,j,k);}
+    const Vector3D& getVertex(size_t i, size_t j, size_t k) const {
+        return _vertices(i,j,k);
+    }
 
-        inline FloatType getRadius(size_t i, size_t j, size_t k) const {return std::sqrt(_vertices(i,j,k).y()*_vertices(i,j,k).y() + _vertices(i,j,k).z()*_vertices(i,j,k).z());}
+    inline FloatType getRadius(size_t i, size_t j, size_t k) const {
+        return std::sqrt(_vertices(i,j,k).y()*_vertices(i,j,k).y() + _vertices(i,j,k).z()*_vertices(i,j,k).z());
+    }
 
-        inline FloatType getTheta(size_t i, size_t j, size_t k) const {return std::atan2(_vertices(i,j,k).z(), _vertices(i,j,k).y());}
-        
-        const Matrix3D<Vector3D> getDualNodes() const {return _dualNodes;}
-        
-        const Matrix3D<FloatType> getVolumes() const {return _volumes;}
+    inline FloatType getTheta(size_t i, size_t j, size_t k) const {
+        return std::atan2(_vertices(i,j,k).z(), _vertices(i,j,k).y());
+    }
+    
+    const Matrix3D<Vector3D> getDualNodes() const {
+        return _dualNodes;
+    }
+    
+    const Matrix3D<FloatType> getVolumes() const {
+        return _volumes;
+    }
 
-        const FloatType getVolume(size_t i, size_t j, size_t k) const {return _volumes(i,j,k);}
+    const FloatType getVolume(size_t i, size_t j, size_t k) const {
+        return _volumes(i,j,k);
+    }
 
-        const Matrix3D<FloatType> getVolume() const {return _volumes;}
+    const size_t getNumberDimensions() const {
+        return _nDimensions;
+    }
 
-        const size_t getNumberDimensions() const {return _nDimensions;}
+    const size_t getNumberPointsI() const {
+        return _nPointsI;
+    }
+    
+    const size_t getNumberPointsJ() const {
+        return _nPointsJ;
+    }
+    
+    const size_t getNumberPointsK() const {
+        return _nPointsK;
+    }
 
-        const size_t getNumberPointsI() const {return _nPointsI;}
-        
-        const size_t getNumberPointsJ() const {return _nPointsJ;}
-        
-        const size_t getNumberPointsK() const {return _nPointsK;}
+    void getElementEdges(size_t i, size_t j, size_t k, Vector3D &iEdge, Vector3D &jEdge, Vector3D &kEdge) const;
 
-        void getElementEdges(size_t i, size_t j, size_t k, Vector3D &iEdge, Vector3D &jEdge, Vector3D &kEdge) const;
+    FloatType getBoundaryTotalArea(BoundaryIndices boundIndex) const {
+        return _boundaryAreas.at(boundIndex);
+    }
 
-        FloatType getBoundaryTotalArea(BoundaryIndices boundIndex) const {return _boundaryAreas.at(boundIndex);}
+    const Matrix2D<Vector3D> getMeshBoundary(BoundaryIndices boundIndex) const {
+        return _boundarySurfaces.at(boundIndex); 
+    }
 
-        const Matrix2D<Vector3D> getMeshBoundary(BoundaryIndices boundIndex) const {return _boundarySurfaces.at(boundIndex); }
+    void computeSurfaceVectorAndCenter(
+        const Vector3D &p1, 
+        const Vector3D &p2, 
+        const Vector3D &p3, 
+        const Vector3D &p4, 
+        Vector3D &normal, 
+        Vector3D &center);
 
-        // compute the surface vector and center of surface given 4 points
-        void computeSurfaceVectorAndCG(const Vector3D &p1, const Vector3D &p2, const Vector3D &p3, const Vector3D &p4, Vector3D &normal, Vector3D &center);
+    FloatType getWedgeAngle() const {
+        return _wedgeAngle;
+    }
 
-        FloatType getWedgeAngle() const {return _wedgeAngle;}
+    FloatType getInputFields(FieldNames fieldName, size_t i, size_t j, size_t k) const {
+        return _inputFile.getField(fieldName, i, j, k);
+    }
 
-        FloatType getInputFields(FieldNames fieldName, size_t i, size_t j, size_t k) const {return _inputFile.getField(fieldName, i, j, k);}
+    Matrix3D<FloatType> getInputFields(FieldNames fieldName) const {
+        return _inputFile.getField(fieldName);
+    }
 
-        Matrix3D<FloatType> getInputFields(FieldNames fieldName) const {return _inputFile.getField(fieldName);}
+    Vector3D getInputFieldsGradient(FieldNames fieldName, size_t i, size_t j, size_t k) const {
+        return _gradientsMap.at(fieldName)(i, j, k);
+    }
 
-        Vector3D getInputFieldsGradient(FieldNames fieldName, size_t i, size_t j, size_t k) const {return _gradientsMap.at(fieldName)(i, j, k);}
+    void computeInputGradients();
 
-        void computeInputGradients();
+    void checkPeriodicity(FloatType angle, FloatType translation);
 
-        void checkPeriodicity(FloatType angle, FloatType translation);
+    void setPeriodicMesh(FloatType angle, FloatType translation);
 
-        void setPeriodicMesh(FloatType angle, FloatType translation);
+    void computeAdaptiveFlowDirection(Matrix3D<Vector3D> &flowDirection) const;
 
-        /** \brief Compute the flow direction for each cell, following the mesh lines. It assumes that the inlet-outlet direction is the i-axis. Other directions not supported
-         * \param[out] flowDirection The flow direction array
-        */
-        void computeAdaptiveFlowDirection(Matrix3D<Vector3D> &flowDirection) const;
+    void computeUniformFlowDirection(Vector3D initDirection, Matrix3D<Vector3D> &flowDirection) const;
 
+    void writeMeshQualityStatistics() const;
 
-        /** \brief Compute the flow direction for each cell, copy pasting the values. Trivial 
-         * \param[in] initDirection The flow direction array
-         * \param[out] flowDirection The flow direction array
-        */
-        void computeUniformFlowDirection(Vector3D initDirection, Matrix3D<Vector3D> &flowDirection) const;
+    bool applyPeriodicTreatment() const {return _periodicMesh;}
 
-        void writeMeshQualityStats() const;
+private:
 
-        bool applyPeriodicTreatment() const {return _periodicMesh;}
+    void readPoints();
 
-    private:
-        const Config& _config;
+    void allocateMemory();
 
-        FloatType _periodicityAngleRad{0.0}, _periodicityTranslation{0.0};
+    void computeDualGrid2dTopology();
+    
+    void computeDualGrid3dTopology();
 
-        size_t _nPointsI, _nPointsJ, _nPointsK, _nPointsTotal;
+    void computeDualGrid1dTopology();
 
-        size_t _nDualPointsI, _nDualPointsJ, _nDualPointsK, _nDualPointsTotal;
-        
-        unsigned short int _nDimensions;
+    void computeMeshInterfaces();
 
-        Matrix3D<FloatType> _aspectRatio;
-        std::vector<FloatType> _skewness, _orthogonality;
+    void computeFiniteVolumes();
+    
+    void computeMeshQualityStatistics();
 
-        Input _inputFile;
+    void computeBoundaryAreas();
+    
+    void printMeshInfo();
 
-        Matrix3D<Vector3D> _surfacesI, _surfacesJ, _surfacesK;  // array of interfaces
+    Matrix3D<FloatType> computeAspectRatio();
 
-        Matrix3D<FloatType> _volumes; // array of cell volumes
+    void computeSkewnessAndOrthogonality(std::vector<FloatType> &skewness, std::vector<FloatType> &orthogonality);
 
-        Matrix3D<Vector3D> _vertices; // array of vertices coordinates
+private:
+    const Config& _config;
+    Input _inputFile;
 
-        Matrix3D<Vector3D> _dualNodes; // array of dual nodes coordinates
+    size_t _nPointsI, _nPointsJ, _nPointsK, _nPointsTotal;
+    size_t _nDualPointsI, _nDualPointsJ, _nDualPointsK, _nDualPointsTotal;
+    unsigned short int _nDimensions;
+    
+    Matrix3D<Vector3D> _surfacesI, _surfacesJ, _surfacesK; 
+    Matrix3D<FloatType> _volumes;
+    Matrix3D<Vector3D> _vertices;
+    Matrix3D<Vector3D> _dualNodes;
+    Matrix3D<Vector3D> _centersI, _centersJ, _centersK;
+    std::map<BoundaryIndices, FloatType> _boundaryAreas;
+    std::map<BoundaryIndices, Matrix2D<Vector3D>> _boundarySurfaces;
+    
+    FloatType _wedgeAngle {0.0}, _cellThickness {0.0}; 
+    FloatType _periodicityAngleRad{0.0}, _periodicityTranslation{0.0};
+    bool _periodicMesh {false};
 
-        Matrix3D<Vector3D> _centersI, _centersJ, _centersK; // array of cell center coordinates
-
-        FloatType _wedgeAngle {0.0}, _cellThickness {0.0}; // angle of the wedge used to compute the cell volume, or the thickness for 2d
-
-        std::map<BoundaryIndices, FloatType> _boundaryAreas;
-
-        std::map<BoundaryIndices, Matrix2D<Vector3D>> _boundarySurfaces;
-
-        Statistics _aspectRatioStats, _skewnessStats, _orthogonalityStats;
-
-        std::map<FieldNames, Matrix3D<Vector3D>> _gradientsMap;
-
-        bool _periodicMesh {false};
-
-        // read the coordinates from the mesh CSV file
-        void readPoints();
-
-        // allocate memory for nodes, surfaces, volumes and surface centers
-        void allocateMemory();
-
-        // compute the dual grid coordinates for a 2d mesh
-        void computeDualGrid2D();
-        
-        // compute the dual grid coordinates for a 3d mesh
-        void computeDualGrid3D();
-
-        // compute the dual grid coordinates for a 1d mesh
-        void computeDualGrid1D();
-
-        // compute the surface normals and centers 
-        void computeMeshInterfaces();
-
-        // compute the cell volumes
-        void computeMeshVolumes();
-        
-        // compute the mesh quality
-        void computeMeshQuality();
-
-        // compute the areas of the boundaries
-        void computeBoundaryAreas();
-        
-        // print some info on screen
-        void printMeshInfo();
-
-        // aspect ratio
-        Matrix3D<FloatType> computeAspectRatio();
-
-        void computeSkewnessAndOrthogonality(std::vector<FloatType> &skewness, std::vector<FloatType> &orthogonality);
-
+    Matrix3D<FloatType> _aspectRatio;
+    std::vector<FloatType> _skewness, _orthogonality;
+    Statistics _aspectRatioStats, _skewnessStats, _orthogonalityStats;
+    
+    std::map<FieldNames, Matrix3D<Vector3D>> _gradientsMap;
 };

@@ -137,14 +137,26 @@ void SolverEuler::initializeSolutionFromRestart(){
     Matrix3D<Vector3D> inputForceViscous;
     Matrix3D<Vector3D> inputForceInviscid;
     
-    readRestartFile(restartFileName, NI, NJ, NK, inputDensity, inputVelX, inputVelY, inputVelZ, inputTemperature, inputForceViscous, inputForceInviscid);
+    readRestartFile(
+        restartFileName, 
+        NI, 
+        NJ, 
+        NK, 
+        inputDensity, 
+        inputVelX, 
+        inputVelY, 
+        inputVelZ, 
+        inputTemperature, 
+        inputForceViscous, 
+        inputForceInviscid);
 
     if (NI != _nPointsI || NJ != _nPointsJ || NK != _nPointsK) {
         if (NI == _nPointsI && NJ == _nPointsJ && _config.getRestartType()=="axisymmetric") {
             axisymmetricRestart(inputDensity, inputVelX, inputVelY, inputVelZ, inputTemperature);
         }
         else if (NI == _nPointsI && NJ == _nPointsJ && _config.getRestartType()!="axisymmetric") {
-            std::cerr << "Restart file dimensions (I,J) coincides with solver dimensions, but K does not. If you want to restart in axisymmetric mode, specify RESTART_TYPE=axisymmetric\n";
+            std::cerr << "Restart file dimensions (I,J) coincides with solver dimensions, but K does not." << 
+                        "If you want to restart in axisymmetric mode, specify RESTART_TYPE=axisymmetric\n";
             exit(1);
         }
         else {
@@ -153,15 +165,28 @@ void SolverEuler::initializeSolutionFromRestart(){
         }
     }
     else {
-        standardRestart(inputDensity, inputVelX, inputVelY, inputVelZ, inputTemperature, inputForceViscous, inputForceInviscid);
+        standardRestart(
+            inputDensity, 
+            inputVelX, 
+            inputVelY, 
+            inputVelZ, 
+            inputTemperature, 
+            inputForceViscous, 
+            inputForceInviscid);
     }
     
 }
 
 
-void SolverEuler::standardRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, 
-                                   Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature, Matrix3D<Vector3D> &inputForceViscous, 
-                                   Matrix3D<Vector3D> &inputForceInviscid) {
+void SolverEuler::standardRestart(
+    Matrix3D<FloatType> &inputDensity, 
+    Matrix3D<FloatType> &inputVelX, 
+    Matrix3D<FloatType> &inputVelY, 
+    Matrix3D<FloatType> &inputVelZ, 
+    Matrix3D<FloatType> &inputTemperature, 
+    Matrix3D<Vector3D> &inputForceViscous, 
+    Matrix3D<Vector3D> &inputForceInviscid) {
+        
     for (size_t i=0; i<_nPointsI; i++) {
         for (size_t j=0; j<_nPointsJ; j++){
             for (size_t k=0; k<_nPointsK; k++){

@@ -7,15 +7,15 @@
 
 Input::Input(std::string filename){
     _filename = filename;
-    readCSVFile();
+    readCsvFile();
 }
 
 
-void Input::readCSVFile() {
+void Input::readCsvFile() {
     std::ifstream file(_filename);
     if (!file) {
         std::cerr << "Error opening coordinates CSV file '" << _filename << "'!\n";
-        std::exit(EXIT_FAILURE);  // EXIT_FAILURE = standard failure code
+        std::exit(EXIT_FAILURE); 
     }
 
     // Read header lines
@@ -95,6 +95,7 @@ FloatType Input::getField(FieldNames fieldName, size_t i, size_t j, size_t k) co
         return it->second(i, j, k);
     } else {
         // Handle missing key case appropriately
-        throw std::invalid_argument("FieldName not found in _fieldsMap.");
+        std::string errorMsg = FieldNameMapper::toString(fieldName) + " not found in: " + _filename;
+        throw std::invalid_argument(errorMsg);
     }
 };

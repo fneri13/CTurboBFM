@@ -6,27 +6,24 @@
 
 
 /** 
-*  \brief     Class handling base input table capabilities.
-*  \details   interface for input reading of csv table input files.
-*  \author    Francesco Neri
+*  \brief     Class handling input information from a csv table of quantities
 */
-
 class InputTable {
     
-    public:
-        InputTable() {};
+public:
+    InputTable() = default;
 
-        InputTable(std::string filename);
+    InputTable(std::string filename);
 
-        std::vector<FloatType> getField(FieldNames fieldName) const {
-            return _fieldsMap.at(fieldName);
-        }
+    std::vector<FloatType> getField(FieldNames fieldName) const {
+        return _fieldsMap.at(fieldName);
+    }
 
-    private:
-        std::string _filename;
-        
-        std::map<FieldNames, std::vector<FloatType>> _fieldsMap;        
+protected:    
+    void readCsvFile();
 
-        void readCSVFile();
+private:
+    std::string _filename;
+    std::map<FieldNames, std::vector<FloatType>> _fieldsMap;        
 
 };

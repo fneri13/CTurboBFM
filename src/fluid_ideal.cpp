@@ -106,7 +106,15 @@ FloatType FluidIdeal::computeEntropy_p_rho(FloatType pressure, FloatType density
     return pressure / std::pow(density, _gamma);
 }
 
-void FluidIdeal::computeInitFields(FloatType initMach, FloatType initTemperature, FloatType initPressure, Vector3D flowDirection, FloatType &density, Vector3D &velocity, FloatType &totEnergy){
+void FluidIdeal::computeInitFields(
+    FloatType initMach, 
+    FloatType initTemperature, 
+    FloatType initPressure, 
+    Vector3D flowDirection, 
+    FloatType &density, 
+    Vector3D &velocity, 
+    FloatType &totEnergy){
+
     FloatType soundSpeed = std::sqrt(_gamma*_R*initTemperature);
     velocity = (flowDirection / flowDirection.magnitude()) * soundSpeed * initMach;
     density = computeDensity_p_T(initPressure, initTemperature);
@@ -130,8 +138,12 @@ FloatType FluidIdeal::computeEntropy_p_T(FloatType pressure, FloatType temperatu
     return entropy;
 }
 
-Matrix3D<FloatType> FluidIdeal::computeTemperature_conservative(Matrix3D<FloatType>& rho, Matrix3D<FloatType>& ux, Matrix3D<FloatType>& uy, 
-                                                                 Matrix3D<FloatType>& uz, Matrix3D<FloatType>& et) const {
+Matrix3D<FloatType> FluidIdeal::computeTemperature_conservative(
+    Matrix3D<FloatType>& rho, 
+    Matrix3D<FloatType>& ux, 
+    Matrix3D<FloatType>& uy, 
+    Matrix3D<FloatType>& uz, 
+    Matrix3D<FloatType>& et) const {
     
     Matrix3D<FloatType> temperature = (et - (ux * ux + uy * uy + uz * uz) * 0.5) * ((_gamma-1.0)/_R);
     return temperature;

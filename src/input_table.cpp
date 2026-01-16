@@ -7,11 +7,11 @@
 
 InputTable::InputTable(std::string filename){
     _filename = filename;
-    readCSVFile();
+    readCsvFile();
 }
 
 
-void InputTable::readCSVFile() {
+void InputTable::readCsvFile() {
     std::ifstream file(_filename);
     if (!file.is_open()) {
         std::cerr << "Error opening file: " << _filename << std::endl;
@@ -40,7 +40,6 @@ void InputTable::readCSVFile() {
         std::stringstream ss(line);
         std::string item;
         size_t index = 0;
-
         while (std::getline(ss, item, ',')) {
             if (index >= fieldOrder.size()) break;
             try {

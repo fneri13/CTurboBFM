@@ -22,20 +22,19 @@ SolverBase::SolverBase(Config& config, Mesh& mesh)
     }
     else if (_fluidModel == FluidModel::REAL){
         throw std::runtime_error("Real fluid model not implemented yet.");
-        // _fluid = std::make_unique<CFluidReal>(_config.getFluidRealDataFile());
     }
     else{
         throw std::runtime_error("Unsupported fluid model selected.");
     }
 
-    ConvectionScheme advScheme = _config.getConvectionScheme();
-    switch (advScheme)
+    AdvectionScheme advectionScheme = _config.getAdvectionScheme();
+    switch (advectionScheme)
     {
-    case ConvectionScheme::JST:
-        _advectionScheme = std::make_unique<AdvectionJst>(_config, *_fluid);
+    case AdvectionScheme::JST:
+        _advection = std::make_unique<AdvectionJst>(_config, *_fluid);
         break;
-    case ConvectionScheme::ROE:
-        _advectionScheme = std::make_unique<AdvectionRoe>(_config, *_fluid);
+    case AdvectionScheme::ROE:
+        _advection = std::make_unique<AdvectionRoe>(_config, *_fluid);
         break;
     default:
         throw std::runtime_error("Unsupported convection scheme selected.");
@@ -46,7 +45,9 @@ SolverBase::SolverBase(Config& config, Mesh& mesh)
 }
 
 void SolverBase::readBoundaryConditions(){
-    std::array<BoundaryIndices, 6> bounds = {BoundaryIndices::I_START,
+
+    std::array<BoundaryIndices, 6> bounds = {
+        BoundaryIndices::I_START,
         BoundaryIndices::I_END,
         BoundaryIndices::J_START,
         BoundaryIndices::J_END,
@@ -58,9 +59,7 @@ void SolverBase::readBoundaryConditions(){
         _boundaryTypes[bound] = _config.getBoundaryType(bound);
     }
 
-    bool periodicityChecked = false;
-
-    // read the boundaries values
+    // read the boundary conditions values
     for (auto& bound : bounds) {
         if (_boundaryTypes[bound] == BoundaryType::INLET || _boundaryTypes[bound] == BoundaryType::INLET_SUPERSONIC) {
             _boundaryValues[bound] = _config.getInletBCValues();
@@ -69,7 +68,10 @@ void SolverBase::readBoundaryConditions(){
             _boundaryValues[bound] = std::vector<FloatType> {};
             _inlet2DfilePath = _config.getInlet2DfilePath();
         }
-        else if (_boundaryTypes[bound] == BoundaryType::OUTLET || _boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC || _boundaryTypes[bound] == BoundaryType::THROTTLE){
+        else if (_boundaryTypes[bound] == BoundaryType::OUTLET 
+                 || _boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC 
+                 || _boundaryTypes[bound] == BoundaryType::THROTTLE){
+
             _boundaryValues[bound] = _config.getOutletBCValues();
         }
         else if (_boundaryTypes[bound] == BoundaryType::RADIAL_EQUILIBRIUM){
@@ -77,59 +79,106 @@ void SolverBase::readBoundaryConditions(){
             _hubStaticPressure = _boundaryValues[bound][0];
         }
         else if (_boundaryTypes[bound] == BoundaryType::PERIODIC){
+            _mesh.checkPeriodicity();
             _boundaryValues[bound] = _config.getPeriodicityInfo();
-            if (!periodicityChecked) {
-                FloatType angle = _config.getPeriodicityAngleRad();
-                FloatType translation = _config.getPeriodicityTranslation();
-                _mesh.checkPeriodicity(angle, translation);
-                _mesh.setPeriodicMesh(angle, translation);
-                periodicityChecked = true;
-            }
         }
         else if (_boundaryTypes[bound] == BoundaryType::NO_SLIP_WALL){
             _boundaryVelocities[bound] = _config.getNoSlipWallVelocity(bound);
         }
         else {
+            // others type of boundaries don't need any other information -> zero length vector
             _boundaryValues[bound] = std::vector<FloatType> {};
         }
     }
 
-    // instantiate boundary condition objects
+    // instantiate boundary objects
     for (auto& bound : bounds) {
         if (_boundaryTypes[bound] == BoundaryType::WALL || _boundaryTypes[bound] == BoundaryType::NO_SLIP_WALL){
-            _boundaryConditions[bound] = std::make_unique<BoundaryInviscidWall>(_config, _mesh, *_fluid, bound);
+            _boundaryConditions[bound] = std::make_unique<BoundaryInviscidWall>(
+                _config, 
+                _mesh, 
+                *_fluid, 
+                bound);
         }
         else if (_boundaryTypes[bound] == BoundaryType::INLET){
-            _boundaryConditions[bound] = std::make_unique<BoundaryInlet>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
+            _boundaryConditions[bound] = std::make_unique<BoundaryInlet>(
+                _config, 
+                _mesh, 
+                *_fluid, 
+                bound, 
+                _boundaryValues[bound]);
         }
         else if (_boundaryTypes[bound] == BoundaryType::INLET_2D){
-            _boundaryConditions[bound] = std::make_unique<BoundaryInlet2D>(_config, _mesh, *_fluid, bound, _inlet2DfilePath);
+            _boundaryConditions[bound] = std::make_unique<BoundaryInlet2D>(
+                _config, 
+                _mesh, 
+                *_fluid, 
+                bound, 
+                _inlet2DfilePath);
         }
         else if (_boundaryTypes[bound] == BoundaryType::INLET_SUPERSONIC){
-            _boundaryConditions[bound] = std::make_unique<BoundaryInletSupersonic>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
+            _boundaryConditions[bound] = std::make_unique<BoundaryInletSupersonic>(
+                _config, 
+                _mesh, 
+                *_fluid, 
+                bound, 
+                _boundaryValues[bound]);
         }
         else if (_boundaryTypes[bound] == BoundaryType::OUTLET){
-            _boundaryConditions[bound] = std::make_unique<BoundaryOutlet>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
+            _boundaryConditions[bound] = std::make_unique<BoundaryOutlet>(
+                _config, 
+                _mesh, 
+                *_fluid, 
+                bound, 
+                _boundaryValues[bound]);
         }
         else if (_boundaryTypes[bound] == BoundaryType::RADIAL_EQUILIBRIUM){
-            _boundaryConditions[bound] = std::make_unique<BoundaryOutletRadialEquilibrium>(_config, _mesh, *_fluid, bound, _radialProfilePressure);
+            _boundaryConditions[bound] = std::make_unique<BoundaryOutletRadialEquilibrium>(
+                _config, 
+                _mesh, 
+                *_fluid, 
+                bound, 
+                _radialProfilePressure);
         }
         else if (_boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC){
-            _boundaryConditions[bound] = std::make_unique<BoundaryOutletSupersonic>(_config, _mesh, *_fluid, bound, _boundaryValues[bound]);
+            _boundaryConditions[bound] = std::make_unique<BoundaryOutletSupersonic>(
+                _config, 
+                _mesh, 
+                *_fluid, 
+                bound, 
+                _boundaryValues[bound]);
         }
         else if (_boundaryTypes[bound] == BoundaryType::THROTTLE){
-            _boundaryConditions[bound] = std::make_unique<BoundaryOutletThrottle>(_config, _mesh, *_fluid, bound, _radialProfilePressure);
+            _boundaryConditions[bound] = std::make_unique<BoundaryOutletThrottle>(
+                _config, 
+                _mesh, 
+                *_fluid, 
+                bound, 
+                _radialProfilePressure);
         }
         else if (_boundaryTypes[bound] == BoundaryType::WEDGE){
-            _boundaryConditions[bound] = std::make_unique<BoundaryFake>(_config, _mesh, *_fluid, bound);
+            _boundaryConditions[bound] = std::make_unique<BoundaryFake>(
+                _config, 
+                _mesh, 
+                *_fluid, 
+                bound);
         }
         else if (_boundaryTypes[bound] == BoundaryType::PERIODIC){
-            _boundaryConditions[bound] = std::make_unique<BoundaryFake>(_config, _mesh, *_fluid, bound);
+            _boundaryConditions[bound] = std::make_unique<BoundaryFake>(
+                _config, 
+                _mesh, 
+                *_fluid, 
+                bound);
         }
         else if (_boundaryTypes[bound] == BoundaryType::TRANSPARENT){
             assert (_mesh.getNumberPointsJ() == 1 && "Transparent boundary only valid for 1D meshes.");
             assert (_mesh.getNumberPointsK() == 1 && "Transparent boundary only valid for 1D meshes.");
-            _boundaryConditions[bound] = std::make_unique<BoundaryTransparent>(_config, _mesh, *_fluid, bound, *_advectionScheme);
+            _boundaryConditions[bound] = std::make_unique<BoundaryTransparent>(
+                _config, 
+                _mesh, 
+                *_fluid, 
+                bound, 
+                *_advection);
         }
     }
 }
@@ -146,7 +195,15 @@ const std::array<int, 3> SolverBase::getStepMask(FluxDirection direction) const 
 }
 
 
-void SolverBase::getBoundarySliceIndices(BoundaryIndices boundaryIdx, size_t &iStart, size_t &iLast, size_t &jStart, size_t &jLast, size_t &kStart, size_t &kLast) const{
+void SolverBase::getBoundarySliceIndices(
+    BoundaryIndices boundaryIdx, 
+    size_t &iStart, 
+    size_t &iLast, 
+    size_t &jStart, 
+    size_t &jLast, 
+    size_t &kStart, 
+    size_t &kLast) const{
+
     iStart=0, 
     iLast=_nPointsI, 
     jStart=0, 

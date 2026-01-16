@@ -133,7 +133,7 @@ public:
 
     void computeInputGradients();
 
-    void checkPeriodicity(FloatType angle, FloatType translation);
+    void checkPeriodicity();
 
     void setPeriodicMesh(FloatType angle, FloatType translation);
 

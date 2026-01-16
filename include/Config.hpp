@@ -195,7 +195,7 @@ public:
 
     FluidModel getFluidModel() const;
 
-    ConvectionScheme getConvectionScheme() const;
+    AdvectionScheme getAdvectionScheme() const;
 
     // get the coefficients for the Runge-Kutta time integration. (Taken from Simon thesis, page 64)
     std::vector<FloatType> getTimeIntegrationCoeffs() const ;

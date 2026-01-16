@@ -321,14 +321,14 @@ TimeStepMethod Config::getTimeStepMethod() const {
     return method;
 }
 
-ConvectionScheme Config::getConvectionScheme() const {
+AdvectionScheme Config::getAdvectionScheme() const {
     std::string value = parseString("CONVECTION_SCHEME");
-    ConvectionScheme scheme = ConvectionScheme::JST;
+    AdvectionScheme scheme = AdvectionScheme::JST;
     if (value == "JST") {
-        scheme = ConvectionScheme::JST;
+        scheme = AdvectionScheme::JST;
     } 
     else if (value == "ROE" || value == "roe" || value == "Roe") {
-        scheme = ConvectionScheme::ROE;
+        scheme = AdvectionScheme::ROE;
     }
     else {
         throw std::runtime_error("Invalid value for key \"CONVECTION_SCHEME\" in configuration.");

@@ -581,7 +581,11 @@ void Mesh::computeInputGradients() {
 }
 
 
-void Mesh::checkPeriodicity(FloatType angle, FloatType translation) {
+void Mesh::checkPeriodicity() {
+    
+    FloatType angle = _config.getPeriodicityAngleRad();
+    FloatType translation = _config.getPeriodicityTranslation();
+
     const FloatType tolerance = 1E-4;  
     const Vector3D& drag{0.0, 0.0, translation};
     
@@ -614,6 +618,8 @@ void Mesh::checkPeriodicity(FloatType angle, FloatType translation) {
             }
         }
     }
+    
+    setPeriodicMesh(angle, translation);
 }
 
 

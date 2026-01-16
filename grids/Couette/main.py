@@ -14,9 +14,9 @@ OUTPUT_FOLDER = 'Grid'
 LY = 0.83E-3 
 LX = 0.83E-3 
 LZ = LY * 5     # flow direction
-NX = 6          # not needed direction
-NY = 65
-NZ = 6 
+NX = 4          # not needed direction
+NY = 15
+NZ = 4 
 
 x = np.linspace(0, LX, NX)
 y = np.linspace(0, LY, NY)

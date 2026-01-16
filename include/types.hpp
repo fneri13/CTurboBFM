@@ -235,7 +235,7 @@ enum class FluxLimiter {
 
 
 /** @brief Enum class for convection schemes*/
-enum class ConvectionScheme {
+enum class AdvectionScheme {
     JST = 0,
     ROE = 1,
 };

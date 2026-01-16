@@ -9,16 +9,19 @@
 #include <string>
 
 SolverEuler::SolverEuler(Config& config, Mesh& mesh)
-    : SolverBase(config, mesh)  // Call base class constructor
+    : SolverBase(config, mesh)  
 {
     
-    // Allocate the memory for all the variables needed
     initializeSolutionArrays();
     
-    // Initialize csv output handler
-    _output = std::make_unique<OutputCSV>(_config, _mesh, _conservativeSolution, *_fluid, _inviscidForce, _viscousForce, _deviationAngle);
+    _output = std::make_unique<OutputCSV>(
+        _config, 
+        _mesh, 
+        _conservativeSolution, 
+        *_fluid, _inviscidForce, 
+        _viscousForce, 
+        _deviationAngle);
 
-    // Initialize BFM source term
     BFM_Model bfmModel = _config.getBFMModel();
     if (bfmModel == BFM_Model::HALL) {
         _bfmSource = std::make_unique<SourceBFMHall>(_config, *_fluid, _mesh);
@@ -41,33 +44,17 @@ SolverEuler::SolverEuler(Config& config, Mesh& mesh)
     else {
         throw std::runtime_error("Unsupported BFM model selected.");
     }
-
     _isBfmActive = _config.isBFMActive();
-    _isGongModelingActive = _config.isGongModelingActive();
-    
+    _isGongFormulationActive = _config.isGongFormulationActive();
 }
 
 
 void SolverEuler::initializeSolutionArrays(){
     _conservativeSolution.resize(_nPointsI, _nPointsJ, _nPointsK);
-    
-    _radialProfilePressure.resize(_nPointsJ);
-    _radialProfileRadialCoords.resize(_nPointsJ);
-    
     _inviscidForce.resize(_nPointsI, _nPointsJ, _nPointsK);
     _viscousForce.resize(_nPointsI, _nPointsJ, _nPointsK);
     _deviationAngle.resize(_nPointsI, _nPointsJ, _nPointsK);
 
-    // initialize arrays for gradients
-    _solutionGrad[SolutionNames::DENSITY] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
-    _solutionGrad[SolutionNames::VELOCITY_X] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
-    _solutionGrad[SolutionNames::VELOCITY_Y] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
-    _solutionGrad[SolutionNames::VELOCITY_Z] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
-    _solutionGrad[SolutionNames::TOTAL_ENERGY] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
-    _solutionGrad[SolutionNames::TEMPERATURE] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
-
-
-    // Initialize the solution either from scratch or from a restart file
     bool restartSolution = _config.restartSolution();
     if (restartSolution) {
         initializeSolutionFromRestart();
@@ -76,14 +63,21 @@ void SolverEuler::initializeSolutionArrays(){
         initializeSolutionFromScratch();
     }
 
-    // compute the initial gradients
+    _solutionGrad[SolutionNames::DENSITY] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
+    _solutionGrad[SolutionNames::VELOCITY_X] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
+    _solutionGrad[SolutionNames::VELOCITY_Y] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
+    _solutionGrad[SolutionNames::VELOCITY_Z] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
+    _solutionGrad[SolutionNames::TOTAL_ENERGY] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
+    _solutionGrad[SolutionNames::TEMPERATURE] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
+
     computeGradient(_conservativeSolution.getDensity(), _solutionGrad[SolutionNames::DENSITY]);
     computeGradient(_conservativeSolution.getVelocityX(), _solutionGrad[SolutionNames::VELOCITY_X]);
     computeGradient(_conservativeSolution.getVelocityY(), _solutionGrad[SolutionNames::VELOCITY_Y]);
     computeGradient(_conservativeSolution.getVelocityZ(), _solutionGrad[SolutionNames::VELOCITY_Z]);
     computeGradient(_conservativeSolution.getTotalEnergy(), _solutionGrad[SolutionNames::TOTAL_ENERGY]);
 
-    // Compute the radial coordinate of the radial profile points at exit (station ni-1)
+    _radialProfilePressure.resize(_nPointsJ);
+    _radialProfileRadialCoords.resize(_nPointsJ);
     size_t ni = _mesh.getNumberPointsI();
     size_t nj = _mesh.getNumberPointsJ();
     for (size_t j = 0; j < nj; j++) {
@@ -101,21 +95,26 @@ void SolverEuler::initializeSolutionFromScratch(){
     Vector3D initDirection = _config.getInitDirection();
 
     Matrix3D<Vector3D> flowDirection(_nPointsI, _nPointsJ, _nPointsK);
-
     if (initDirection == Vector3D{0.0, 0.0, 0.0}) { // alias for adaptive scenario
         _mesh.computeAdaptiveFlowDirection(flowDirection);
     }
-    else { // standard uniform initialization
+    else {
         _mesh.computeUniformFlowDirection(initDirection, flowDirection);    
     }
 
     FloatType density {0.0}, totEnergy {0.0};
     Vector3D velocity {0.0, 0.0, 0.0};
-    
     for (size_t i=0; i<_nPointsI; i++) {
         for (size_t j=0; j<_nPointsJ; j++){
             for (size_t k=0; k<_nPointsK; k++){
-                _fluid->computeInitFields(initMach, initTemperature, initPressure, flowDirection(i,j,k), density, velocity, totEnergy);
+                _fluid->computeInitFields(
+                    initMach, 
+                    initTemperature, 
+                    initPressure, 
+                    flowDirection(i,j,k), 
+                    density, 
+                    velocity, 
+                    totEnergy);
                 _conservativeSolution._rho(i,j,k) = density;
                 _conservativeSolution._rhoU(i,j,k) = density * velocity.x();
                 _conservativeSolution._rhoV(i,j,k) = density * velocity.y();
@@ -129,9 +128,7 @@ void SolverEuler::initializeSolutionFromScratch(){
 void SolverEuler::initializeSolutionFromRestart(){
     std::string restartFileName = _config.getRestartFilepath();
     
-    size_t NI=0, NJ=0, NK=0;
-    
-    // Allocate arrays for input data
+    size_t NI=0, NJ=0, NK=0;    
     Matrix3D<FloatType> inputDensity;
     Matrix3D<FloatType> inputVelX;
     Matrix3D<FloatType> inputVelY;
@@ -1318,7 +1315,7 @@ void SolverEuler::computeSolutionGradient(FlowSolution &sol, std::map<SolutionNa
     Matrix3D<FloatType> et = sol.getTotalEnergy();
 
     // Gong source terms need all the gradient of primitive
-    if (_config.isGongModelingActive()){
+    if (_config.isGongFormulationActive()){
         computeGradient(rho, solutionGrad[SolutionNames::DENSITY]);
         computeGradient(ux, solutionGrad[SolutionNames::VELOCITY_X]);
         computeGradient(uy, solutionGrad[SolutionNames::VELOCITY_Y]);

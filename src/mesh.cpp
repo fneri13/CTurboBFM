@@ -335,7 +335,7 @@ void Mesh::computeBoundaryAreas() {
 
     // compute the areas for each boundary
     for (const auto& index : BoundaryIndicesArray) {
-        _boundaryAreas[index] = computeSurfaceIntegral(_boundarySurfaces[index]);
+        _boundaryAreas[index] = computeTotalSurfaceArea(_boundarySurfaces[index]);
     }
 
 }
@@ -578,8 +578,8 @@ void Mesh::checkPeriodicity(FloatType angle, FloatType translation) {
             const Vector3D& pointB = _vertices(i, j, _nPointsK - 1) - drag;
 
             // Compute angular positions
-            const FloatType thetaA = atan2_from0_to2pi(pointA.z(), pointA.y());
-            const FloatType thetaB = atan2_from0_to2pi(pointB.z(), pointB.y());
+            const FloatType thetaA = atan2FromZeroTo2pi(pointA.z(), pointA.y());
+            const FloatType thetaB = atan2FromZeroTo2pi(pointB.z(), pointB.y());
 
             // Compute minimal angular difference, modulo 2π
             FloatType deltaTheta = std::fmod(thetaB - thetaA, 2.0 * M_PI);
@@ -657,9 +657,9 @@ void Mesh::writeMeshQualityStats() const {
         return;
     }
 
-    writeDataToCSV(_skewness, _meshQualityFolderName + "/skewness.csv");
-    writeDataToCSV(_orthogonality, _meshQualityFolderName + "/orthogonality.csv");
-    writeDataToCSV(_aspectRatio.getData(), _meshQualityFolderName + "/aspect_ratio.csv");
+    writeDataToCsv(_skewness, _meshQualityFolderName + "/skewness.csv");
+    writeDataToCsv(_orthogonality, _meshQualityFolderName + "/orthogonality.csv");
+    writeDataToCsv(_aspectRatio.getData(), _meshQualityFolderName + "/aspect_ratio.csv");
 }
 
 

@@ -10,7 +10,7 @@ StateVector SourceBFMHall::computeBodyForceSource(size_t i, size_t j, size_t k, 
     FloatType forceMagnitude = _relativeVelocityCylindric.dot(_relativeVelocityCylindric) * M_PI * _deviationAngle / _pitch / std::abs(_normalCamberTangential);
     
     Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceMagnitude;
-    Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
+    Vector3D forceCartesian = computeCartesianComponentsFromCylindrical(forceCylindrical, _theta);
     
     inviscidForce(i, j, k) = forceCartesian;
     viscousForce(i, j, k) = Vector3D(0,0,0);

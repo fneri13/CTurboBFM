@@ -114,7 +114,7 @@ void OutputBase::getScalarFieldsMap(std::map<std::string, Matrix3D<FloatType>>& 
                                                     _mesh.getVertex(i, j, k).y() * _mesh.getVertex(i, j, k).y());
                         theta = std::atan2(_mesh.getVertex(i, j, k).z(), _mesh.getVertex(i, j, k).y());
                         gridVelCyl = {0.0, 0.0, omega * radius};
-                        gridVelCart = computeCartesianVectorFromCylindrical(gridVelCyl, theta);
+                        gridVelCart = computeCartesianComponentsFromCylindrical(gridVelCyl, theta);
 
                         scalarsMap["Grid Velocity X"](i, j, k) = gridVelCart.x();
                         scalarsMap["Grid Velocity Y"](i, j, k) = gridVelCart.y();

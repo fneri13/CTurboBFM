@@ -83,13 +83,13 @@ void SourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateVe
     
     // flow kinematics
     _velocityCartesian = {primitive[1], primitive[2], primitive[3]};
-    _velocityCylindrical = computeCylindricalVectorFromCartesian(_velocityCartesian, _theta);
+    _velocityCylindrical = computeCylindricalComponentsFromCartesian(_velocityCartesian, _theta);
     
     // relative flow kinematics
     _omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
     _dragVelocityCylindrical = {0, 0, _omega * _radius};
     _relativeVelocityCylindric = _velocityCylindrical - _dragVelocityCylindrical;
-    _relativeVelocityCartesian = computeCartesianVectorFromCylindrical(_relativeVelocityCylindric, _theta);
+    _relativeVelocityCartesian = computeCartesianComponentsFromCylindrical(_relativeVelocityCylindric, _theta);
     _velMeridional = std::sqrt(_velocityCylindrical.x() * _velocityCylindrical.x() + 
                                 _velocityCylindrical.y() * _velocityCylindrical.y());
 
@@ -121,7 +121,7 @@ void SourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateVe
 
     // Directions of the force components (the inviscid one is considered positive from suction to pressure side, when the blade is pushing the flow)
     _inviscidForceDirectionCylindrical = computeInviscidForceDirection(_relativeVelocityCylindric, _normalCamberCylindric);
-    _inviscidForceDirectionCartesian = computeCartesianVectorFromCylindrical(_inviscidForceDirectionCylindrical, _theta);
+    _inviscidForceDirectionCartesian = computeCartesianComponentsFromCylindrical(_inviscidForceDirectionCylindrical, _theta);
     _viscousForceDirectionCylindrical = - _relativeVelocityCylindric.normalized();
     _viscousForceDirectionCartesian = - _relativeVelocityCartesian.normalized();
 
@@ -133,14 +133,14 @@ void SourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateVe
     StateVector conservativeInlet = conservativeVars.at(_leadingEdgeIdx, j, k);
     StateVector conservativeOutlet = conservativeVars.at(_trailingEdgeIdx, j, k);
 
-    StateVector primitiveInlet = getEulerPrimitiveFromConservative(conservativeInlet);
-    StateVector primitiveOutlet = getEulerPrimitiveFromConservative(conservativeOutlet);
+    StateVector primitiveInlet = getPrimitiveVariablesFromConservative(conservativeInlet);
+    StateVector primitiveOutlet = getPrimitiveVariablesFromConservative(conservativeOutlet);
 
     Vector3D velocityInlet = {primitiveInlet[1], primitiveInlet[2], primitiveInlet[3]};
     Vector3D velocityOutlet = {primitiveOutlet[1], primitiveOutlet[2], primitiveOutlet[3]};
 
-    Vector3D velocityInletCyl = computeCylindricalVectorFromCartesian(velocityInlet, _theta);
-    Vector3D velocityOutletCyl = computeCylindricalVectorFromCartesian(velocityOutlet, _theta);
+    Vector3D velocityInletCyl = computeCylindricalComponentsFromCartesian(velocityInlet, _theta);
+    Vector3D velocityOutletCyl = computeCylindricalComponentsFromCartesian(velocityOutlet, _theta);
 
     FloatType radiusInlet = _mesh.getRadius(_leadingEdgeIdx, j, k);
     FloatType radiusOutlet = _mesh.getRadius(_trailingEdgeIdx, j, k);

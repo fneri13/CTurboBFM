@@ -16,7 +16,7 @@ StateVector BoundaryInlet::computeBoundaryFlux(
 
     if (_referenceFrame == ReferenceFrame::CYLINDRICAL){
         FloatType theta = _mesh.getTheta(indices[0], indices[1], indices[2]);
-        flowDirection = computeCartesianVectorFromCylindrical(flowDirection, theta);
+        flowDirection = computeCartesianComponentsFromCylindrical(flowDirection, theta);
     }
 
     if (flowDirection.x() == 1.0 && flowDirection.y() == 1.0 && flowDirection.z() == 1.0) {

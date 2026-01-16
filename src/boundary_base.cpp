@@ -9,7 +9,7 @@ StateVector BoundaryBase::computeSubsonicInletFlux(
     const Vector3D& flowDirection){
 
     // properties of internal point
-    StateVector primitive = getEulerPrimitiveFromConservative(internalConservative);
+    StateVector primitive = getPrimitiveVariablesFromConservative(internalConservative);
     Vector3D velocityInt({primitive[1], primitive[2], primitive[3]});
     FloatType soundSpeedInt = _fluid.computeSoundSpeed_rho_u_et(primitive[0], velocityInt, primitive[4]);
     FloatType totEnthalpyInt = _fluid.computeTotalEnthalpy_rho_u_et(primitive[0], velocityInt, primitive[4]);
@@ -40,7 +40,7 @@ StateVector BoundaryBase::computeSubsonicInletFlux(
         velocityBound.z(), 
         totEnergyBound});
         
-    StateVector flux = computeEulerFluxFromPrimitive(primitiveBoundary, surface, _fluid);
+    StateVector flux = computeAdvectionFluxFromPrimitive(primitiveBoundary, surface, _fluid);
     return flux;
 
 }
@@ -51,14 +51,14 @@ StateVector BoundaryBase::computeOutletFlux(
     const FloatType& boundaryPressure,
     const size_t& iterCounter){
 
-    auto primitive = getEulerPrimitiveFromConservative(internalConservative);
+    auto primitive = getPrimitiveVariablesFromConservative(internalConservative);
     Vector3D velocity = {primitive[1], primitive[2], primitive[3]};
     auto density = primitive[0];
     auto pressure = _fluid.computePressure_rho_u_et(density, velocity, primitive[4]);
     auto soundSpeed = _fluid.computeSoundSpeed_p_rho(pressure, primitive[0]);
     
     if (velocity.magnitude() >= soundSpeed) {
-        auto flux = computeEulerFluxFromPrimitive(primitive, surface, _fluid);
+        auto flux = computeAdvectionFluxFromPrimitive(primitive, surface, _fluid);
         return flux;
     }
     else {
@@ -73,7 +73,7 @@ StateVector BoundaryBase::computeOutletFlux(
             velocityBoundary.y(), 
             velocityBoundary.z(), 
             totEnergyBoundary});
-        auto flux = computeEulerFluxFromPrimitive(primitiveBoundary, surface, _fluid);
+        auto flux = computeAdvectionFluxFromPrimitive(primitiveBoundary, surface, _fluid);
         return flux;
     }
 

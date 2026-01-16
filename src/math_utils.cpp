@@ -5,8 +5,8 @@
 FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces, const Matrix2D<Vector3D> &vectors){
     auto ni = surfaces.sizeI();
     auto nj = surfaces.sizeJ();
+    
     FloatType sum = 0.0;
-
     for (size_t i=0; i<ni; i++){
         for (size_t j=0; j<nj; j++){
             sum += surfaces(i,j).dot(vectors(i,j));
@@ -15,21 +15,24 @@ FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces, const Matri
     return sum;
 }
 
-FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces, const Matrix2D<FloatType> &vecX, const Matrix2D<FloatType> &vecY, const Matrix2D<FloatType> &vecZ){
+FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces, 
+    const Matrix2D<FloatType> &vecX, 
+    const Matrix2D<FloatType> &vecY, 
+    const Matrix2D<FloatType> &vecZ){
+
     auto ni = surfaces.sizeI();
     auto nj = surfaces.sizeJ();
     FloatType sum = 0.0;
 
     for (size_t i=0; i<ni; i++){
         for (size_t j=0; j<nj; j++){
-            sum += surfaces(i,j).x() * vecX(i,j) + surfaces(i,j).y() * vecY(i,j) + surfaces(i,j).z() * vecZ(i,j);
+            sum += surfaces(i,j).x()*vecX(i,j) + surfaces(i,j).y()*vecY(i,j) + surfaces(i,j).z()*vecZ(i,j);
         }
     }
     return sum;
 }
 
-
-FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces){
+FloatType computeTotalSurfaceArea(const Matrix2D<Vector3D> &surfaces){
     auto ni = surfaces.sizeI();
     auto nj = surfaces.sizeJ();
     FloatType sum = 0.0;
@@ -43,7 +46,7 @@ FloatType computeSurfaceIntegral(const Matrix2D<Vector3D> &surfaces){
 }
 
 
-StateVector getEulerPrimitiveFromConservative(StateVector conservative){
+StateVector getPrimitiveVariablesFromConservative(StateVector conservative){
     StateVector primitive;
     primitive[0] = conservative[0];
     primitive[1] = conservative[1] / conservative[0];
@@ -54,7 +57,7 @@ StateVector getEulerPrimitiveFromConservative(StateVector conservative){
 }
 
 
-StateVector getEulerConservativeFromPrimitive(StateVector primitive){
+StateVector getConservativeVariablesFromPrimitive(StateVector primitive){
     StateVector conservative;
     conservative[0] = primitive[0];
     conservative[1] = primitive[1] * primitive[0];
@@ -65,7 +68,7 @@ StateVector getEulerConservativeFromPrimitive(StateVector primitive){
 }
 
 
-StateVector computeEulerFluxFromPrimitive(StateVector primitive, Vector3D surface, const FluidBase& fluid){
+StateVector computeAdvectionFluxFromPrimitive(StateVector primitive, Vector3D surface, const FluidBase& fluid){
     Vector3D normal = surface / surface.magnitude();
     Vector3D velocity = {primitive[1], primitive[2], primitive[3]};
     FloatType normalVelocity = velocity.dot(normal);
@@ -83,9 +86,9 @@ StateVector computeEulerFluxFromPrimitive(StateVector primitive, Vector3D surfac
 }
 
 
-StateVector computeEulerFluxFromConservative(StateVector conservative, Vector3D surface, const FluidBase& fluid){
-    StateVector primitive = getEulerPrimitiveFromConservative(conservative);
-    StateVector flux = computeEulerFluxFromPrimitive(primitive, surface, fluid);
+StateVector computeAdvectionFluxFromConservative(StateVector conservative, Vector3D surface, const FluidBase& fluid){
+    StateVector primitive = getPrimitiveVariablesFromConservative(conservative);
+    StateVector flux = computeAdvectionFluxFromPrimitive(primitive, surface, fluid);
     return flux;
 }
 
@@ -94,41 +97,39 @@ FloatType computeAngleBetweenVectors(const Vector3D& v1, const Vector3D& v2) {
     Vector3D v1norm = v1.normalized();
     Vector3D v2norm = v2.normalized();
 
-    FloatType dot = v1norm.dot(v2norm);
+    FloatType dotProduct = v1norm.dot(v2norm);
 
     // Clamp dot product to valid range for acos()
-    dot = std::clamp(dot, static_cast<FloatType>(-1.0), static_cast<FloatType>(1.0));
+    dotProduct = std::clamp(dotProduct, static_cast<FloatType>(-1.0), static_cast<FloatType>(1.0));
 
-    return std::acos(dot);
+    return std::acos(dotProduct);
 }
 
 
 Vector3D rotateVectorAlongXAxis(const Vector3D& v, FloatType theta){
     Vector3D newVector;
     newVector.x() = v.x();
-    newVector.y() = v.y() * cos(theta) - v.z() * sin(theta);
-    newVector.z() = v.y() * sin(theta) + v.z() * cos(theta);
+    newVector.y() = v.y()*cos(theta) - v.z()*sin(theta);
+    newVector.z() = v.y()*sin(theta) + v.z()*cos(theta);
     return newVector;
 }
 
 StateVector rotateStateVectorAlongXAxis(const StateVector& state, FloatType theta){
     Vector3D vector(state[1], state[2], state[3]);
     Vector3D rotatedVector = rotateVectorAlongXAxis(vector, theta);
-
     StateVector newVector({state[0], rotatedVector.x(), rotatedVector.y(), rotatedVector.z(), state[4]});
-
     return newVector;
 }
 
-Vector3D computeCylindricalVectorFromCartesian(Vector3D vec, FloatType theta){
+Vector3D computeCylindricalComponentsFromCartesian(Vector3D vec, FloatType theta){
     Vector3D newVector;
     newVector.x() = vec.x();
-    newVector.y() = vec.y() * cos(theta) + vec.z() * sin(theta);
-    newVector.z() = - vec.y() * sin(theta) + vec.z() * cos(theta);
+    newVector.y() = vec.y()*cos(theta) + vec.z()*sin(theta);
+    newVector.z() = - vec.y()*sin(theta) + vec.z()*cos(theta);
     return newVector;
 }
 
-Vector3D computeCartesianVectorFromCylindrical(Vector3D vec, FloatType theta){
+Vector3D computeCartesianComponentsFromCylindrical(Vector3D vec, FloatType theta){
     Vector3D newVector;
     newVector.x() = vec.x();
     newVector.y() = vec.y() * cos(theta) - vec.z() * sin(theta);
@@ -170,10 +171,17 @@ void integrateRadialEquilibrium(const std::vector<FloatType>& density,
 }
 
 
-void computeGradientGreenGauss(const Matrix3D<Vector3D>& surfacesI, const Matrix3D<Vector3D>& surfacesJ, const Matrix3D<Vector3D>& surfacesK, 
-    const Matrix3D<Vector3D>& midPointsI, const Matrix3D<Vector3D>& midPointsJ, const Matrix3D<Vector3D>& midPointsK, 
-    const Matrix3D<Vector3D>& nodes, const Matrix3D<
-    FloatType>& volumes, const Matrix3D<FloatType>& field, Matrix3D<Vector3D>& gradient){
+void computeGradientGreenGauss(
+    const Matrix3D<Vector3D>& surfacesI, 
+    const Matrix3D<Vector3D>& surfacesJ, 
+    const Matrix3D<Vector3D>& surfacesK, 
+    const Matrix3D<Vector3D>& midPointsI, 
+    const Matrix3D<Vector3D>& midPointsJ, 
+    const Matrix3D<Vector3D>& midPointsK, 
+    const Matrix3D<Vector3D>& nodes, 
+    const Matrix3D<FloatType>& volumes, 
+    const Matrix3D<FloatType>& field, 
+    Matrix3D<Vector3D>& gradient){
 
     size_t ni = volumes.sizeI();
     size_t nj = volumes.sizeJ();
@@ -203,29 +211,47 @@ void computeGradientGreenGauss(const Matrix3D<Vector3D>& surfacesI, const Matrix
                 FloatType scalarBottom = interpolateScalar(field, i, j, k, nodes, centerBottom, Direction3D::BOTTOM);
                 FloatType scalarTop = interpolateScalar(field, i, j, k, nodes, centerTop, Direction3D::TOP);
 
-                std::array<Vector3D, 6> surfaces = {surfaceWest, surfaceEast, surfaceNorth, surfaceSouth, surfaceBottom, surfaceTop};
-                std::array<FloatType, 6> scalars = {scalarWest, scalarEast, scalarNorth, scalarSouth, scalarBottom, scalarTop};
+                std::array<Vector3D, 6> surfaces = {
+                    surfaceWest, 
+                    surfaceEast, 
+                    surfaceNorth, 
+                    surfaceSouth, 
+                    surfaceBottom, 
+                    surfaceTop};
 
-                gradient(i,j,k) = computeGreenGaussFormula(surfaces, scalars, volumes(i,j,k));
+                std::array<FloatType, 6> scalars = {
+                    scalarWest, 
+                    scalarEast, 
+                    scalarNorth, 
+                    scalarSouth, 
+                    scalarBottom, 
+                    scalarTop};
+
+                gradient(i,j,k) = computeGreenGaussDivergence(surfaces, scalars, volumes(i,j,k));
             }
         }
     }
 }
 
 
-FloatType interpolateScalar(const Matrix3D<FloatType>& field, size_t i, size_t j, size_t k, const Matrix3D<Vector3D>& nodes, const Vector3D& point, Direction3D direction){
+FloatType interpolateScalar(
+    const Matrix3D<FloatType>& field, 
+    size_t i, 
+    size_t j, 
+    size_t k, 
+    const Matrix3D<Vector3D>& nodes, 
+    const Vector3D& point, 
+    Direction3D direction){
+
     Vector3D point0 = nodes(i,j,k);
     FloatType field0 = field(i,j,k);
     
-    FloatType field1 = 0.0;
+    FloatType field1 {0.0};
     Vector3D point1(0.0,0.0,0.0);
-    
     FloatType fieldInterpolated = 0.0;
-
     size_t ni = field.sizeI();
     size_t nj = field.sizeJ();
     size_t nk = field.sizeK();
-
     if (direction==Direction3D::WEST && i==0){
         return field0;
     }
@@ -271,23 +297,14 @@ FloatType interpolateScalar(const Matrix3D<FloatType>& field, size_t i, size_t j
         field1 = field(i,j,k+1);
     }
 
-    FloatType distance1 = (point - point0).magnitude();
-    FloatType distance2 = (point - point1).magnitude();
-    fieldInterpolated = field0 + (field1 - field0) * distance1 / (distance1 + distance2);
+    FloatType distance0 = (point - point0).magnitude();
+    FloatType distance1 = (point - point1).magnitude();
+    fieldInterpolated = field0 + (field1 - field0) * distance0 / (distance0 + distance1);
     return fieldInterpolated;
 }
 
 
-Vector3D computeGreenGaussFormula(const std::array<Vector3D,6>& surfaces, const std::array<FloatType,6>& scalars, const FloatType& volume){
-    Vector3D gradient(0.0,0.0,0.0);
-    int length = surfaces.size();
-    for (int i=0; i<length; i++){
-        gradient += surfaces[i] * scalars[i];
-    }
-    return gradient / volume;
-}
-
-FloatType atan2_from0_to2pi(FloatType y, FloatType x){
+FloatType atan2FromZeroTo2pi(FloatType y, FloatType x){
     FloatType angle = std::atan2(y, x);
     if (angle < 0)
         angle += 2 * M_PI;
@@ -309,7 +326,7 @@ FloatType rescaleMinMax(const FloatType& value, const FloatType& min, const Floa
 
 
 
-FloatType interpolateLinear(const std::vector<double>& x,
+FloatType linearInterpolation(const std::vector<double>& x,
                             const std::vector<double>& y,
                             const FloatType& xp) {
 
@@ -338,7 +355,7 @@ FloatType interpolateLinear(const std::vector<double>& x,
     
 }
 
-void writeDataToCSV(const std::vector<FloatType>& data, const std::string& filename)
+void writeDataToCsv(const std::vector<FloatType>& data, const std::string& filename)
 {
     std::ofstream file(filename);
     if (!file.is_open()) {
@@ -355,66 +372,10 @@ void writeDataToCSV(const std::vector<FloatType>& data, const std::string& filen
 }
 
 
-// Matrix2D<FloatType> computeAdvectionFluxJacobian(const StateVector& primitive, const Vector3D& direction, const FluidBase& fluid){
-//     // formulation taken from Blazek
-
-//     Matrix2D<FloatType> jacobian(5, 5);
-
-//     FloatType u = primitive[1];
-//     FloatType v = primitive[2];
-//     FloatType w = primitive[3];
-//     FloatType et = primitive[4];
-//     FloatType nx = direction(0);
-//     FloatType ny = direction(1);
-//     FloatType nz = direction(2);
-
-//     FloatType gmma = fluid.getGamma();
-//     FloatType umag2 = u*u + v*v + w*w; // square of velocity magnitude
-//     FloatType V = u*nx + v*ny + w*nz; // velocity along the required direction
-    
-//     FloatType phi = 0.5 * (gmma - 1) * umag2;
-//     FloatType a1 = gmma * et - phi;
-//     FloatType a2 = gmma - 1.0;
-//     FloatType a3 = gmma - 2.0;
-
-//     jacobian(0, 0) = 0.0;
-//     jacobian(0, 1) = nx;
-//     jacobian(0, 2) = ny;
-//     jacobian(0, 3) = nz;
-//     jacobian(0, 4) = 0.0;
-
-//     jacobian(1, 0) = nx * phi - u * V;
-//     jacobian(1, 1) = V - a3 * nx * u;
-//     jacobian(1, 2) = ny * u - a2 * nx * v;
-//     jacobian(1, 3) = nz * u - a2 * nx * w;
-//     jacobian(1, 4) = a2 * nx;
-
-//     jacobian(2, 0) = ny * phi - v * V;
-//     jacobian(2, 1) = nx * v - a2 * ny * u;
-//     jacobian(2, 2) = V - a3 * ny * v;
-//     jacobian(2, 3) = nz * v - a2 * ny * w;
-//     jacobian(2, 4) = a2 * ny;
-
-//     jacobian(3, 0) = nz * phi - w * V;
-//     jacobian(3, 1) = nx * w - a2 * nz * u;
-//     jacobian(3, 2) = ny * w - a2 * nz * v;
-//     jacobian(3, 3) = V - a3 * nz * w;
-//     jacobian(3, 4) = a2 * nz;
-
-//     jacobian(4, 0) = V * (phi - a1); 
-//     jacobian(4, 1) = nx * a1 - a2 * u * V;
-//     jacobian(4, 2) = ny * a1 - a2 * v * V;
-//     jacobian(4, 3) = nz * a1 - a2 * w * V;
-//     jacobian(4, 4) = gmma * V;
-
-//     return jacobian;
-
-// }
-
-
-
-Matrix2D<FloatType> computeAdvectionFluxJacobian(const StateVector& primitive, const Vector3D& direction, const FluidBase& fluid){
-    // formulation taken from Hirsch book, as summation of A*nx + B*ny + C*nz
+Matrix2D<FloatType> computeAdvectionJacobian(
+    const StateVector& primitive, 
+    const Vector3D& direction, 
+    const FluidBase& fluid){
 
     Matrix2D<FloatType> jacobian(5, 5);
 
@@ -426,11 +387,10 @@ Matrix2D<FloatType> computeAdvectionFluxJacobian(const StateVector& primitive, c
     FloatType ny = direction(1);
     FloatType nz = direction(2);
 
+    // precompute common terms
     FloatType gmma = fluid.getGamma();
-    FloatType umag2 = u*u + v*v + w*w; // square of velocity magnitude
-    FloatType V = u*nx + v*ny + w*nz; // scalar product
-    
-    // pre-compute commonly used terms
+    FloatType umag2 = u*u + v*v + w*w; 
+    FloatType V = u*nx + v*ny + w*nz; 
     FloatType phi = 0.5 * (gmma - 1) * umag2;
 
     // first row

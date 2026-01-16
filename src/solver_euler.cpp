@@ -196,8 +196,8 @@ void SolverEuler::axisymmetricRestart(Matrix3D<FloatType> &inputDensity, Matrix3
     for (size_t i=0; i<_nPointsI; i++) {
         for (size_t j=0; j<_nPointsJ; j++){
             for (size_t k=0; k<_nPointsK; k++){
-                thetaInitial = atan2_from0_to2pi(_mesh.getVertex(i,j,0).z(), _mesh.getVertex(i,j,0).y());
-                thetaPoint = atan2_from0_to2pi(_mesh.getVertex(i,j,k).z(), _mesh.getVertex(i,j,k).y());
+                thetaInitial = atan2FromZeroTo2pi(_mesh.getVertex(i,j,0).z(), _mesh.getVertex(i,j,0).y());
+                thetaPoint = atan2FromZeroTo2pi(_mesh.getVertex(i,j,k).z(), _mesh.getVertex(i,j,k).y());
                 thetaRotation = thetaPoint - thetaInitial;
                 
                 velocityInitial = Vector3D(inputVelX(i,j,0), inputVelY(i,j,0), inputVelZ(i,j,0));
@@ -503,7 +503,7 @@ void SolverEuler::computeTimestepArray(const FlowSolution &solution, Matrix3D<Fl
                 jDir = jEdge / jEdge.magnitude();
                 kDir = kEdge / kEdge.magnitude();
                 conservative = solution.at(i,j,k);
-                primitive = getEulerPrimitiveFromConservative(conservative);
+                primitive = getPrimitiveVariablesFromConservative(conservative);
                 velocity(0) = primitive[1];
                 velocity(1) = primitive[2];
                 velocity(2) = primitive[3];
@@ -598,10 +598,10 @@ void SolverEuler::updateTurboPerformance(const FlowSolution&solution){
             for (size_t k=0; k<nk; k++){
                 StateVector primitive;
                 if (bcIndex == BoundaryIndices::I_START){
-                    primitive = getEulerPrimitiveFromConservative(solution.at(0,j,k));
+                    primitive = getPrimitiveVariablesFromConservative(solution.at(0,j,k));
                 }
                 else{
-                    primitive = getEulerPrimitiveFromConservative(solution.at(_nPointsI-1,j,k));
+                    primitive = getPrimitiveVariablesFromConservative(solution.at(_nPointsI-1,j,k));
                 }
                 FloatType rho = primitive[0];
                 FloatType ux = primitive[1];
@@ -909,7 +909,7 @@ StateVector SolverEuler::computeViscousFlux(const StateVector& conservative, con
                                    const Vector3D& velZGrad, const Vector3D& tempGrad, const Vector3D& surface) const{
     
     // fluid state
-    StateVector primitive = getEulerPrimitiveFromConservative(conservative);
+    StateVector primitive = getPrimitiveVariablesFromConservative(conservative);
     Vector3D vel = Vector3D(primitive[1], primitive[2], primitive[3]);
     
     // fluid quantities
@@ -1102,14 +1102,14 @@ void SolverEuler::updateRadialProfiles(FlowSolution &solution){
     size_t ni = _mesh.getNumberPointsI();
     for (size_t j = 0; j < nj; j++) {
         conservative = solution.at(ni-1, j, 0);
-        primitive = getEulerPrimitiveFromConservative(conservative);    
+        primitive = getPrimitiveVariablesFromConservative(conservative);    
         velocityCart(0) = primitive[1];
         velocityCart(1) = primitive[2];
         velocityCart(2) = primitive[3];
 
         densityProfile[j] = primitive[0];
         theta = std::atan2(_mesh.getVertex(0,j,0).z(), _mesh.getVertex(0,j,0).y());
-        velocityCyl = computeCylindricalVectorFromCartesian(velocityCart, theta);
+        velocityCyl = computeCylindricalComponentsFromCartesian(velocityCart, theta);
         velTangProfile[j] = std::abs(velocityCyl.z());
     }
 
@@ -1150,7 +1150,7 @@ void SolverEuler::computeSourceTerms(FlowSolution& solution, const std::map<Solu
 
                 // compute general terms
                 conservative = solution.at(i, j, k);
-                primitive = getEulerPrimitiveFromConservative(conservative);
+                primitive = getPrimitiveVariablesFromConservative(conservative);
                 volume = _mesh.getVolume(i, j, k);
                 pressure = _fluid->computePressure_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
                 radius = _mesh.getRadius(i, j, k);
@@ -1179,13 +1179,13 @@ void SolverEuler::computeSourceTerms(FlowSolution& solution, const std::map<Solu
 
                 if (geomSourceFlag) {
                     velocityCart = {primitive[1], primitive[2], primitive[3]};
-                    velocityCyl = computeCylindricalVectorFromCartesian(velocityCart, theta);
+                    velocityCyl = computeCylindricalComponentsFromCartesian(velocityCart, theta);
 
                     sourceCyl.x() = 0.0; // no axial contribution
                     sourceCyl.y() = (+ primitive[0] * velocityCyl.z() * velocityCyl.z() + pressure) / radius; // + rho*theta^2/r + p/r in radial direction
                     sourceCyl.z() = - primitive[0] * velocityCyl.y() * velocityCyl.z() / radius; // - rho*ur*utheta/r in tangential direction
 
-                    sourceCart = computeCartesianVectorFromCylindrical(sourceCyl, theta);
+                    sourceCart = computeCartesianComponentsFromCylindrical(sourceCyl, theta);
                     sourceGeometrical[0] = 0.0;
                     sourceGeometrical[1] = sourceCart.x();
                     sourceGeometrical[2] = sourceCart.y();
@@ -1272,7 +1272,7 @@ void SolverEuler::updateMonitorPoints(const FlowSolution &solution){
         size_t idxJ = _monitorPoints_idxJ[i];
         size_t idxK = _monitorPoints_idxK[i];
         StateVector conservative = solution.at(idxI, idxJ, idxK);
-        StateVector primitive = getEulerPrimitiveFromConservative(conservative);
+        StateVector primitive = getPrimitiveVariablesFromConservative(conservative);
         FloatType pressure = _fluid->computePressure_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
 
         _monitorPoints[i][MonitorOutputFields::PRESSURE].push_back(pressure);

@@ -9,10 +9,10 @@ StateVector AdvectionJst::computeFlux(
     const Vector3D& S) 
 {
     
-    auto Wll = getEulerPrimitiveFromConservative(Ull);
-    auto Wl = getEulerPrimitiveFromConservative(Ul);
-    auto Wr = getEulerPrimitiveFromConservative(Ur);
-    auto Wrr = getEulerPrimitiveFromConservative(Urr);
+    auto Wll = getPrimitiveVariablesFromConservative(Ull);
+    auto Wl = getPrimitiveVariablesFromConservative(Ul);
+    auto Wr = getPrimitiveVariablesFromConservative(Ur);
+    auto Wrr = getPrimitiveVariablesFromConservative(Urr);
     auto Wavg = (Wl + Wr) * 0.5; 
 
     FloatType rCoeff[2] = {
@@ -31,7 +31,7 @@ StateVector AdvectionJst::computeFlux(
     FloatType psi2 = _kappa2 * s * r;
     FloatType psi4 = std::max(0.0, _kappa4 * r - _c4 * psi2);
 
-    auto flux = computeEulerFluxFromPrimitive(Wavg, S, _fluid);
+    auto flux = computeAdvectionFluxFromPrimitive(Wavg, S, _fluid);
     auto dissipation = (Ur - Ul) * psi2 - ((Urr - Ur) - (Ur - Ul) * 2 + (Ul - Ull)) * psi4;
     flux -= dissipation;
 

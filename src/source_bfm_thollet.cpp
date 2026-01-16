@@ -19,7 +19,7 @@ StateVector SourceBFMThollet::computeInviscidComponent(size_t i, size_t j, size_
     }
     
     Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceMag;
-    Vector3D forceCartesianNew = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
+    Vector3D forceCartesianNew = computeCartesianComponentsFromCylindrical(forceCylindrical, _theta);
 
     FloatType relaxFactor = _config.getBfmRelaxationFactor();
 
@@ -89,7 +89,7 @@ StateVector SourceBFMThollet::computeViscousComponent(size_t i, size_t j, size_t
     }
 
     Vector3D forceCylindrical = _viscousForceDirectionCylindrical * forceMag;
-    Vector3D forceCartesianNew = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
+    Vector3D forceCartesianNew = computeCartesianComponentsFromCylindrical(forceCylindrical, _theta);
 
     // update the force according to equation 24 of Chima's paper
     FloatType relaxFactor = _config.getBfmRelaxationFactor();

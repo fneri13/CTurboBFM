@@ -23,6 +23,6 @@ StateVector BoundaryInletSupersonic::computeBoundaryFlux(
         totEnergyBoundary
     });
 
-    auto flux = computeEulerFluxFromPrimitive(primitiveBoundary, surface, _fluid);
+    auto flux = computeAdvectionFluxFromPrimitive(primitiveBoundary, surface, _fluid);
     return flux;
 }

@@ -11,10 +11,10 @@ StateVector AdvectionRoe::computeFlux(
     const Vector3D& S)
 {
 
-    StateVector Wl = getEulerPrimitiveFromConservative(Ul);
-    StateVector Wr = getEulerPrimitiveFromConservative(Ur);
-    StateVector Wrr = getEulerPrimitiveFromConservative(Urr);
-    StateVector Wll = getEulerPrimitiveFromConservative(Ull);
+    StateVector Wl = getPrimitiveVariablesFromConservative(Ul);
+    StateVector Wr = getPrimitiveVariablesFromConservative(Ur);
+    StateVector Wrr = getPrimitiveVariablesFromConservative(Urr);
+    StateVector Wll = getPrimitiveVariablesFromConservative(Ull);
 
     if (_isMusclActive){
         musclReconstructLeftRight(Wll, Wl, Wr, Wrr, _fluxLimiter);
@@ -133,8 +133,8 @@ void AdvectionRoe::assembleTotalFlux(
 
     // Compute flux in normal reference frame (n1, n2, n3).
     // The direction is (1, 0, 0) because the state has been aligned to the normal triad
-    StateVector fluxL = computeEulerFluxFromPrimitive(WnormL, {1.0, 0.0, 0.0}, _fluid);
-    StateVector fluxR = computeEulerFluxFromPrimitive(WnormR, {1.0, 0.0, 0.0}, _fluid);
+    StateVector fluxL = computeAdvectionFluxFromPrimitive(WnormL, {1.0, 0.0, 0.0}, _fluid);
+    StateVector fluxR = computeAdvectionFluxFromPrimitive(WnormR, {1.0, 0.0, 0.0}, _fluid);
 
     // Entropy fix of the eigenvalues
     StateVector fixedEigenvalues({0.0, 0.0, 0.0, 0.0, 0.0});

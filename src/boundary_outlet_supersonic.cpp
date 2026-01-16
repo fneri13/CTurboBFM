@@ -9,7 +9,7 @@ StateVector BoundaryOutletSupersonic::computeBoundaryFlux(
             const FlowSolution& flowSolution, 
             const size_t& iterCounter) {
                 
-    auto primitive = getEulerPrimitiveFromConservative(internalConservative);
-    auto flux = computeEulerFluxFromPrimitive(primitive, surface, _fluid);
+    auto primitive = getPrimitiveVariablesFromConservative(internalConservative);
+    auto flux = computeAdvectionFluxFromPrimitive(primitive, surface, _fluid);
     return flux;
 }

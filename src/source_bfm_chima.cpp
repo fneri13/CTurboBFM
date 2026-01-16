@@ -15,8 +15,8 @@ StateVector SourceBFMChima::computeBodyForceSource(size_t i, size_t j, size_t k,
 
     // compute scaling coefficients
     FloatType currentMassFlow = _turboPerformance[TurboPerformance::MASS_FLOW].back();
-    _scalingTurning = interpolateLinear(_inputTable.getField(FieldNames::CHIMA_MASS_FLOW), _inputTable.getField(FieldNames::CHIMA_SCALING_TURNING), currentMassFlow);
-    _scalingLoss = interpolateLinear(_inputTable.getField(FieldNames::CHIMA_MASS_FLOW), _inputTable.getField(FieldNames::CHIMA_SCALING_LOSS), currentMassFlow);
+    _scalingTurning = linearInterpolation(_inputTable.getField(FieldNames::CHIMA_MASS_FLOW), _inputTable.getField(FieldNames::CHIMA_SCALING_TURNING), currentMassFlow);
+    _scalingLoss = linearInterpolation(_inputTable.getField(FieldNames::CHIMA_MASS_FLOW), _inputTable.getField(FieldNames::CHIMA_SCALING_LOSS), currentMassFlow);
     
     // compute body force contributions
     StateVector viscousComponent = computeViscousComponent(i, j, k, primitive, viscousForce);
@@ -37,7 +37,7 @@ StateVector SourceBFMChima::computeInviscidComponent(size_t i, size_t j, size_t 
 
     // contribution to flow equations
     Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceInviscidMagnitude;
-    Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
+    Vector3D forceCartesian = computeCartesianComponentsFromCylindrical(forceCylindrical, _theta);
     inviscidForce(i, j, k) = forceCartesian;
     
     StateVector source({0,0,0,0,0});
@@ -65,7 +65,7 @@ StateVector SourceBFMChima::computeViscousComponent(size_t i, size_t j, size_t k
     // contribution to flow equations
     Vector3D forceCylindrical = _viscousForceDirectionCylindrical * forceMag;
     _viscousForceCylindrical = forceCylindrical;
-    Vector3D forceCartesian = computeCartesianVectorFromCylindrical(forceCylindrical, _theta);
+    Vector3D forceCartesian = computeCartesianComponentsFromCylindrical(forceCylindrical, _theta);
     viscousForce(i, j, k) = forceCartesian;
     
     StateVector source({0,0,0,0,0});

@@ -678,5 +678,5 @@ void Mesh::writeMeshQualityStatistics() const {
 void Mesh::setPeriodicMesh(FloatType periodicityAngle, FloatType periodicityTranslation) {
     _periodicityAngleRad = periodicityAngle;
     _periodicityTranslation = periodicityTranslation;
-    _periodicMesh = true;
+    _meshHasPeriodicity = true;
 }

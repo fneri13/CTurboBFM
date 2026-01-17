@@ -143,7 +143,7 @@ public:
 
     void writeMeshQualityStatistics() const;
 
-    bool applyPeriodicTreatment() const {return _periodicMesh;}
+    bool isPeriodicityActive() const {return _meshHasPeriodicity;}
 
 private:
 
@@ -189,7 +189,7 @@ private:
     
     FloatType _wedgeAngle {0.0}, _cellThickness {0.0}; 
     FloatType _periodicityAngleRad{0.0}, _periodicityTranslation{0.0};
-    bool _periodicMesh {false};
+    bool _meshHasPeriodicity {false};
 
     Matrix3D<FloatType> _aspectRatio;
     std::vector<FloatType> _skewness, _orthogonality;

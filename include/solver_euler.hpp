@@ -99,7 +99,7 @@ private:
     void updateRadialProfiles(FlowSolution &solution);
     
     /** @brief compute all the source terms and apply them to the residuals */
-    void computeSourceTerms(
+    void computeSourceResiduals(
         FlowSolution& solution, 
         const std::map<SolutionNames, Matrix3D<Vector3D>>& solutionGrad, 
         size_t itCounter, 
@@ -166,6 +166,11 @@ private:
         const Vector3D& velZGrad, 
         const Vector3D& tempGrad, 
         const Vector3D& surface) const;
+
+protected:
+    void enforcePeriodicityOnResiduals(FlowSolution& residuals, FloatType& angleRad) const;
+
+    void enforceNoSlipWallsOnResiduals(FlowSolution& residuals) const;
 
 private:
     FlowSolution _conservativeSolution; 

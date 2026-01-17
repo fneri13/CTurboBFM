@@ -186,7 +186,7 @@ void SolverEuler::standardRestart(
     Matrix3D<FloatType> &inputTemperature, 
     Matrix3D<Vector3D> &inputForceViscous, 
     Matrix3D<Vector3D> &inputForceInviscid) {
-        
+
     for (size_t i=0; i<_nPointsI; i++) {
         for (size_t j=0; j<_nPointsJ; j++){
             for (size_t k=0; k<_nPointsK; k++){
@@ -197,22 +197,28 @@ void SolverEuler::standardRestart(
 
                 FloatType pressure = _fluid->computePressure_rho_T(inputDensity(i,j,k), inputTemperature(i,j,k));
                 FloatType staticEnergy = _fluid->computeStaticEnergy_p_rho(pressure, inputDensity(i,j,k));
-                FloatType totalEnergy = staticEnergy + 0.5*(inputVelX(i,j,k)*inputVelX(i,j,k) + inputVelY(i,j,k)*inputVelY(i,j,k) + inputVelZ(i,j,k)*inputVelZ(i,j,k));
+                FloatType totalEnergy = staticEnergy + 0.5*(
+                    inputVelX(i,j,k)*inputVelX(i,j,k) 
+                    + inputVelY(i,j,k)*inputVelY(i,j,k) 
+                    + inputVelZ(i,j,k)*inputVelZ(i,j,k));
                 _conservativeSolution._rhoE(i,j,k) = inputDensity(i,j,k) * totalEnergy;
             }
         }
     }
     std::cout << "Standard initialization done.\n";
 
-    // needed to update force fields if they were present in the solution file
-    _viscousForce = inputForceViscous;
-    
+    _viscousForce = inputForceViscous;    
     _inviscidForce = inputForceInviscid;
-
 }
 
 
-void SolverEuler::axisymmetricRestart(Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, Matrix3D<FloatType> &inputTemperature) {
+void SolverEuler::axisymmetricRestart(
+    Matrix3D<FloatType> &inputDensity, 
+    Matrix3D<FloatType> &inputVelX, 
+    Matrix3D<FloatType> &inputVelY, 
+    Matrix3D<FloatType> &inputVelZ, 
+    Matrix3D<FloatType> &inputTemperature) {
+
     FloatType thetaInitial, thetaPoint, thetaRotation;
     Vector3D velocityInitial, velocityPoint;
     for (size_t i=0; i<_nPointsI; i++) {
@@ -241,9 +247,18 @@ void SolverEuler::axisymmetricRestart(Matrix3D<FloatType> &inputDensity, Matrix3
 }
 
 
-void SolverEuler::readRestartFile(const std::string &restartFileName, size_t &NI, size_t &NJ, size_t &NK,
-                                   Matrix3D<FloatType> &inputDensity, Matrix3D<FloatType> &inputVelX, Matrix3D<FloatType> &inputVelY, Matrix3D<FloatType> &inputVelZ, 
-                                   Matrix3D<FloatType> &inputTemperature, Matrix3D<Vector3D> &inputForceViscous, Matrix3D<Vector3D> &inputForceInviscid) {
+void SolverEuler::readRestartFile(
+    const std::string &restartFileName, 
+    size_t &NI, 
+    size_t &NJ, 
+    size_t &NK,
+    Matrix3D<FloatType> &inputDensity, 
+    Matrix3D<FloatType> &inputVelX, 
+    Matrix3D<FloatType> &inputVelY, 
+    Matrix3D<FloatType> &inputVelZ, 
+    Matrix3D<FloatType> &inputTemperature, 
+    Matrix3D<Vector3D> &inputForceViscous, 
+    Matrix3D<Vector3D> &inputForceInviscid) {
 
     std::ifstream file(restartFileName);
     if (!file.is_open()) {
@@ -267,7 +282,6 @@ void SolverEuler::readRestartFile(const std::string &restartFileName, size_t &NI
 
     bool isBfmSimulation = _config.isBFMActive();
 
-    // Read header
     std::getline(file, line);
     std::istringstream headerStream(line);
     std::string column;
@@ -316,7 +330,10 @@ void SolverEuler::readRestartFile(const std::string &restartFileName, size_t &NI
         inputVelY(i,j,k)        = row[iVelY];
         inputVelZ(i,j,k)        = row[iVelZ];
         FloatType totalEnergy = row[iTotEnergy];
-        inputTemperature(i,j,k) = _fluid->computeTemperature_rho_u_et(inputDensity(i,j,k), {inputVelX(i,j,k), inputVelY(i,j,k), inputVelZ(i,j,k)}, totalEnergy);
+        inputTemperature(i,j,k) = _fluid->computeTemperature_rho_u_et(
+            inputDensity(i,j,k), 
+            {inputVelX(i,j,k), inputVelY(i,j,k), inputVelZ(i,j,k)}, 
+            totalEnergy);
 
         if (isBfmSimulation) {
             inputForceInviscid(i,j,k).x() = (iForceInviscidX != 0) ? row[iForceInviscidX] : 0.0;
@@ -576,45 +593,32 @@ void SolverEuler::updateMassFlows(const FlowSolution&solution){
 
 void SolverEuler::updateTurboPerformance(const FlowSolution&solution){
     
-    // mass flow (complete per machine)
     FloatType massFlow = 0.5 * (_massFlows[BoundaryIndices::I_START] + _massFlows[BoundaryIndices::I_END]);
-
-    FloatType periodicAngle{0.0};
-    FloatType scalingFactor{1.0};
-
     if (_config.getTopology() == Topology::AXISYMMETRIC){
         massFlow *= 2.0 * M_PI / _mesh.getWedgeAngle();
     }
     else {
-        // fix the case of non-full annulus domain
-        periodicAngle = _config.getPeriodicityAngleDeg();
-        if (periodicAngle > 0.0) {
-            scalingFactor = 360.0 / periodicAngle;
-            massFlow *= scalingFactor;
+        FloatType periodicAngle = _config.getPeriodicityAngleDeg();
+        if (periodicAngle != 0.0) {
+            massFlow *= 360.0 / periodicAngle;
         }
     }
-    
-    
-
-
     _turboPerformance[TurboPerformance::MASS_FLOW].push_back(massFlow);
     
-    // performance quantities
     std::array<BoundaryIndices, 2> bcIndices {BoundaryIndices::I_START, BoundaryIndices::I_END};
     std::vector<FloatType> totalPressure;
     std::vector<FloatType> totalTemperature;
-
     for (auto& bcIndex: bcIndices){
         Matrix2D<Vector3D> surface = _mesh.getMeshBoundary(bcIndex);
 
         size_t nj = surface.sizeI();
         size_t nk = surface.sizeJ();
-        Matrix2D<FloatType> rhoUX_pt(nj, nk);
-        Matrix2D<FloatType> rhoUY_pt(nj, nk);
-        Matrix2D<FloatType> rhoUZ_pt(nj, nk);
-        Matrix2D<FloatType> rhoUX_Tt(nj, nk);
-        Matrix2D<FloatType> rhoUY_Tt(nj, nk);
-        Matrix2D<FloatType> rhoUZ_Tt(nj, nk);
+        Matrix2D<FloatType> rhoUxPt(nj, nk);
+        Matrix2D<FloatType> rhoUyPt(nj, nk);
+        Matrix2D<FloatType> rhoUzPt(nj, nk);
+        Matrix2D<FloatType> rhoUxTt(nj, nk);
+        Matrix2D<FloatType> rhoUyTt(nj, nk);
+        Matrix2D<FloatType> rhoUzTt(nj, nk);
 
         for (size_t j=0; j<nj; j++){
             for (size_t k=0; k<nk; k++){
@@ -633,91 +637,107 @@ void SolverEuler::updateTurboPerformance(const FlowSolution&solution){
                 FloatType totalPressure = _fluid->computeTotalPressure_rho_u_et(rho, {ux,uy,uz}, et);
                 FloatType totalTemperature = _fluid->computeTotalTemperature_rho_u_et(rho, {ux,uy,uz}, et);
 
-                rhoUX_pt(j,k) = rho * ux * totalPressure;
-                rhoUY_pt(j,k) = rho * uy * totalPressure;
-                rhoUZ_pt(j,k) = rho * uz * totalPressure;
-                rhoUX_Tt(j,k) = rho * ux * totalTemperature;
-                rhoUY_Tt(j,k) = rho * uy * totalTemperature;
-                rhoUZ_Tt(j,k) = rho * uz * totalTemperature;
+                rhoUxPt(j,k) = rho * ux * totalPressure;
+                rhoUyPt(j,k) = rho * uy * totalPressure;
+                rhoUzPt(j,k) = rho * uz * totalPressure;
+                rhoUxTt(j,k) = rho * ux * totalTemperature;
+                rhoUyTt(j,k) = rho * uy * totalTemperature;
+                rhoUzTt(j,k) = rho * uz * totalTemperature;
             }
         }
-
-        totalPressure.push_back(computeSurfaceIntegral(surface, rhoUX_pt, rhoUY_pt, rhoUZ_pt) / _massFlows[bcIndex]);
-        totalTemperature.push_back(computeSurfaceIntegral(surface, rhoUX_Tt, rhoUY_Tt, rhoUZ_Tt) / _massFlows[bcIndex]);
+        totalPressure.push_back(computeSurfaceIntegral(surface, rhoUxPt, rhoUyPt, rhoUzPt) / _massFlows[bcIndex]);
+        totalTemperature.push_back(computeSurfaceIntegral(surface, rhoUxTt, rhoUyTt, rhoUzTt) / _massFlows[bcIndex]);
     }
     
-    FloatType PRtt = totalPressure.at(1) / totalPressure.at(0);
-    FloatType TRtt = totalTemperature.at(1) / totalTemperature.at(0);
-    FloatType ETAtt = _fluid->computeTotalEfficiency_PRtt_TRt(PRtt, TRtt);
+    FloatType pressureRatio = totalPressure.at(1) / totalPressure.at(0);
+    FloatType temperatureRatio = totalTemperature.at(1) / totalTemperature.at(0);
+    FloatType efficiency = _fluid->computeTotalEfficiency_PRtt_TRt(pressureRatio, temperatureRatio);
 
-    _turboPerformance[TurboPerformance::TOTAL_PRESSURE_RATIO].push_back(PRtt);
-    _turboPerformance[TurboPerformance::TOTAL_TEMPERATURE_RATIO].push_back(TRtt);
-    _turboPerformance[TurboPerformance::TOTAL_EFFICIENCY].push_back(ETAtt);
+    _turboPerformance[TurboPerformance::TOTAL_PRESSURE_RATIO].push_back(pressureRatio);
+    _turboPerformance[TurboPerformance::TOTAL_TEMPERATURE_RATIO].push_back(temperatureRatio);
+    _turboPerformance[TurboPerformance::TOTAL_EFFICIENCY].push_back(efficiency);
     
 }
 
-void SolverEuler::computeResiduals(FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad, 
-                                    const size_t it, const FloatType timePhysical, FlowSolution &residuals) {
-    
-    // the residual is defined as positive on the LHS of the equations. So, the fluxes must be added, and the sources (positive on the RHS) must be subtracted
-    
+void SolverEuler::computeResiduals(
+    FlowSolution& solution, 
+    const std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad, 
+    const size_t iterationCounter, 
+    const FloatType timePhysical, 
+    FlowSolution &residuals) {
+        
     residuals.setToZero(); 
-
-    // compute residuals contribution from advection fluxes
-    computeAdvectionFluxResiduals(FluxDirection::I, solution, it, residuals);
+    
+    // advection fluxes
+    computeAdvectionFluxResiduals(FluxDirection::I, solution, iterationCounter, residuals);
     if (_topology!=Topology::ONE_DIMENSIONAL){
-        computeAdvectionFluxResiduals(FluxDirection::J, solution, it, residuals);
+        computeAdvectionFluxResiduals(FluxDirection::J, solution, iterationCounter, residuals);
     }
     if (_topology==Topology::THREE_DIMENSIONAL){
-        computeAdvectionFluxResiduals(FluxDirection::K, solution, it, residuals);
+        computeAdvectionFluxResiduals(FluxDirection::K, solution, iterationCounter, residuals);
     }
 
     // viscous fluxes
     if (_config.isViscosityActive()){
-        computeViscousFluxResiduals(FluxDirection::I, solution, solutionGrad, it, residuals);
-        computeViscousFluxResiduals(FluxDirection::J, solution, solutionGrad, it, residuals);
+        computeViscousFluxResiduals(FluxDirection::I, solution, solutionGrad, iterationCounter, residuals);
+        computeViscousFluxResiduals(FluxDirection::J, solution, solutionGrad, iterationCounter, residuals);
         if (_topology==Topology::THREE_DIMENSIONAL){
-            computeViscousFluxResiduals(FluxDirection::K, solution, solutionGrad, it, residuals);
+            computeViscousFluxResiduals(FluxDirection::K, solution, solutionGrad, iterationCounter, residuals);
         }
     }
 
-    // compute residuals contribution from sources (of all different origins)
-    computeSourceTerms(solution, solutionGrad, it, residuals, _inviscidForce, _viscousForce, _deviationAngle, timePhysical);
+    // source terms
+    computeSourceResiduals(
+        solution, 
+        solutionGrad, 
+        iterationCounter, 
+        residuals, 
+        _inviscidForce, 
+        _viscousForce, 
+        _deviationAngle, 
+        timePhysical);
 
-    // cure periodic cells (Blazek method). The volumetric and surface contributions must be averaged and combined
-    if (_mesh.applyPeriodicTreatment()){
+    // periodicity enforcement on residuals
+    if (_mesh.isPeriodicityActive()){
         FloatType angle = _mesh.getPeriodicityAngleRad();
-        for (size_t i=0; i<_nPointsI; i++){
+        enforcePeriodicityOnResiduals(residuals, angle);
+    }
+
+    // no-slip walls enforcement on residuals
+    if (_config.isViscosityActive()){
+        enforceNoSlipWallsOnResiduals(residuals);
+    }
+
+}
+
+
+void SolverEuler::enforcePeriodicityOnResiduals(FlowSolution& residuals, FloatType& angleRad) const {
+    for (size_t i=0; i<_nPointsI; i++){
             for (size_t j=0; j<_nPointsJ; j++){
                 StateVector R1 = residuals.at(i, j, 0);
                 StateVector R2 = residuals.at(i, j, _nPointsK - 1);
 
                 // Rotate the second in place of a common frame (e.g. frame of the "first" side)
-                StateVector R2_frame1 = rotateStateVectorAlongXAxis(R2, -angle);
+                StateVector R2_frame1 = rotateStateVectorAlongXAxis(R2, -angleRad);
 
                 // Combine residuals to get an average, in the frame of the "first" side
                 StateVector R1_avg = (R1 + R2_frame1) * 0.5;
 
                 // Symmetrize: give each half (ensures conservation)
                 residuals.set(i, j, 0, R1_avg);
-                residuals.set(i, j, _nPointsK - 1, rotateStateVectorAlongXAxis(R1_avg, +angle));
+                residuals.set(i, j, _nPointsK - 1, rotateStateVectorAlongXAxis(R1_avg, +angleRad));
             }
         }
-    }
-
-    // treat no-slip walls
-    Vector3D zeroWallVel{0.0, 0.0, 0.0}; // the momentum residuals must always been zeroed in the equation
-    if (_config.isViscosityActive()){
-            for (auto& bc : _boundaryTypes){
-            if (bc.second == BoundaryType::NO_SLIP_WALL){
-                setMomentumSolutionOnViscousWalls(residuals, bc.first, zeroWallVel);
-            }
-        }
-    }
-    
-
 }
 
+void SolverEuler::enforceNoSlipWallsOnResiduals(FlowSolution& residuals) const {
+    Vector3D zeroWallEffect{0.0, 0.0, 0.0}; 
+    for (auto& bc : _boundaryTypes){
+        if (bc.second == BoundaryType::NO_SLIP_WALL){
+            setMomentumSolutionOnViscousWalls(residuals, bc.first, zeroWallEffect);
+        }
+    }
+}
 
 
 void SolverEuler::computeAdvectionFluxResiduals(FluxDirection direction, const FlowSolution& solution, size_t itCounter, FlowSolution &residuals) const {
@@ -798,7 +818,7 @@ void SolverEuler::computeAdvectionFluxResiduals(FluxDirection direction, const F
                     Uright = solution.at(iFace, jFace, kFace);
 
                     // get the extended stencil of values
-                    if (direction==FluxDirection::K && _mesh.applyPeriodicTreatment()){ // for periodic boundaries
+                    if (direction==FluxDirection::K && _mesh.isPeriodicityActive()){ // for periodic boundaries
                         if (dirFace==1){                                                // first internal element
                             Uleftleft = solution.at(iFace , jFace , nk-3);                  // last internal element
                             Uleftleft = rotateStateVectorAlongXAxis(Uleftleft, -_mesh.getPeriodicityAngleRad());
@@ -999,7 +1019,7 @@ void SolverEuler::updateSolution(const FlowSolution &solOld, FlowSolution &solNe
 
 void SolverEuler::enforcePeriodicity(FlowSolution &solNew){
 
-    if (_mesh.applyPeriodicTreatment()){
+    if (_mesh.isPeriodicityActive()){
         StateVector U1, U2, Uavg;
         for (size_t i = 0; i < _nPointsI; i++) {
             for (size_t j = 0; j < _nPointsJ; j++) {
@@ -1147,7 +1167,7 @@ void SolverEuler::updateRadialProfiles(FlowSolution &solution){
 }
 
 
-void SolverEuler::computeSourceTerms(FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad, 
+void SolverEuler::computeSourceResiduals(FlowSolution& solution, const std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad, 
                                       const size_t itCounter, FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, 
                                       Matrix3D<FloatType> &deviationAngle, FloatType timePhysical) {
     

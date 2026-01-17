@@ -57,6 +57,7 @@ public:
         size_t &kStart, 
         size_t &kLast) const;
 
+
 protected:
     const Config& _config;
     Mesh& _mesh;

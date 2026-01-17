@@ -70,7 +70,7 @@ private:
         const FloatType &integrationCoeff, 
         const Matrix3D<FloatType> &dt);
 
-    void enforcePeriodicity(FlowSolution &sol);
+    void enforcePeriodicityOnSolution(FlowSolution &sol);
 
     void computeSolutionGradient(FlowSolution &sol, std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad);
 
@@ -90,7 +90,7 @@ private:
 
     void printLogResiduals(const StateVector &logRes, unsigned long int it) const;
 
-    void writeLogResidualsToCSV() const;
+    void writeLogResidualsToCsvFile() const;
 
     void writeTurboPerformanceToCsvFile() const;
 
@@ -98,7 +98,9 @@ private:
 
     void updateRadialProfiles(FlowSolution &solution);
     
-    /** @brief compute all the source terms and apply them to the residuals */
+    /** @brief compute all the source terms and apply them to the residuals 
+     * Contains the BFM source terms, axisymmetric geometric terms, and Gong BF formulation terms
+    */
     void computeSourceResiduals(
         FlowSolution& solution, 
         const std::map<SolutionNames, Matrix3D<Vector3D>>& solutionGrad, 
@@ -138,9 +140,12 @@ private:
         Matrix3D<Vector3D> &inputForceViscous, 
         Matrix3D<Vector3D> &inputForceInviscid);
 
-    void computeGradient(const Matrix3D<FloatType> &var, Matrix3D<Vector3D> &grad) const;
+    void computeGradientOfField(const Matrix3D<FloatType> &var, Matrix3D<Vector3D> &grad) const;
     
-    /** @brief compute the source terms related to Gong body force formulations */
+    /** @brief compute the source terms related to Gong body force formulations 
+     * The term computed here is simply -Omega*dudtheta. It is computed with upwinded 2nd order finite differences
+     * in the direction of shaft rotation
+    */
     StateVector computeGongSource(
         const FloatType& radius, 
         const FloatType& theta, 
@@ -172,6 +177,13 @@ protected:
 
     void enforceNoSlipWallsOnResiduals(FlowSolution& residuals) const;
 
+    void understandWhatSourcesAreNeeded(
+        const size_t i, 
+        const size_t j, 
+        const size_t k, 
+        bool &geometricSourceFlag, 
+        bool &gongSourceFlag) const;
+
 private:
     FlowSolution _conservativeSolution; 
     std::map<SolutionNames, Matrix3D<Vector3D>> _solutionGrad;
@@ -186,7 +198,7 @@ private:
     Matrix3D<Vector3D> _inviscidForce, _viscousForce;
     Matrix3D<FloatType> _deviationAngle;
 
-    std::vector<unsigned int> _monitorPoints_idxI, _monitorPoints_idxJ, _monitorPoints_idxK;
+    std::vector<unsigned int> _monitorPointsIdxI, _monitorPointsIdxJ, _monitorPointsIdxK;
     unsigned int _numberMonitorPoints = 0;
     
 };

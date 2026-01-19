@@ -82,7 +82,7 @@ void OutputBase::allocateSpaceForOutput(
 
     const bool isBFMActive = _config.isBFMActive();
     if (isBFMActive && _outputFields == OutputFields::TURBO_BFM){
-        fieldsMap["Blockage"] = _mesh.getInputFields(FieldNames::BLOCKAGE);
+        fieldsMap["Blockage"] = _mesh.getInputFields(InputField::BLOCKAGE);
         fieldsMap.emplace("Relative Mach",          Matrix3D<FloatType>(ni, nj, nk));
         fieldsMap.emplace("Grid Velocity X",        Matrix3D<FloatType>(ni, nj, nk));
         fieldsMap.emplace("Grid Velocity Y",        Matrix3D<FloatType>(ni, nj, nk));
@@ -132,7 +132,7 @@ void OutputBase::storeFields(
                     fieldsMap["Entropy"](i, j, k) = _fluid.computeEntropy_rho_u_et(rho, vel, et);
 
                     if (isBFMActive && _outputFields == OutputFields::TURBO_BFM){
-                        omega = _mesh.getInputFields(FieldNames::RPM)(i, j, k) * 2.0 * M_PI / 60.0;
+                        omega = _mesh.getInputFields(InputField::RPM)(i, j, k) * 2.0 * M_PI / 60.0;
                         radius = std::sqrt(_mesh.getVertex(i, j, k).z() * _mesh.getVertex(i, j, k).z() +
                                                     _mesh.getVertex(i, j, k).y() * _mesh.getVertex(i, j, k).y());
                         theta = std::atan2(_mesh.getVertex(i, j, k).z(), _mesh.getVertex(i, j, k).y());

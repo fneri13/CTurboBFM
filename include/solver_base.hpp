@@ -49,7 +49,7 @@ public:
 
     /** fetch indices for a 2D boundary slice of the 3D problem structure */
     void getBoundarySliceIndices(
-        BoundaryIndices boundaryIdx, 
+        BoundaryIndex boundaryIdx, 
         size_t &iStart, 
         size_t &iLast, 
         size_t &jStart, 
@@ -71,18 +71,18 @@ protected:
     FluidModel _fluidModel = FluidModel::IDEAL;
     std::unique_ptr<AdvectionBase> _advection;
     
-    std::map<BoundaryIndices, BoundaryType> _boundaryTypes;
-    std::map<BoundaryIndices, std::vector<FloatType>> _boundaryValues;
-    std::map<BoundaryIndices, Vector3D> _boundaryVelocities;
-    std::map<BoundaryIndices, std::unique_ptr<BoundaryBase>> _boundaryConditions;
+    std::map<BoundaryIndex, BoundaryType> _boundaryTypes;
+    std::map<BoundaryIndex, std::vector<FloatType>> _boundaryValues;
+    std::map<BoundaryIndex, Vector3D> _boundaryVelocities;
+    std::map<BoundaryIndex, std::unique_ptr<BoundaryBase>> _boundaryConditions;
     FloatType _hubStaticPressure;
     std::vector<FloatType> _radialProfilePressure; 
     std::vector<FloatType> _radialProfileRadialCoords; 
     std::string _inlet2DfilePath{""}; 
 
-    std::map<BoundaryIndices, FloatType> _massFlows;
+    std::map<BoundaryIndex, FloatType> _massFlows;
     std::map<TurboPerformance, std::vector<FloatType>> _turboPerformance; 
-    std::vector<std::map<MonitorOutputFields, std::vector<FloatType>>> _monitorPoints; 
+    std::vector<std::map<MonitorOutputField, std::vector<FloatType>>> _monitorPoints; 
 
     size_t _residualsDropConvergence {16};
 

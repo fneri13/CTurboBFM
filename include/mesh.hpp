@@ -99,11 +99,11 @@ public:
 
     void getElementEdges(size_t i, size_t j, size_t k, Vector3D &iEdge, Vector3D &jEdge, Vector3D &kEdge) const;
 
-    FloatType getBoundaryTotalArea(BoundaryIndices boundIndex) const {
+    FloatType getBoundaryTotalArea(BoundaryIndex boundIndex) const {
         return _boundaryAreas.at(boundIndex);
     }
 
-    const Matrix2D<Vector3D> getMeshBoundary(BoundaryIndices boundIndex) const {
+    const Matrix2D<Vector3D> getMeshBoundary(BoundaryIndex boundIndex) const {
         return _boundarySurfaces.at(boundIndex); 
     }
 
@@ -119,15 +119,15 @@ public:
         return _wedgeAngle;
     }
 
-    FloatType getInputFields(FieldNames fieldName, size_t i, size_t j, size_t k) const {
+    FloatType getInputFields(InputField fieldName, size_t i, size_t j, size_t k) const {
         return _inputFile.getField(fieldName, i, j, k);
     }
 
-    Matrix3D<FloatType> getInputFields(FieldNames fieldName) const {
+    Matrix3D<FloatType> getInputFields(InputField fieldName) const {
         return _inputFile.getField(fieldName);
     }
 
-    Vector3D getInputFieldsGradient(FieldNames fieldName, size_t i, size_t j, size_t k) const {
+    Vector3D getInputFieldsGradient(InputField fieldName, size_t i, size_t j, size_t k) const {
         return _gradientsMap.at(fieldName)(i, j, k);
     }
 
@@ -184,8 +184,8 @@ private:
     Matrix3D<Vector3D> _vertices;
     Matrix3D<Vector3D> _dualNodes;
     Matrix3D<Vector3D> _centersI, _centersJ, _centersK;
-    std::map<BoundaryIndices, FloatType> _boundaryAreas;
-    std::map<BoundaryIndices, Matrix2D<Vector3D>> _boundarySurfaces;
+    std::map<BoundaryIndex, FloatType> _boundaryAreas;
+    std::map<BoundaryIndex, Matrix2D<Vector3D>> _boundarySurfaces;
     
     FloatType _wedgeAngle {0.0}, _cellThickness {0.0}; 
     FloatType _periodicityAngleRad{0.0}, _periodicityTranslation{0.0};
@@ -195,5 +195,5 @@ private:
     std::vector<FloatType> _skewness, _orthogonality;
     Statistics _aspectRatioStats, _skewnessStats, _orthogonalityStats;
     
-    std::map<FieldNames, Matrix3D<Vector3D>> _gradientsMap;
+    std::map<InputField, Matrix3D<Vector3D>> _gradientsMap;
 };

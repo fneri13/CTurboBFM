@@ -1,15 +1,22 @@
 #include "source_bfm_hall.hpp"
 
-StateVector SourceBFMHall::computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, 
-    Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, FlowSolution &conservativeVars) {
+StateVector SourceBFMHall::computeBodyForceSource(
+    size_t i, 
+    size_t j, 
+    size_t k, 
+    const StateVector& primitive, 
+    Matrix3D<Vector3D> &inviscidForce, 
+    Matrix3D<Vector3D> &viscousForce, 
+    FlowSolution &conservativeVars) {
+
     computeFlowState(i, j, k, primitive, conservativeVars);
     
     FloatType volume = _mesh.getVolume(i, j, k);
 
-    // when the deviation becomes negative, the force mag becomes negative the pull the flow back into place aligned with the camber
-    FloatType forceMagnitude = _relativeVelocityCylindric.dot(_relativeVelocityCylindric) * M_PI * _deviationAngle / _pitch / std::abs(_normalCamberTangential);
+    FloatType forceMagnitude = _relVelCylindric.dot(_relVelCylindric) * M_PI * _deviationAngle / 
+        _tangentialPitch / std::abs(_normalCamberTangential);
     
-    Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceMagnitude;
+    Vector3D forceCylindrical = _inviscidForceDirCylindrical * forceMagnitude;
     Vector3D forceCartesian = computeCartesianComponentsFromCylindrical(forceCylindrical, _theta);
     
     inviscidForce(i, j, k) = forceCartesian;

@@ -2,27 +2,56 @@
 
 #include "source_bfm_base.hpp"
 
-// Base class handling BFM Correlations model source terms computation
 class SourceBFMCorrelations : public SourceBFMBase {
 public:
 
-    SourceBFMCorrelations(const Config &config, const FluidBase &fluid, const Mesh &mesh) : SourceBFMBase(config, fluid, mesh) {
-        _leadingEdgeIdx = _config.getLeadingEdgeIndex();
-        _trailingEdgeIdx = _config.getTrailingEdgeIndex();
-    }
+    SourceBFMCorrelations(const Config &config, const FluidBase &fluid, const Mesh &mesh);
 
     virtual ~SourceBFMCorrelations() = default;  
 
 protected:
 
-    virtual StateVector computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, 
-                Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, FlowSolution &conservativeVars);
+    virtual StateVector computeBodyForceSource(
+        size_t i, 
+        size_t j, 
+        size_t k, 
+        const StateVector& primitive, 
+        Matrix3D<Vector3D> &inviscidForce, 
+        Matrix3D<Vector3D> &viscousForce, 
+        FlowSolution &conservativeVars);
 
-    StateVector computeInviscidComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce);
+    StateVector computeInviscidComponent(
+        size_t i, 
+        size_t j, 
+        size_t k, 
+        const StateVector& primitive, 
+        Matrix3D<Vector3D> &inviscidForce);
     
-    StateVector computeViscousComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &viscousForce);
+    /** @brief not implemented yet --> zero viscous force for now*/
+    StateVector computeViscousComponent(
+        size_t i, 
+        size_t j, 
+        size_t k, 
+        const StateVector& primitive, 
+        Matrix3D<Vector3D> &viscousForce);
 
 private:
+
+    void computeCorrelationParameters(
+        size_t i, 
+        size_t j, 
+        size_t k, 
+        FlowSolution &conservativeSolution);
+
+private:
+    size_t _leadingEdgeIdx;
+    size_t _trailingEdgeIdx;
+    FloatType _solidity;
+    Vector3D _relVelInlet, _relVelOutlet;
+    FloatType _diffusionFactor; // Lieblein definition
+    FloatType _inletFlowAngleDeg;
+    FloatType _bladeMeridionalLength;
+    FloatType _camberAngleDegAbs;
     FloatType _incidenceZeroTenThkStar;
     
 };

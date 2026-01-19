@@ -12,7 +12,7 @@ public:
         const Config &config, 
         const Mesh &mesh, 
         const FluidBase &fluid, 
-        BoundaryIndices boundIndex)
+        BoundaryIndex boundIndex)
         : BoundaryBase(config, mesh, fluid, boundIndex) {}     
 
     virtual ~BoundaryFake()  = default;

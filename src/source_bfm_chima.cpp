@@ -1,24 +1,38 @@
 #include "source_bfm_chima.hpp"
 
-SourceBFMChima::SourceBFMChima(const Config &config, const FluidBase &fluid, const Mesh &mesh,
-                                  std::map<TurboPerformance, std::vector<FloatType>> &turboPerformance) 
+SourceBFMChima::SourceBFMChima(
+    const Config &config, 
+    const FluidBase &fluid, 
+    const Mesh &mesh,
+    std::map<TurboPerformance, 
+    std::vector<FloatType>> &turboPerformance) 
     : SourceBFMBase(config, fluid, mesh),
-      _inputTable(config.getChimaScalingFunctionsFile()), _turboPerformance(turboPerformance), _trailingEdgeIndex(config.getTrailingEdgeIndex())
-{}
+    _inputTable(config.getChimaScalingFunctionsFile()), 
+    _turboPerformance(turboPerformance), 
+    _trailingEdgeIndex(config.getTrailingEdgeIndex()) {}
 
 
-StateVector SourceBFMChima::computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, 
-    Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, FlowSolution &conservativeVars) {
+StateVector SourceBFMChima::computeBodyForceSource(
+    size_t i, 
+    size_t j, 
+    size_t k, 
+    const StateVector& primitive, 
+    Matrix3D<Vector3D> &inviscidForce, 
+    Matrix3D<Vector3D> &viscousForce, 
+    FlowSolution &conservativeVars) {
     
-    // Update bfm state variables
     computeFlowState(i, j, k, primitive, conservativeVars);
 
-    // compute scaling coefficients
     FloatType currentMassFlow = _turboPerformance[TurboPerformance::MASS_FLOW].back();
-    _scalingTurning = linearInterpolation(_inputTable.getField(FieldNames::CHIMA_MASS_FLOW), _inputTable.getField(FieldNames::CHIMA_SCALING_TURNING), currentMassFlow);
-    _scalingLoss = linearInterpolation(_inputTable.getField(FieldNames::CHIMA_MASS_FLOW), _inputTable.getField(FieldNames::CHIMA_SCALING_LOSS), currentMassFlow);
+    _scalingTurning = linearInterpolation(
+        _inputTable.getField(InputField::CHIMA_MASS_FLOW), 
+        _inputTable.getField(InputField::CHIMA_SCALING_TURNING), 
+        currentMassFlow);
+    _scalingLoss = linearInterpolation(
+        _inputTable.getField(InputField::CHIMA_MASS_FLOW), 
+        _inputTable.getField(InputField::CHIMA_SCALING_LOSS), 
+        currentMassFlow);
     
-    // compute body force contributions
     StateVector viscousComponent = computeViscousComponent(i, j, k, primitive, viscousForce);
     StateVector inviscidComponent = computeInviscidComponent(i, j, k, primitive, inviscidForce);
     
@@ -26,17 +40,20 @@ StateVector SourceBFMChima::computeBodyForceSource(size_t i, size_t j, size_t k,
 }
 
 
-StateVector SourceBFMChima::computeInviscidComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce) {
+StateVector SourceBFMChima::computeInviscidComponent(
+    size_t i, 
+    size_t j, 
+    size_t k, 
+    const StateVector& primitive, 
+    Matrix3D<Vector3D> &inviscidForce) {
     
-    // compute the magnitude
-    FloatType deltaTotEnthalpy_dm_ref = _mesh.getInputFields(FieldNames::DELTA_TOT_ENTHALPY_DM, i, j, k);
+    FloatType deltaTotEnthalpy_dm_ref = _mesh.getInputFields(InputField::DELTA_TOT_ENTHALPY_DM, i, j, k);
     FloatType deltaTotEnthalpy_dm = deltaTotEnthalpy_dm_ref * _scalingTurning;
     _tangentialForce = deltaTotEnthalpy_dm * _velMeridional /( _radius * _omega);
     FloatType forceInviscidTangential = _tangentialForce - _viscousForceCylindrical.z();
-    FloatType forceInviscidMagnitude = std::abs(forceInviscidTangential / _inviscidForceDirectionCylindrical.z());
+    FloatType forceInviscidMagnitude = std::abs(forceInviscidTangential / _inviscidForceDirCylindrical.z());
 
-    // contribution to flow equations
-    Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceInviscidMagnitude;
+    Vector3D forceCylindrical = _inviscidForceDirCylindrical * forceInviscidMagnitude;
     Vector3D forceCartesian = computeCartesianComponentsFromCylindrical(forceCylindrical, _theta);
     inviscidForce(i, j, k) = forceCartesian;
     
@@ -53,17 +70,23 @@ StateVector SourceBFMChima::computeInviscidComponent(size_t i, size_t j, size_t 
 
 
 
-StateVector SourceBFMChima::computeViscousComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &viscousForce) {
+StateVector SourceBFMChima::computeViscousComponent(
+    size_t i, 
+    size_t j, 
+    size_t k, 
+    const StateVector& primitive, 
+    Matrix3D<Vector3D> &viscousForce) {
     
-    // compute the magnitude
-    FloatType deltaS_deltaM_ref = _mesh.getInputFields(FieldNames::DELTA_ENTROPY_DM, i, j, k);
+    FloatType deltaS_deltaM_ref = _mesh.getInputFields(InputField::DELTA_ENTROPY_DM, i, j, k);
     FloatType deltaS_deltaM = deltaS_deltaM_ref * _scalingLoss;
-    FloatType relVelMag = _relativeVelocityCylindric.magnitude();
-    FloatType temperature = _fluid.computeTemperature_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
+    FloatType relVelMag = _relVelCylindric.magnitude();
+    FloatType temperature = _fluid.computeTemperature_rho_u_et(
+        primitive[0], 
+        {primitive[1], primitive[2], primitive[3]}, 
+        primitive[4]);
     FloatType forceMag = temperature * _velMeridional / relVelMag * deltaS_deltaM;
 
-    // contribution to flow equations
-    Vector3D forceCylindrical = _viscousForceDirectionCylindrical * forceMag;
+    Vector3D forceCylindrical = _viscousForceDirCylindrical * forceMag;
     _viscousForceCylindrical = forceCylindrical;
     Vector3D forceCartesian = computeCartesianComponentsFromCylindrical(forceCylindrical, _theta);
     viscousForce(i, j, k) = forceCartesian;

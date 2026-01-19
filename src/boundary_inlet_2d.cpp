@@ -5,7 +5,7 @@ BoundaryInlet2D::BoundaryInlet2D(
     const Config &config, 
     const Mesh &mesh, 
     const FluidBase &fluid, 
-    BoundaryIndices boundIndex, 
+    BoundaryIndex boundIndex, 
     std::string inletFile)
     : BoundaryBase(config, mesh, fluid, boundIndex) {
         
@@ -32,14 +32,14 @@ StateVector BoundaryInlet2D::computeBoundaryFlux(
             const FlowSolution& flowSolution, 
             const size_t& iterCounter) {
     
-    FloatType nx = _inputGrid.getField(FieldNames::INLET_NX, indices[0], indices[1], indices[2]);
-    FloatType ny = _inputGrid.getField(FieldNames::INLET_NY, indices[0], indices[1], indices[2]);
-    FloatType nz = _inputGrid.getField(FieldNames::INLET_NZ, indices[0], indices[1], indices[2]);
+    FloatType nx = _inputGrid.getField(InputField::INLET_NX, indices[0], indices[1], indices[2]);
+    FloatType ny = _inputGrid.getField(InputField::INLET_NY, indices[0], indices[1], indices[2]);
+    FloatType nz = _inputGrid.getField(InputField::INLET_NZ, indices[0], indices[1], indices[2]);
     Vector3D flowDirection(nx, ny, nz);
     flowDirection /= flowDirection.magnitude();
 
-    FloatType totalPressure = _inputGrid.getField(FieldNames::TOTAL_PRESSURE, indices[0], indices[1], indices[2]);
-    FloatType totalTemperature = _inputGrid.getField(FieldNames::TOTAL_TEMPERATURE, indices[0], indices[1], indices[2]);
+    FloatType totalPressure = _inputGrid.getField(InputField::TOTAL_PRESSURE, indices[0], indices[1], indices[2]);
+    FloatType totalTemperature = _inputGrid.getField(InputField::TOTAL_TEMPERATURE, indices[0], indices[1], indices[2]);
     
     StateVector flux = computeSubsonicInletFlux(
         internalConservative, 

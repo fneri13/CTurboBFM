@@ -9,7 +9,7 @@
 class BoundaryBase {
     
 public:
-    BoundaryBase(const Config &config, const Mesh &mesh, const FluidBase &fluid, BoundaryIndices boundIndex) 
+    BoundaryBase(const Config &config, const Mesh &mesh, const FluidBase &fluid, BoundaryIndex boundIndex) 
         : _config(config), _mesh(mesh), _fluid(fluid), _boundaryIndex(boundIndex) {};
         
     virtual ~BoundaryBase() = default;
@@ -52,6 +52,6 @@ protected:
     const Config& _config;
     const Mesh& _mesh;
     const FluidBase& _fluid;
-    const BoundaryIndices _boundaryIndex;
+    const BoundaryIndex _boundaryIndex;
         
 };

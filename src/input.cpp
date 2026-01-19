@@ -40,7 +40,7 @@ void Input::readCsvFile() {
 
     // allocate the memory for the arrays
     for (auto &head: headers){
-        FieldNames field = FieldNameMapper::fromString(head);
+        InputField field = FieldNameMapper::fromString(head);
         _fieldsMap[field] = Matrix3D<FloatType>(_ni, _nj, _nk);
     }
 
@@ -70,7 +70,7 @@ void Input::readCsvFile() {
 
         // Assign each value to the correct field matrix
         for (size_t idx = 0; idx < headers.size(); ++idx) {
-            FieldNames field = FieldNameMapper::fromString(headers[idx]);
+            InputField field = FieldNameMapper::fromString(headers[idx]);
             _fieldsMap[field](i, j, k) = values[idx];
         }
     }
@@ -83,13 +83,13 @@ void Input::readCsvFile() {
 
 
 Vector3D Input::getCoordinates(size_t i, size_t j, size_t k) const {
-    return Vector3D(_fieldsMap.at(FieldNames::X_COORDS)(i, j, k),
-                    _fieldsMap.at(FieldNames::Y_COORDS)(i, j, k),
-                    _fieldsMap.at(FieldNames::Z_COORDS)(i, j, k));
+    return Vector3D(_fieldsMap.at(InputField::X_COORDS)(i, j, k),
+                    _fieldsMap.at(InputField::Y_COORDS)(i, j, k),
+                    _fieldsMap.at(InputField::Z_COORDS)(i, j, k));
 };
 
 
-FloatType Input::getField(FieldNames fieldName, size_t i, size_t j, size_t k) const {
+FloatType Input::getField(InputField fieldName, size_t i, size_t j, size_t k) const {
     auto it = _fieldsMap.find(fieldName);
     if (it != _fieldsMap.end()) {
         return it->second(i, j, k);

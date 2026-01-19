@@ -1,33 +1,37 @@
 #include "source_bfm_thollet.hpp"
 
-StateVector SourceBFMThollet::computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, 
-            Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, FlowSolution &conservativeVars) {
+StateVector SourceBFMThollet::computeBodyForceSource(
+    size_t i, 
+    size_t j, 
+    size_t k, 
+    const StateVector& primitive, 
+    Matrix3D<Vector3D> &inviscidForce, 
+    Matrix3D<Vector3D> &viscousForce, 
+    FlowSolution &conservativeVars) {
 
     computeFlowState(i, j, k, primitive, conservativeVars);
+
     StateVector inviscidComponent = computeInviscidComponent(i, j, k, primitive, inviscidForce);
     StateVector viscousComponent = computeViscousComponent(i, j, k, primitive, viscousForce);
+    
     return inviscidComponent + viscousComponent;
 }
 
 
-StateVector SourceBFMThollet::computeInviscidComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce) {
-    FloatType Kmach = computeCompressibilityCorrection(_relativeVelocityCylindric, primitive);
-    FloatType forceMag = _Kn * Kmach * _relativeVelocityCylindric.dot(_relativeVelocityCylindric) * M_PI * _deviationAngle / _pitch / std::abs(_normalCamberTangential) / _blockage;
-    
-    if (_diffusionFactor > 0.6){
-        _inviscidForceDirectionCylindrical = _normalCamberCylindric; // approach used when a blade should be stalled -> apply only normal force perpendicular to the camber
-    }
-    
-    Vector3D forceCylindrical = _inviscidForceDirectionCylindrical * forceMag;
-    Vector3D forceCartesianNew = computeCartesianComponentsFromCylindrical(forceCylindrical, _theta);
+StateVector SourceBFMThollet::computeInviscidComponent(
+    size_t i, 
+    size_t j, 
+    size_t k, 
+    const StateVector& primitive, 
+    Matrix3D<Vector3D> &inviscidForce) {
 
-    FloatType relaxFactor = _config.getBfmRelaxationFactor();
-
-
-    // update the force according to equation 24 of Chima's paper
-    Vector3D forceCartesian = inviscidForce(i, j, k) * (1.0 - relaxFactor) + forceCartesianNew * relaxFactor;
+    FloatType Kmach = computeCompressibilityCorrection(_relVelCylindric, primitive);
+    FloatType forceMag = _Kn * Kmach * _relVelCylindric.dot(_relVelCylindric) * M_PI * _deviationAngle /
+        _tangentialPitch / std::abs(_normalCamberTangential) / _blockage;
     
-    // update the force in memory
+    Vector3D forceCylindrical = _inviscidForceDirCylindrical * forceMag;
+    Vector3D forceCartesian = computeCartesianComponentsFromCylindrical(forceCylindrical, _theta);
+    
     inviscidForce(i, j, k) = forceCartesian;
     
     StateVector source({0,0,0,0,0});
@@ -41,15 +45,20 @@ StateVector SourceBFMThollet::computeInviscidComponent(size_t i, size_t j, size_
     return source*volume*primitive[0];
 }
 
-FloatType SourceBFMThollet::computeCompressibilityCorrection(const Vector3D& relativeVelocityCylindric, const StateVector& primitive) {
-    FloatType soundSpeed = _fluid.computeSoundSpeed_rho_u_et(primitive[0], {primitive[1], primitive[2], primitive[3]}, primitive[4]);
+FloatType SourceBFMThollet::computeCompressibilityCorrection(
+    const Vector3D& relativeVelocityCylindric, 
+    const StateVector& primitive) {
+
+    FloatType soundSpeed = _fluid.computeSoundSpeed_rho_u_et(
+        primitive[0], 
+        {primitive[1], primitive[2], primitive[3]}, 
+        primitive[4]);
     FloatType relativeMach = relativeVelocityCylindric.magnitude() / soundSpeed;
 
-    if (std::abs(relativeMach-1.0) < 0.001)
+    if (std::abs(relativeMach-1.0) < 1E-03)
         relativeMach = 0.999;
     
     FloatType kPrime = 0.0;
-    
     if (relativeMach<1.0)
         kPrime = 1.0 / std::sqrt(1.0 - relativeMach*relativeMach);
     else
@@ -58,44 +67,40 @@ FloatType SourceBFMThollet::computeCompressibilityCorrection(const Vector3D& rel
     return std::min(3.0, kPrime);
 }
 
-StateVector SourceBFMThollet::computeViscousComponent(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &viscousForce) {
-    if (_diffusionFactor > 0.6){
-        return StateVector({0,0,0,0,0}); // no loss component when a blade is stalled. The normal term already thinks about it
-    }
+StateVector SourceBFMThollet::computeViscousComponent(
+    size_t i, 
+    size_t j, 
+    size_t k, 
+    const StateVector& primitive, 
+    Matrix3D<Vector3D> &viscousForce) {
     
     FloatType nu = _config.getFluidKinematicViscosity();
-    FloatType stwl = _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, i, j, k);
+    FloatType stwl = _mesh.getInputFields(InputField::STREAMWISE_LENGTH, i, j, k);
 
-    // if the stwl is zero, get the average with the downstream points, otherwise the ReX will be zero, and therefore Cf infinity
-    if (stwl < 1e-9){
-        stwl = (_mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, i+1, j, k) + _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, i, j, k)) /2.0 ;
+    if (stwl < 1E-06){
+        stwl = (_mesh.getInputFields(InputField::STREAMWISE_LENGTH, i+1, j, k) + 
+        _mesh.getInputFields(InputField::STREAMWISE_LENGTH, i, j, k)) / 2.0 ;
     }
 
-    FloatType ReX = _relativeVelocityCylindric.magnitude() * stwl / nu;
+    FloatType ReX = _relVelCylindric.magnitude() * stwl / nu;
     FloatType Cf = 0.0592 * std::pow(ReX, -0.2);
 
     FloatType forceMag = 0.0;
-    if (_offDesignActive == "no"){
-        forceMag = _relativeVelocityCylindric.dot(_relativeVelocityCylindric) / (_pitch * _blockage * std::abs(_normalCamberTangential)) * (_Kf * Cf);
+    if (!_isOffDesignActive){
+        forceMag = _relVelCylindric.dot(_relVelCylindric) / (
+            _tangentialPitch * _blockage * std::abs(_normalCamberTangential)) * (_Kf * Cf);
         }
-    else if (_offDesignActive == "yes"){
-        FloatType deviationAnglePivot = _mesh.getInputFields(FieldNames::DEVIATION_ANGLE_PIVOT, i, j, k);
-        FloatType Kmach = computeCompressibilityCorrection(_relativeVelocityCylindric, primitive);
-        forceMag = _relativeVelocityCylindric.dot(_relativeVelocityCylindric) / (_pitch * _blockage * std::abs(_normalCamberTangential)) * (
+    else{
+        FloatType deviationAnglePivot = _mesh.getInputFields(InputField::DEVIATION_ANGLE_PIVOT, i, j, k);
+        FloatType Kmach = computeCompressibilityCorrection(_relVelCylindric, primitive);
+        forceMag = _relVelCylindric.dot(_relVelCylindric) / (
+            _tangentialPitch * _blockage * std::abs(_normalCamberTangential)) * (
             _Kf * Cf + M_PI * Kmach * std::pow(std::abs(_deviationAngle - deviationAnglePivot), 2.0 * _Kd));
     }
-    else {
-        throw std::runtime_error("HALL_THOLLET_OFF_DESIGN_ACTIVE can only be <yes> or <no>");
-    }
 
-    Vector3D forceCylindrical = _viscousForceDirectionCylindrical * forceMag;
-    Vector3D forceCartesianNew = computeCartesianComponentsFromCylindrical(forceCylindrical, _theta);
-
-    // update the force according to equation 24 of Chima's paper
-    FloatType relaxFactor = _config.getBfmRelaxationFactor();
-    Vector3D forceCartesian = viscousForce(i, j, k) * (1.0 - relaxFactor) + forceCartesianNew * relaxFactor;
+    Vector3D forceCylindrical = _viscousForceDirCylindrical * forceMag;
+    Vector3D forceCartesian = computeCartesianComponentsFromCylindrical(forceCylindrical, _theta);
     
-    // update the force in memory
     viscousForce(i, j, k) = forceCartesian;
     
     StateVector source({0,0,0,0,0});

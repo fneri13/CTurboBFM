@@ -46,13 +46,13 @@ SolverBase::SolverBase(Config& config, Mesh& mesh)
 
 void SolverBase::readBoundaryConditions(){
 
-    std::array<BoundaryIndices, 6> bounds = {
-        BoundaryIndices::I_START,
-        BoundaryIndices::I_END,
-        BoundaryIndices::J_START,
-        BoundaryIndices::J_END,
-        BoundaryIndices::K_START,
-        BoundaryIndices::K_END};
+    std::array<BoundaryIndex, 6> bounds = {
+        BoundaryIndex::I_START,
+        BoundaryIndex::I_END,
+        BoundaryIndex::J_START,
+        BoundaryIndex::J_END,
+        BoundaryIndex::K_START,
+        BoundaryIndex::K_END};
     
     // read the boundaries type
     for (auto& bound : bounds) {
@@ -93,7 +93,7 @@ void SolverBase::readBoundaryConditions(){
 
     // instantiate boundary objects
     for (auto& bound : bounds) {
-        if (_boundaryTypes[bound] == BoundaryType::WALL || _boundaryTypes[bound] == BoundaryType::NO_SLIP_WALL){
+        if (_boundaryTypes[bound] == BoundaryType::INVISCID_WALL || _boundaryTypes[bound] == BoundaryType::NO_SLIP_WALL){
             _boundaryConditions[bound] = std::make_unique<BoundaryInviscidWall>(
                 _config, 
                 _mesh, 
@@ -196,7 +196,7 @@ const std::array<int, 3> SolverBase::getStepMask(FluxDirection direction) const 
 
 
 void SolverBase::getBoundarySliceIndices(
-    BoundaryIndices boundaryIdx, 
+    BoundaryIndex boundaryIdx, 
     size_t &iStart, 
     size_t &iLast, 
     size_t &jStart, 
@@ -213,22 +213,22 @@ void SolverBase::getBoundarySliceIndices(
     
     switch (boundaryIdx)
     {
-    case BoundaryIndices::I_START:
+    case BoundaryIndex::I_START:
         iLast = 1;
         break;
-    case BoundaryIndices::I_END:
+    case BoundaryIndex::I_END:
         iStart = _nPointsI-1;
         break;
-    case BoundaryIndices::J_START:
+    case BoundaryIndex::J_START:
         jLast = 1;
         break;
-    case BoundaryIndices::J_END:
+    case BoundaryIndex::J_END:
         jStart = _nPointsJ-1;
         break;
-    case BoundaryIndices::K_START:
+    case BoundaryIndex::K_START:
         kLast = 1;
         break;
-    case BoundaryIndices::K_END:
+    case BoundaryIndex::K_END:
         kStart = _nPointsK-1;
         break;
     }

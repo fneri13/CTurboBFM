@@ -12,7 +12,7 @@ public:
     BoundaryTransparent(const Config &config, 
         const Mesh &mesh, 
         const FluidBase &fluid, 
-        BoundaryIndices boundIndex, 
+        BoundaryIndex boundIndex, 
         AdvectionBase &advScheme)
         : BoundaryBase(config, mesh, fluid, boundIndex), 
         _advScheme(advScheme) {}            

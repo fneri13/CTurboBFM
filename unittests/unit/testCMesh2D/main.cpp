@@ -163,12 +163,12 @@ TEST(CMeshTest, TestComputeBoundaryAreas){
     Config config("input.ini");
     Mesh mesh(config);
 
-    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::I_START), 5.0);
-    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::I_END), 5.0);
-    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::J_START), 5.0);
-    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::J_END), 5.0);
-    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::K_START), 25.0);
-    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::K_END), 25.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndex::I_START), 5.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndex::I_END), 5.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndex::J_START), 5.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndex::J_END), 5.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndex::K_START), 25.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndex::K_END), 25.0);
 }
 
 

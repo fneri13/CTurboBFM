@@ -20,7 +20,7 @@ public:
         const Config& config,
         const Mesh& mesh,
         const FluidBase& fluid,
-        BoundaryIndices boundIndex,
+        BoundaryIndex boundIndex,
         const std::vector<FloatType>& inletValues)
         : BoundaryBase(config, mesh, fluid, boundIndex),
         _boundaryValues(inletValues),

@@ -117,7 +117,7 @@ public:
     
     bool isBlockageActive() const;
     
-    BFM_Model getBFMModel() const;
+    BodyForceModel getBFMModel() const;
 
     KindSolver getKindSolver() const;
 
@@ -131,7 +131,7 @@ public:
 
     FloatType getFluidPrandtlNumber() const {return parseFloat("FLUID_PRANDTL_NUMBER");}
 
-    BoundaryType getBoundaryType(const BoundaryIndices) const;
+    BoundaryType getBoundaryType(const BoundaryIndex) const;
 
     std::vector<FloatType> getInletBCValues() const { return parseVector<FloatType>("INLET_VALUE");}
 
@@ -165,7 +165,7 @@ public:
 
     std::string getChimaScalingFunctionsFile() const {return parseString("CHIMA_SCALING_FUNCTIONS_FILEPATH");}
 
-    Vector3D getNoSlipWallVelocity(BoundaryIndices boundary) const;
+    Vector3D getNoSlipWallVelocity(BoundaryIndex boundary) const;
 
     FloatType getChimaReferenceMassFlow() const {return parseFloat("CHIMA_REFERENCE_MASS_FLOW");}
 
@@ -224,7 +224,7 @@ public:
 
     FloatType getHallTholletCoefficient_KD() const {return parseFloat("HALL_THOLLET_COEFFICIENT_KD");} 
 
-    std::string getHallTholletOffDesignActive() const {return parseString("HALL_THOLLET_OFF_DESIGN_ACTIVE");}
+    bool getHallTholletOffDesignActive() const;
 
     int getMonitorPointsCoordsI() const { return parseInt("MONITOR_POINTS_I_COORDS");}
 

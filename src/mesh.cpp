@@ -328,22 +328,22 @@ Matrix3D<FloatType> Mesh::computeAspectRatio() {
 
 void Mesh::computeBoundaryAreas() {
 
-    _boundarySurfaces[BoundaryIndices::I_START] = _surfacesI.getBoundarySlice(BoundaryIndices::I_START);
-    _boundarySurfaces[BoundaryIndices::I_END] = _surfacesI.getBoundarySlice(BoundaryIndices::I_END);
-    _boundarySurfaces[BoundaryIndices::J_START] = _surfacesJ.getBoundarySlice(BoundaryIndices::J_START);
-    _boundarySurfaces[BoundaryIndices::J_END] = _surfacesJ.getBoundarySlice(BoundaryIndices::J_END);
-    _boundarySurfaces[BoundaryIndices::K_START] = _surfacesK.getBoundarySlice(BoundaryIndices::K_START);
-    _boundarySurfaces[BoundaryIndices::K_END] = _surfacesK.getBoundarySlice(BoundaryIndices::K_END);
+    _boundarySurfaces[BoundaryIndex::I_START] = _surfacesI.getBoundarySlice(BoundaryIndex::I_START);
+    _boundarySurfaces[BoundaryIndex::I_END] = _surfacesI.getBoundarySlice(BoundaryIndex::I_END);
+    _boundarySurfaces[BoundaryIndex::J_START] = _surfacesJ.getBoundarySlice(BoundaryIndex::J_START);
+    _boundarySurfaces[BoundaryIndex::J_END] = _surfacesJ.getBoundarySlice(BoundaryIndex::J_END);
+    _boundarySurfaces[BoundaryIndex::K_START] = _surfacesK.getBoundarySlice(BoundaryIndex::K_START);
+    _boundarySurfaces[BoundaryIndex::K_END] = _surfacesK.getBoundarySlice(BoundaryIndex::K_END);
 
-    std::array<BoundaryIndices, 6> BoundaryIndicesArray = {
-        BoundaryIndices::I_START,
-        BoundaryIndices::I_END,
-        BoundaryIndices::J_START,
-        BoundaryIndices::J_END,
-        BoundaryIndices::K_START,
-        BoundaryIndices::K_END
+    std::array<BoundaryIndex, 6> BoundaryIndexArray = {
+        BoundaryIndex::I_START,
+        BoundaryIndex::I_END,
+        BoundaryIndex::J_START,
+        BoundaryIndex::J_END,
+        BoundaryIndex::K_START,
+        BoundaryIndex::K_END
     };
-    for (const auto& index : BoundaryIndicesArray) {
+    for (const auto& index : BoundaryIndexArray) {
         _boundaryAreas[index] = computeTotalSurfaceArea(_boundarySurfaces[index]);
     }
 
@@ -570,13 +570,13 @@ void Mesh::getElementEdges(size_t i, size_t j, size_t k, Vector3D &iEdge, Vector
 
 void Mesh::computeInputGradients() {
     if (_config.isBFMActive()){
-        _gradientsMap[FieldNames::BLOCKAGE] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
-        auto blockage = getInputFields(FieldNames::BLOCKAGE);
+        _gradientsMap[InputField::BLOCKAGE] = Matrix3D<Vector3D>(_nPointsI, _nPointsJ, _nPointsK);
+        auto blockage = getInputFields(InputField::BLOCKAGE);
         computeGradientGreenGauss(
             _surfacesI, _surfacesJ, _surfacesK, 
             _centersI, _centersJ, _centersK, 
             _vertices, _volumes, blockage, 
-            _gradientsMap[FieldNames::BLOCKAGE]);
+            _gradientsMap[InputField::BLOCKAGE]);
     }
 }
 

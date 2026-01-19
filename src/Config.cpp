@@ -166,21 +166,21 @@ bool Config::isBlockageActive() const {
     return parseBool("BLOCKAGE_ACTIVE", false);
 }
 
-BFM_Model Config::getBFMModel() const {
+BodyForceModel Config::getBFMModel() const {
     string value = parseString("BFM_MODEL", true);
-    BFM_Model model = BFM_Model::NONE;
+    BodyForceModel model = BodyForceModel::NONE;
     if (value == "Hall-Thollet") {
-        model = BFM_Model::HALL_THOLLET;
+        model = BodyForceModel::HALL_THOLLET;
     } else if (value == "Hall") {
-        model = BFM_Model::HALL;
+        model = BodyForceModel::HALL;
     } else if (value == "Chima") {
-        model = BFM_Model::CHIMA;
+        model = BodyForceModel::CHIMA;
     } else if (value == "None") {
-        model = BFM_Model::NONE;
+        model = BodyForceModel::NONE;
     } else if (value == "Blockage") {
-        model = BFM_Model::ONLY_BLOCKAGE;
+        model = BodyForceModel::ONLY_BLOCKAGE;
     } else if (value == "Correlations") {
-        model = BFM_Model::CORRELATIONS;
+        model = BodyForceModel::CORRELATIONS;
     } 
     else {
         throw std::runtime_error("Invalid value for key \"BFM_MODEL\" in configuration.");
@@ -218,26 +218,26 @@ Topology Config::getTopology() const {
     return topology;
 }
 
-BoundaryType Config::getBoundaryType(BoundaryIndices bcIndex) const{
+BoundaryType Config::getBoundaryType(BoundaryIndex bcIndex) const{
     BoundaryType boundaryType;
     std::string boundaryString;
 
-    if (bcIndex == BoundaryIndices::I_START){
+    if (bcIndex == BoundaryIndex::I_START){
         boundaryString = parseVector<std::string>("BOUNDARY_TYPE_I")[0];
     } 
-    else if (bcIndex == BoundaryIndices::I_END){
+    else if (bcIndex == BoundaryIndex::I_END){
         boundaryString = parseVector<std::string>("BOUNDARY_TYPE_I")[1];
     } 
-    else if (bcIndex == BoundaryIndices::J_START){
+    else if (bcIndex == BoundaryIndex::J_START){
         boundaryString = parseVector<std::string>("BOUNDARY_TYPE_J")[0];
     } 
-    else if (bcIndex == BoundaryIndices::J_END){
+    else if (bcIndex == BoundaryIndex::J_END){
         boundaryString = parseVector<std::string>("BOUNDARY_TYPE_J")[1];
     }
-    else if (bcIndex == BoundaryIndices::K_START){
+    else if (bcIndex == BoundaryIndex::K_START){
         boundaryString = parseVector<std::string>("BOUNDARY_TYPE_K")[0];
     }
-    else if (bcIndex == BoundaryIndices::K_END){
+    else if (bcIndex == BoundaryIndex::K_END){
         boundaryString = parseVector<std::string>("BOUNDARY_TYPE_K")[1];
     } 
     else {
@@ -266,7 +266,7 @@ BoundaryType Config::getBoundaryType(BoundaryIndices bcIndex) const{
         boundaryType = BoundaryType::THROTTLE;
     } 
     else if (boundaryString == "wall") {
-        boundaryType = BoundaryType::WALL;
+        boundaryType = BoundaryType::INVISCID_WALL;
     } 
     else if (boundaryString == "no_slip_wall") {
         boundaryType = BoundaryType::NO_SLIP_WALL;
@@ -394,6 +394,17 @@ void Config::printAllConfigValues() const {
         return initialPressure + (outletPressure - initialPressure) * iterRatio;
     }
 
+bool Config::getHallTholletOffDesignActive() const {
+    std::string value = parseString("HALL_THOLLET_OFF_DESIGN_ACTIVE");
+    if (value == "true" || value == "yes" || value == "1") {
+        return true;
+    } else if (value == "false" || value == "no" || value == "0") {
+        return false;
+    } else {
+        throw std::runtime_error("Invalid value for key \"HALL_THOLLET_OFF_DESIGN_ACTIVE\" in configuration.");
+    }
+}
+
 
 FluxLimiter Config::getFluxLimiter() const {
         std::string value = parseString("FLUX_LIMITER", true);
@@ -474,27 +485,27 @@ OutputFields Config::getOutputFields() const {
 }
 
 
-Vector3D Config::getNoSlipWallVelocity(BoundaryIndices boundary) const{
+Vector3D Config::getNoSlipWallVelocity(BoundaryIndex boundary) const{
     std::string cfgName{""};
     
     switch (boundary)
     {
-    case BoundaryIndices::I_START:
+    case BoundaryIndex::I_START:
         cfgName = "BOUNDARY_I_START_VELOCITY";
         break;
-    case BoundaryIndices::I_END:
+    case BoundaryIndex::I_END:
         cfgName = "BOUNDARY_I_END_VELOCITY";
         break;
-    case BoundaryIndices::J_START:
+    case BoundaryIndex::J_START:
         cfgName = "BOUNDARY_J_START_VELOCITY";
         break;
-    case BoundaryIndices::J_END:
+    case BoundaryIndex::J_END:
         cfgName = "BOUNDARY_J_END_VELOCITY";
         break;
-    case BoundaryIndices::K_START:
+    case BoundaryIndex::K_START:
         cfgName = "BOUNDARY_K_START_VELOCITY";
         break;
-    case BoundaryIndices::K_END:
+    case BoundaryIndex::K_END:
         cfgName = "BOUNDARY_K_END_VELOCITY";
         break;
     default:
@@ -509,6 +520,9 @@ Vector3D Config::getNoSlipWallVelocity(BoundaryIndices boundary) const{
 
 std::vector<FloatType> Config::getPeriodicityInfo() const {
     std::vector<FloatType> periodicityInfo = parseVector<FloatType>("PERIODICITY_INFO");
-    assert (periodicityInfo.size() == 2 && "PERIODICITY_INFO must indicate 2 values (translation along z and rotation along x)");
+    
+    assert (periodicityInfo.size() == 2 && 
+        "PERIODICITY_INFO must indicate 2 values (translation along z and rotation along x)");
+    
     return periodicityInfo;
 }

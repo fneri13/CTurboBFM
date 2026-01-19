@@ -16,7 +16,7 @@ public:
 
     Input(std::string filename);
 
-    Matrix3D<FloatType> getField(FieldNames fieldName) const {
+    Matrix3D<FloatType> getField(InputField fieldName) const {
         return _fieldsMap.at(fieldName);
     }
 
@@ -28,14 +28,14 @@ public:
 
     Vector3D getCoordinates(size_t i, size_t j, size_t k) const;
 
-    FloatType getField(FieldNames fieldName, size_t i, size_t j, size_t k) const ;
+    FloatType getField(InputField fieldName, size_t i, size_t j, size_t k) const ;
 
 protected:
     void readCsvFile();
 
 private:
     std::string _filename;
-    std::map<FieldNames, Matrix3D<FloatType>> _fieldsMap;
+    std::map<InputField, Matrix3D<FloatType>> _fieldsMap;
     size_t _ni, _nj, _nk;
 
 };

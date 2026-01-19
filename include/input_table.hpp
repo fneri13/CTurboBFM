@@ -15,7 +15,7 @@ public:
 
     InputTable(std::string filename);
 
-    std::vector<FloatType> getField(FieldNames fieldName) const {
+    std::vector<FloatType> getField(InputField fieldName) const {
         return _fieldsMap.at(fieldName);
     }
 
@@ -24,6 +24,6 @@ protected:
 
 private:
     std::string _filename;
-    std::map<FieldNames, std::vector<FloatType>> _fieldsMap;        
+    std::map<InputField, std::vector<FloatType>> _fieldsMap;        
 
 };

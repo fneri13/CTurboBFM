@@ -19,7 +19,7 @@ void InputTable::readCsvFile() {
     }
 
     std::string line;
-    std::vector<FieldNames> fieldOrder;
+    std::vector<InputField> fieldOrder;
 
     // Read header
     if (std::getline(file, line)) {

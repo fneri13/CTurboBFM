@@ -111,12 +111,12 @@ TEST(CMeshTest, TestComputeBoundaryAreas3D){
     Config config("input.ini");
     Mesh mesh(config);
 
-    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::I_START), 35.0);
-    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::I_END), 35.0);
-    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::J_START), 45.0);
-    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::J_END), 45.0);
-    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::K_START), 63.0);
-    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndices::K_END), 63.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndex::I_START), 35.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndex::I_END), 35.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndex::J_START), 45.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndex::J_END), 45.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndex::K_START), 63.0);
+    ASSERT_DOUBLE_EQ(mesh.getBoundaryTotalArea(BoundaryIndex::K_END), 63.0);
 }
 
 TEST(CMeshTest, TestComputeSurfaceAndCenters) {

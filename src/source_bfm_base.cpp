@@ -4,14 +4,16 @@
 SourceBFMBase::SourceBFMBase(const Config &config, const FluidBase &fluid, const Mesh &mesh) 
         : _config(config), _fluid(fluid), _mesh(mesh) {
 
-            // read data associated to body force perturbation
-            _perturbationBodyForceActive = _config.isPerturbationBodyForceActive();
-            
-            if (_perturbationBodyForceActive){
+            _isBlockageActive = _config.isBlockageActive();
+            _isPerturbationActive = _config.isPerturbationBodyForceActive();
+            if (_isPerturbationActive){
                 std::vector<FloatType> perturbationCenterCoords = _config.getPerturbationCenter();        
-                _perturbationCenter = {perturbationCenterCoords[0], perturbationCenterCoords[1], perturbationCenterCoords[2]};
+                _perturbationCenter = {
+                    perturbationCenterCoords[0], 
+                    perturbationCenterCoords[1], 
+                    perturbationCenterCoords[2]};
                 _perturbationRadius = _config.getPerturbationRadialExtension();
-                _perturbationScalingFactor = _config.getPerturbationScalingFactor();
+                _perturbationScaling = _config.getPerturbationScalingFactor();
                 _perturbationTimeStart = _config.getPerturbationStartTime();
                 _perturbationTimeDuration = _config.getPerturbationTimeDuration();
             }
@@ -19,29 +21,40 @@ SourceBFMBase::SourceBFMBase(const Config &config, const FluidBase &fluid, const
         };
 
 
-StateVector SourceBFMBase::computeSource(size_t i, size_t j, size_t k, const StateVector& primitive, Matrix3D<Vector3D> &inviscidForce, 
-                                        Matrix3D<Vector3D> &viscousForce, Matrix3D<FloatType> &deviationAngle, FloatType &timePhysical,
-                                        FlowSolution &conservativeVars) {
+StateVector SourceBFMBase::computeTotalSource(
+    size_t i, 
+    size_t j, 
+    size_t k, 
+    const StateVector& primitive, 
+    Matrix3D<Vector3D> &inviscidForce, 
+    Matrix3D<Vector3D> &viscousForce, 
+    Matrix3D<FloatType> &deviationAngle, 
+    FloatType &timePhysical,
+    FlowSolution &conservativeVars) {
 
     StateVector blockageSource({0,0,0,0,0});
-    
-    if (_config.isBlockageActive()){
+    if (_isBlockageActive){
         blockageSource = computeBlockageSource(i, j, k, primitive);
     }
 
-    FloatType numberBlades = _mesh.getInputFields(FieldNames::NUMBER_BLADES, i, j, k);
-    
-    if (numberBlades == 0){ // this is the layer upstream of leading edge, no blade present, only blockage contribution
+    FloatType numberBlades = _mesh.getInputFields(InputField::NUMBER_BLADES, i, j, k);
+    if (numberBlades == 0){
         return blockageSource;
     }
 
-    StateVector bodyForceSource = computeBodyForceSource(i, j, k, primitive, inviscidForce, viscousForce, conservativeVars);
+    StateVector bodyForceSource = computeBodyForceSource(
+        i, j, k, 
+        primitive, 
+        inviscidForce, 
+        viscousForce, 
+        conservativeVars);
     
-    FloatType bodyForceVariation = computeBodyForcePerturbationScaling(i, j, k, timePhysical);
+    FloatType perturbFactor = computePerturbationFactor(i, j, k, timePhysical);
+    
+    // update deviation angle field, needed for output
+    deviationAngle(i, j, k) = _deviationAngle; 
 
-    deviationAngle(i, j, k) = _deviationAngle; // update the deviation angle that has been computed from every bfm model, storing it for the output
-
-    return blockageSource + bodyForceSource * (1.0 + bodyForceVariation);
+    return blockageSource + bodyForceSource * (1.0 + perturbFactor);
 }
 
 
@@ -49,12 +62,12 @@ StateVector SourceBFMBase::computeBlockageSource(size_t i, size_t j, size_t k, c
 
     Vector3D velocity({primitive[1], primitive[2], primitive[3]});
     FloatType totalEnthalpy = _fluid.computeTotalEnthalpy_rho_u_et(primitive[0], velocity, primitive[4]);
-    FloatType blockage = _mesh.getInputFields(FieldNames::BLOCKAGE, i, j, k);
-    Vector3D blockageGrad = _mesh.getInputFieldsGradient(FieldNames::BLOCKAGE, i, j, k);
+    FloatType blockage = _mesh.getInputFields(InputField::BLOCKAGE, i, j, k);
+    Vector3D blockageGrad = _mesh.getInputFieldsGradient(InputField::BLOCKAGE, i, j, k);
     FloatType volume = _mesh.getVolume(i, j, k);
+    
     StateVector source({0,0,0,0,0});
     FloatType commonTerm = -1.0 / blockage * primitive[0] * velocity.dot(blockageGrad);
-
     source[0] = commonTerm;
     source[1] = commonTerm * velocity.x();
     source[2] = commonTerm * velocity.y();
@@ -62,204 +75,149 @@ StateVector SourceBFMBase::computeBlockageSource(size_t i, size_t j, size_t k, c
     source[4] = commonTerm * totalEnthalpy;
 
     return source*volume;
-
 }
 
 
-StateVector SourceBFMBase::computeBodyForceSource(size_t i, size_t j, size_t k, const StateVector& primitive, 
-    Matrix3D<Vector3D> &inviscidForce, Matrix3D<Vector3D> &viscousForce, FlowSolution &conservativeVars) {
+StateVector SourceBFMBase::computeBodyForceSource(
+    size_t i, 
+    size_t j, 
+    size_t k, 
+    const StateVector& primitive, 
+    Matrix3D<Vector3D> &inviscidForce, 
+    Matrix3D<Vector3D> &viscousForce, 
+    FlowSolution &conservativeVars) {
+
     inviscidForce(i, j, k) = {0, 0, 0};
     viscousForce(i, j, k) = {0, 0, 0};
     return StateVector({0, 0, 0, 0, 0});
 }
 
 
-void SourceBFMBase::computeFlowState(size_t i, size_t j, size_t k, const StateVector& primitive, FlowSolution &conservativeVars) {
+void SourceBFMBase::computeFlowState(
+    size_t i, 
+    size_t j, 
+    size_t k, 
+    const StateVector& primitive, 
+    FlowSolution &conservativeVars) {
     
-    // element location
-    _point = _mesh.getVertex(i, j, k);
     _radius = _mesh.getRadius(i, j, k);
     _theta = _mesh.getTheta(i, j, k);
     
-    // flow kinematics
-    _velocityCartesian = {primitive[1], primitive[2], primitive[3]};
-    _velocityCylindrical = computeCylindricalComponentsFromCartesian(_velocityCartesian, _theta);
+    _velCartesian = {primitive[1], primitive[2], primitive[3]};
+    _velCylindrical = computeCylindricalComponentsFromCartesian(_velCartesian, _theta);
     
-    // relative flow kinematics
-    _omega = _mesh.getInputFields(FieldNames::RPM, i, j, k) * 2 * M_PI / 60;
-    _dragVelocityCylindrical = {0, 0, _omega * _radius};
-    _relativeVelocityCylindric = _velocityCylindrical - _dragVelocityCylindrical;
-    _relativeVelocityCartesian = computeCartesianComponentsFromCylindrical(_relativeVelocityCylindric, _theta);
-    _velMeridional = std::sqrt(_velocityCylindrical.x() * _velocityCylindrical.x() + 
-                                _velocityCylindrical.y() * _velocityCylindrical.y());
+    _omega = _mesh.getInputFields(InputField::RPM, i, j, k) * 2 * M_PI / 60;
+    _dragVelCylindrical = {0, 0, _omega * _radius};
+    _relVelCylindric = _velCylindrical - _dragVelCylindrical;
+    _relVelCartesian = computeCartesianComponentsFromCylindrical(_relVelCylindric, _theta);
+    _velMeridional = std::sqrt(_velCylindrical.x() * _velCylindrical.x() + 
+                                _velCylindrical.y() * _velCylindrical.y());
 
-    // blade properties
-    _numberBlades = _mesh.getInputFields(FieldNames::NUMBER_BLADES, i, j, k);
-    _pitch = 2.0 * M_PI * _radius / _numberBlades;
-    _normalCamberAxial = _mesh.getInputFields(FieldNames::NORMAL_AXIAL, i, j, k);
-    _normalCamberRadial = _mesh.getInputFields(FieldNames::NORMAL_RADIAL, i, j, k);
-    _normalCamberTangential = _mesh.getInputFields(FieldNames::NORMAL_TANGENTIAL, i, j, k);
+    _bladesNumber = _mesh.getInputFields(InputField::NUMBER_BLADES, i, j, k);
+    _tangentialPitch = 2.0 * M_PI * _radius / _bladesNumber;
+    _normalCamberAxial = _mesh.getInputFields(InputField::NORMAL_AXIAL, i, j, k);
+    _normalCamberRadial = _mesh.getInputFields(InputField::NORMAL_RADIAL, i, j, k);
+    _normalCamberTangential = _mesh.getInputFields(InputField::NORMAL_TANGENTIAL, i, j, k);
     _normalCamberCylindric = {_normalCamberAxial, _normalCamberRadial, _normalCamberTangential};
-    _blockage = _mesh.getInputFields(FieldNames::BLOCKAGE, i, j, k);
-    _bladeIsPresent = _mesh.getInputFields(FieldNames::BLADE_PRESENT, i, j, k);
+    _blockage = _mesh.getInputFields(InputField::BLOCKAGE, i, j, k);
+    _isBladePresent = _mesh.getInputFields(InputField::BLADE_PRESENT, i, j, k);
     
-    // characteristic angles
-    // _leanAngle = _mesh.getInputFields(FieldNames::BLADE_LEAN_ANGLE, i, j, k);
-    // _gaspathAngle = _mesh.getInputFields(FieldNames::BLADE_GAS_PATH_ANGLE, i, j, k);
-    _metalAngle = _mesh.getInputFields(FieldNames::BLADE_METAL_ANGLE, i, j, k);
-    _flowAngle = std::atan2(_relativeVelocityCylindric.z(), _velMeridional);
-    _deviationAngle = computeDeviationAngle(_relativeVelocityCylindric, _normalCamberCylindric);
+    _leanAngle = _mesh.getInputFields(InputField::BLADE_LEAN_ANGLE, i, j, k);
+    _gasPathAngle = _mesh.getInputFields(InputField::BLADE_GAS_PATH_ANGLE, i, j, k);
+    _metalAngle = _mesh.getInputFields(InputField::BLADE_METAL_ANGLE, i, j, k);
+    _flowAngle = std::atan2(_relVelCylindric.z(), _velMeridional);
+    _deviationAngle = computeDeviationAngle(_relVelCylindric, _normalCamberCylindric);
     
-    // stick to the convention that the deviation angle is positive when the blade is pushing the flow (or the flow is underturned)
+    // CONVENTION: deviation is positive when the blade should push the flow (flow is currently under-turned)
     if (_omega > 0.0){
         _deviationAngle = - _flowAngle + _metalAngle;
     }
     else {
         _deviationAngle = + _flowAngle - _metalAngle;
     }
-    
 
-    // Directions of the force components (the inviscid one is considered positive from suction to pressure side, when the blade is pushing the flow)
-    _inviscidForceDirectionCylindrical = computeInviscidForceDirection(_relativeVelocityCylindric, _normalCamberCylindric);
-    _inviscidForceDirectionCartesian = computeCartesianComponentsFromCylindrical(_inviscidForceDirectionCylindrical, _theta);
-    _viscousForceDirectionCylindrical = - _relativeVelocityCylindric.normalized();
-    _viscousForceDirectionCartesian = - _relativeVelocityCartesian.normalized();
-
-
-    // quantities related to inlet-outlet
-    _solidity = (_mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, _trailingEdgeIdx, j, k) - 
-                 _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, _leadingEdgeIdx, j, k)) / _pitch;
-    
-    StateVector conservativeInlet = conservativeVars.at(_leadingEdgeIdx, j, k);
-    StateVector conservativeOutlet = conservativeVars.at(_trailingEdgeIdx, j, k);
-
-    StateVector primitiveInlet = getPrimitiveVariablesFromConservative(conservativeInlet);
-    StateVector primitiveOutlet = getPrimitiveVariablesFromConservative(conservativeOutlet);
-
-    Vector3D velocityInlet = {primitiveInlet[1], primitiveInlet[2], primitiveInlet[3]};
-    Vector3D velocityOutlet = {primitiveOutlet[1], primitiveOutlet[2], primitiveOutlet[3]};
-
-    Vector3D velocityInletCyl = computeCylindricalComponentsFromCartesian(velocityInlet, _theta);
-    Vector3D velocityOutletCyl = computeCylindricalComponentsFromCartesian(velocityOutlet, _theta);
-
-    FloatType radiusInlet = _mesh.getRadius(_leadingEdgeIdx, j, k);
-    FloatType radiusOutlet = _mesh.getRadius(_trailingEdgeIdx, j, k);
-
-    Vector3D dragVelocityInlet = {0.0, 0.0, _omega * radiusInlet};
-    Vector3D dragVelocityOutlet = {0.0, 0.0, _omega * radiusOutlet};
-    
-    _relativeVelocityInlet = velocityInletCyl - dragVelocityInlet;
-    _relativeVelocityOutlet = velocityOutletCyl - dragVelocityOutlet;
-
-    // lieblein diffusion factor
-    _diffusionFactor = 1.0 - _relativeVelocityOutlet.magnitude() / _relativeVelocityInlet.magnitude() + std::abs(
-                                _relativeVelocityInlet.z() - _relativeVelocityOutlet.z()) / (2.0 * _solidity * _relativeVelocityInlet.magnitude());
-    
-    FloatType velMeridionalInlet = std::sqrt(_relativeVelocityInlet.x() * _relativeVelocityInlet.x() + 
-                                             _relativeVelocityInlet.y() * _relativeVelocityInlet.y());
-
-    _flowAngleInletDeg = std::atan2(_relativeVelocityInlet.z(), velMeridionalInlet) * 180.0 / M_PI;
-    
-    _streamBladeLength = _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, _trailingEdgeIdx, j, k) - _mesh.getInputFields(FieldNames::STREAMWISE_LENGTH, _leadingEdgeIdx, j, k);
-
-    _camberAngleDegAbs = std::abs(_mesh.getInputFields(FieldNames::BLADE_METAL_ANGLE, _trailingEdgeIdx, j, k) - _mesh.getInputFields(FieldNames::BLADE_METAL_ANGLE, _leadingEdgeIdx, j, k))  * 180 / M_PI;
+    // CONVENTION: positive inviscid force means a positive force directed from suction to pressure side
+    _inviscidForceDirCylindrical = computeInviscidForceDirection(_relVelCylindric, _normalCamberCylindric);
+    _inviscidForceDirCartesian = computeCartesianComponentsFromCylindrical(_inviscidForceDirCylindrical, _theta);
+    _viscousForceDirCylindrical = - _relVelCylindric.normalized();
+    _viscousForceDirCartesian = - _relVelCartesian.normalized();
 
 }
 
 
 FloatType SourceBFMBase::computeDeviationAngle(Vector3D relativeVelocityCyl, Vector3D normalCamber){
     Vector3D normal = normalCamber / normalCamber.magnitude();
-    Vector3D velRelMeridional = {relativeVelocityCyl.x(), relativeVelocityCyl.y(), .0};
-    Vector3D spanwiseDir = {-velRelMeridional.y(), velRelMeridional.x(), .0};
+    Vector3D velMeridional = {relativeVelocityCyl.x(), relativeVelocityCyl.y(), 0.0};
+    Vector3D spanwiseDir = {-velMeridional.y(), velMeridional.x(), 0.0};
     spanwiseDir = spanwiseDir / spanwiseDir.magnitude();
 
+    // blade-to-blade velocity obtained removing the spanwise component
     Vector3D velInPlane = relativeVelocityCyl - spanwiseDir * relativeVelocityCyl.dot(spanwiseDir);
-    FloatType Wmn = velInPlane.dot(normal);
+    FloatType normalVel = velInPlane.dot(normal);
+
     // the deviation angle is positive when the blade should push, and negative when the blade should pull
-    FloatType deviationAngle = -std::asin(Wmn / velInPlane.magnitude());
+    FloatType deviationAngle = -std::asin(normalVel / velInPlane.magnitude());
     
     return deviationAngle;
 }
 
 Vector3D SourceBFMBase::computeInviscidForceDirection(const Vector3D& relativeVelocity, const Vector3D& normalCamber){
-    // method based on versor projection
-    // the idea is that the loading versor is found be subtracting from the normal camber versor its projection on the relative velocity versor
 
-    Vector3D relativeVelocityPlus = {relativeVelocity.x(), relativeVelocity.y(), relativeVelocity.z()};
-    Vector3D wDir = relativeVelocityPlus.normalized();
-    Vector3D normal = normalCamber.normalized();
-    Vector3D versor = normal - wDir * normal.dot(wDir);
-    versor = versor.normalized();
+    // remove component along relative velocity
+    Vector3D relVelDir = relativeVelocity.normalized();
+    Vector3D normalDir = normalCamber.normalized();
+    Vector3D versor = (normalDir - relVelDir * normalDir.dot(relVelDir)).normalized();
 
-    // ADDITIONAL NOTE: if we want to remove every effect in the spanwise direction, we can also remove the projection in the direction of orthogonal meridional velocity
-    Vector3D velMeridional{relativeVelocity.x(), relativeVelocity.y(), .0};
-    Vector3D spanDirection = {velMeridional.y(), -velMeridional.x(), .0};
+    // remove component out of blade-to-blade plane
+    Vector3D velMeridional{relativeVelocity.x(), relativeVelocity.y(), 0.0};
+    Vector3D spanDirection = {velMeridional.y(), -velMeridional.x(), 0.0};
     spanDirection = spanDirection.normalized();
-    versor = versor - spanDirection * versor.dot(spanDirection);
-    versor = versor.normalized();
+    versor = (versor - spanDirection * versor.dot(spanDirection)).normalized();
 
     return versor;
 
 }
 
 
-// Vector3D SourceBFMBase::computeInviscidForceDirection(const Vector3D& relativeVelocity, const FloatType& gaspathAngle, const FloatType& flowAngle, FloatType& leanAngle){
-//     // overwrite lean to zero for now
-//     // leanAngle = 0.0;
-    
-//     // the minus are there because the derivation considers opposite signs for the rotations of the ref frames
-//     FloatType nAxial = -std::sin(flowAngle) * std::cos(leanAngle) * std::cos(gaspathAngle) - std::sin(leanAngle) * std::sin(gaspathAngle);
-//     FloatType nRadial = -std::sin(flowAngle) * std::sin(gaspathAngle) * std::cos(leanAngle) + std::sin(leanAngle) * std::cos(gaspathAngle);
-//     FloatType nTan = std::cos(flowAngle) * std::cos(leanAngle);
+FloatType SourceBFMBase::computeTangentialComponent(
+    FloatType fAxial, 
+    const Vector3D& relativeVelocityDirection, 
+    const Vector3D& normalCamber){
 
-//     Vector3D versor =   {nAxial, nRadial, nTan};
-
-//     // convention on the sign for a positive pushing force
-//     if (_flowAngle > 0){
-//         versor = -versor;
-//     }
-
-//     return versor;
-// }
-
-
-FloatType SourceBFMBase::computeTangentialComponent(FloatType fAxial, const Vector3D& relativeVelocityDirection, const Vector3D& normalCamber){
-    FloatType fTangential = (-relativeVelocityDirection.x() * fAxial - relativeVelocityDirection.y() * normalCamber.y()) / relativeVelocityDirection.z();
+    FloatType fTangential = (
+        -relativeVelocityDirection.x() * fAxial -
+         relativeVelocityDirection.y() * normalCamber.y()) /
+        relativeVelocityDirection.z();
     return fTangential;
 }
 
 
-FloatType SourceBFMBase::computeBodyForcePerturbationScaling(size_t i, size_t j, size_t k, FloatType timePhysical) const{
+FloatType SourceBFMBase::computePerturbationFactor(size_t i, size_t j, size_t k, FloatType timePhysical) const{
 
     if (!_config.isPerturbationBodyForceActive()){
         return 0.0;
     }
 
-    // if time not in the perturbation, return 1
     if (timePhysical < _perturbationTimeStart || timePhysical > _perturbationTimeStart + _perturbationTimeDuration){
         return 0.0;
     }
-
-    // if the rest is not true, compute the scaling factor of the body force, through RBF in space and time
     
-    FloatType variationMax = _perturbationScalingFactor; // a value of 1 means doubling the body force. -1 means setting it to 0
+    FloatType variationMax = _perturbationScaling; 
 
     Vector3D point = _mesh.getVertex(i,j,k);
-    FloatType d = (point - _perturbationCenter).magnitude(); // distance of the point from the perturbation center
+    FloatType distance = (point - _perturbationCenter).magnitude();
 
-    if (d > 2.0*_perturbationRadius){
+    if (distance > 3.0*_perturbationRadius){
         return 0.0;
     }
 
-    FloatType spaceModulation = std::exp(-(d*d)/(_perturbationRadius*_perturbationRadius)); // RBF in space. At d=R the modulation is around 35%
+    FloatType spaceModulation = std::exp(-(distance*distance)/(_perturbationRadius*_perturbationRadius));
 
-    FloatType timeCentral = _perturbationTimeStart + _perturbationTimeDuration/3.0; // central time touches the peak
-    FloatType sigma = _perturbationTimeDuration/2.0; // sharp rise and fall
-    FloatType timeModulation = std::exp( - (std::pow(timePhysical-timeCentral, 2)) / std::pow(sigma,2)); // RBF in time
+    FloatType peakInTime = _perturbationTimeStart + _perturbationTimeDuration/2.0;
+    FloatType sigmaTime = _perturbationTimeDuration/3.0;
+    FloatType timeModulation = std::exp( - (std::pow(timePhysical-peakInTime, 2)) / std::pow(sigmaTime, 2)); 
 
-    FloatType perturbationVariation = variationMax * spaceModulation * timeModulation; // a value of 1 means doubling the body force. -1 means setting it to 0
-
-    // }
+    FloatType perturbationVariation = variationMax * spaceModulation * timeModulation; 
 
     return perturbationVariation;
 }

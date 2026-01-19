@@ -43,7 +43,7 @@ private:
     /** @brief compute the global residual, defined as V*dU/dt + R = 0 -> R = fluxes - source terms */
     void computeResiduals(
         FlowSolution& solution, 
-        const std::map<SolutionNames, Matrix3D<Vector3D>>& solutionGrad, 
+        const std::map<SolutionName, Matrix3D<Vector3D>>& solutionGrad, 
         const size_t itCounter, 
         const FloatType timePhysical, 
         FlowSolution &residuals);
@@ -59,7 +59,7 @@ private:
     void computeViscousFluxResiduals(
         FluxDirection direction, 
         const FlowSolution& solution, 
-        const std::map<SolutionNames, Matrix3D<Vector3D>>& solutionGrad, 
+        const std::map<SolutionName, Matrix3D<Vector3D>>& solutionGrad, 
         size_t itCounter, 
         FlowSolution &residuals) const;
 
@@ -72,7 +72,7 @@ private:
 
     void enforcePeriodicityOnSolution(FlowSolution &sol);
 
-    void computeSolutionGradient(FlowSolution &sol, std::map<SolutionNames, Matrix3D<Vector3D>> &solutionGrad);
+    void computeSolutionGradient(FlowSolution &sol, std::map<SolutionName, Matrix3D<Vector3D>> &solutionGrad);
 
     void printInfoResiduals(FlowSolution &residuals, size_t it);
 
@@ -103,7 +103,7 @@ private:
     */
     void computeSourceResiduals(
         FlowSolution& solution, 
-        const std::map<SolutionNames, Matrix3D<Vector3D>>& solutionGrad, 
+        const std::map<SolutionName, Matrix3D<Vector3D>>& solutionGrad, 
         size_t itCounter, 
         FlowSolution &residuals, 
         Matrix3D<Vector3D> &inviscidForce, 
@@ -158,7 +158,7 @@ private:
     /** @brief set the momentum vector on the nodes belonging to viscous walls */
     void setMomentumSolutionOnViscousWalls(
         FlowSolution &residuals, 
-        const BoundaryIndices &boundaryIndices, 
+        const BoundaryIndex &BoundaryIndex, 
         const Vector3D &wallVelocity) const;
     
     /** @brief perform some preprocessing of the solution */
@@ -186,7 +186,7 @@ protected:
 
 private:
     FlowSolution _conservativeSolution; 
-    std::map<SolutionNames, Matrix3D<Vector3D>> _solutionGrad;
+    std::map<SolutionName, Matrix3D<Vector3D>> _solutionGrad;
     std::unique_ptr<OutputBase> _output;
     
     bool _isBfmActive{false};

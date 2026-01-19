@@ -1,8 +1,8 @@
 #pragma once
 #include <iostream>
 #include <vector>
-#include <algorithm> // for minmax_element
-#include <numeric>   // for accumulate, inner_product
+#include <algorithm> 
+#include <numeric>   
 #include <cmath>
 #include <map>
 #include <cassert>
@@ -12,25 +12,18 @@
 using FloatType = double;
 
 
-/**
- * @brief Class for 3D vectors of FloatType type elements. The 3 components are named as x,y,z.
- */
+/** @brief Class for 3D vectors of FloatType type elements. The 3 components are named as x,y,z. */
 class Vector3D {
 
     private:
-        std::array<FloatType, 3> _data; // data member
+        std::array<FloatType, 3> _data; 
 
     public:
         
-        /** @brief Default constructor, initializeds to {0,0,0} */
-        Vector3D() : _data{0.0, 0.0, 0.0} {} // default constructor
-        
-        /** @brief Overloaded constructor, initializeds to {x,y,z} 
-         * \param x, y, z coordinates 
-        */
-        Vector3D(FloatType x, FloatType y, FloatType z) : _data{x, y, z} {} //overloaded
+        Vector3D() : _data{0.0, 0.0, 0.0} {} 
 
-        // Accessors
+        Vector3D(FloatType x, FloatType y, FloatType z) : _data{x, y, z} {} 
+
         FloatType& operator()(size_t index) {
             assert (index < 3 && "Index out of bounds");
             return _data[index];
@@ -49,7 +42,6 @@ class Vector3D {
         const FloatType& y() const { return _data[1]; }
         const FloatType& z() const { return _data[2]; }
 
-        // Operator Overloads
         Vector3D operator+(const Vector3D& other) const {
             return Vector3D(x() + other.x(), y() + other.y(), z() + other.z());
         }
@@ -67,36 +59,43 @@ class Vector3D {
         }
 
         Vector3D& operator+=(const Vector3D& other) {
-            x() += other.x(); y() += other.y(); z() += other.z();
+            x() += other.x(); 
+            y() += other.y(); 
+            z() += other.z();
             return *this;
         }
 
         Vector3D& operator-=(const Vector3D& other) {
-            x() -= other.x(); y() -= other.y(); z() -= other.z();
+            x() -= other.x(); 
+            y() -= other.y(); 
+            z() -= other.z();
             return *this;
         }
 
         Vector3D operator-() const {
-            return Vector3D(- x(), - y(), - z());
+            return Vector3D(-x(), -y(), -z());
         }
 
         Vector3D& operator*=(FloatType scalar) {
-            x() *= scalar; y() *= scalar; z() *= scalar;
+            x() *= scalar; 
+            y() *= scalar; 
+            z() *= scalar;
             return *this;
         }
 
         Vector3D& operator/=(FloatType scalar) {
-            x() /= scalar; y() /= scalar; z() /= scalar;
+            x() /= scalar; 
+            y() /= scalar; 
+            z() /= scalar;
             return *this;
         }
 
         bool operator==(const Vector3D& other) const {
-            return x() == other.x() && y() == other.y() && z() == other.z();
+            return (x() == other.x() && y() == other.y() && z() == other.z());
         }
 
-        // Magnitude and normalization
         FloatType magnitude() const {
-            return std::sqrt(x() * x() + y() * y() + z() * z());
+            return std::sqrt(x()*x() + y()*y() + z()*z());
         }
 
         Vector3D normalized() const {
@@ -106,159 +105,135 @@ class Vector3D {
 
         Vector3D cross(const Vector3D& other) const {
             return Vector3D(
-                y() * other.z() - z() * other.y(),
-                z() * other.x() - x() * other.z(),
-                x() * other.y() - y() * other.x()
+                y()*other.z() - z()*other.y(),
+                z()*other.x() - x()*other.z(),
+                x()*other.y() - y()*other.x()
             );
         }
 
         FloatType dot(const Vector3D& other) const {
-            FloatType result = x() * other.x() + y() * other.y() + z() * other.z();
+            FloatType result = x()*other.x() + y()*other.y() + z()*other.z();
             return result;
         }
 
-        // print the content
         friend std::ostream& operator<<(std::ostream& os, const Vector3D& v) {
         return os << "(" << v.x() << ", " << v.y() << ", " << v.z() << ")";
         }
 };
 
-/** @brief Enum class for BFM models*/
-enum class BFM_Model {
-    NONE = 0,
-    HALL = 1,
-    HALL_THOLLET = 2,
-    LIFT_DRAG = 3,
-    FROZEN_FORCE = 4,
-    FROZEN_GRADIENT = 5,
-    GONG = 6,
-    NERI = 7,
-    CHIMA = 8,
-    ONLY_BLOCKAGE = 9,
-    LAMPRAKIS = 10,
-    CORRELATIONS = 11,
+
+
+enum class BodyForceModel {
+    NONE,
+    HALL,
+    HALL_THOLLET,
+    CHIMA,
+    ONLY_BLOCKAGE,
+    CORRELATIONS,
 };
 
 
-/** @brief Enum class for boundary indices*/
-enum class BoundaryIndices {
-    I_START = 0,
-    I_END = 1,
-    J_START = 2,
-    J_END = 3,
-    K_START = 4,
-    K_END = 5
+enum class BoundaryIndex {
+    I_START,
+    I_END,
+    J_START,
+    J_END,
+    K_START,
+    K_END
 };
 
 
-/** @brief Enum class for output formats*/
-enum class OutputFormats {
+enum class OutputFormat {
     CSV = 0,
     VTK = 1
 };
 
 
-/** @brief Enum class for kind of solver*/
 enum class KindSolver {
     EULER = 0,
     RANS = 1
 };
 
 
-/** @brief Enum class for topologies*/
 enum class Topology{
-    TWO_DIMENSIONAL = 0,
-    THREE_DIMENSIONAL = 1,
-    AXISYMMETRIC = 2,
-    ONE_DIMENSIONAL =3
+    TWO_DIMENSIONAL,
+    THREE_DIMENSIONAL,
+    AXISYMMETRIC,
+    ONE_DIMENSIONAL
 };
 
 
-/** @brief Enum class for boundary types*/
 enum class BoundaryType {
-    INLET = 0,
-    INLET_SUPERSONIC = 1,
-    OUTLET_SUPERSONIC = 2,
-    OUTLET = 3,
-    RADIAL_EQUILIBRIUM = 4,
-    WALL = 5,
-    EMPTY = 6,
-    WEDGE = 7,
-    PERIODIC = 8,
-    THROTTLE = 9,
-    INLET_2D = 10,
-    NO_SLIP_WALL = 11,
+    INLET,
+    INLET_SUPERSONIC,
+    OUTLET_SUPERSONIC,
+    OUTLET,
+    RADIAL_EQUILIBRIUM,
+    INVISCID_WALL,
+    EMPTY,
+    WEDGE,
+    PERIODIC,
+    THROTTLE,
+    INLET_2D,
+    NO_SLIP_WALL,
     TRANSPARENT
 };
 
 
-/** @brief Enum class for time integration*/
 enum class TimeIntegration {
-    RUNGE_KUTTA_4 = 0,
-    RUNGE_KUTTA_3 = 1
+    RUNGE_KUTTA_4,
+    RUNGE_KUTTA_3
 };
 
 
-/** @brief Enum class for time step method*/
 enum class TimeStepMethod {
-    LOCAL = 0,
-    GLOBAL = 1,
+    LOCAL,
+    GLOBAL,
     FIXED
 };
 
-/** @brief Enum class for turbo performance*/
 enum class TurboPerformance {
-    MASS_FLOW = 0,
-    TOTAL_PRESSURE_RATIO = 1,
-    TOTAL_EFFICIENCY = 2,
-    TOTAL_TEMPERATURE_RATIO = 3,
+    MASS_FLOW,
+    TOTAL_PRESSURE_RATIO,
+    TOTAL_EFFICIENCY,
+    TOTAL_TEMPERATURE_RATIO,
 };
 
-/** @brief Enum class for turbo performance*/
-enum class MonitorOutputFields {
-    PRESSURE = 0,
-    VELOCITY_X = 1,
-    VELOCITY_Y = 2,
-    VELOCITY_Z = 3,
-    TIME = 4,
+enum class MonitorOutputField {
+    PRESSURE,
+    VELOCITY_X,
+    VELOCITY_Y,
+    VELOCITY_Z,
+    TIME,
 };
 
-/** @brief Enum class for advection flux limiter*/
 enum class FluxLimiter {
-    NONE = 0,
-    VAN_ALBADA = 1,
-    VAN_LEER = 2,
-    MIN_MOD = 3,
+    NONE,
+    VAN_ALBADA,
+    VAN_LEER,
+    MIN_MOD,
 };
 
-
-
-
-/** @brief Enum class for convection schemes*/
 enum class AdvectionScheme {
-    JST = 0,
-    ROE = 1,
+    JST,
+    ROE,
 };
 
 
-/** @brief Matrix2D class for 2D matrices generic elements*/
+/** @brief Class for 2D data container generic elements*/
 template<typename T>
 class Matrix2D {
     public:
-        // Default constructor
         Matrix2D() : _ni(0), _nj(0) {}
 
-        // Constructor with dimensions
         Matrix2D(size_t ni, size_t nj) : _ni(ni), _nj(nj), _data(ni * nj, T{}) {}
 
-        // Resize the matrix to new dimensions
         void resize(size_t ni, size_t nj) {
             _ni = ni;
             _nj = nj;
-            _data.assign(ni * nj, T{});   // instead of resize()
+            _data.assign(ni * nj, T{});
         }
 
-        // Overloaded () operator for access with bounds checking
         T& operator()(size_t i, size_t j) {
             check_bounds(i, j);
             return _data[i * _nj + j];
@@ -272,7 +247,6 @@ class Matrix2D {
         size_t sizeI() const { return _ni; }
         size_t sizeJ() const { return _nj; }
 
-        // Regular addition (A + B)
         Matrix2D<T> operator+(const Matrix2D<T>& other) const {
             assert(_ni == other._ni && _nj == other._nj && "Matrix dimensions must match for addition");
             Matrix2D<T> result(_ni, _nj);
@@ -329,14 +303,12 @@ class Matrix2D {
 
 
 
-/** @brief Class for 3D matrices of generic elements*/
+/** @brief Class for 3D data container */
 template <typename T>
 class Matrix3D {
     public:
-        // Default constructor
         Matrix3D() : _ni(0), _nj(0), _nk(0) {}
 
-        // Constructor with dimensions and optional initial data
         Matrix3D(size_t ni, size_t nj, size_t nk, const std::vector<T>& initial_data = {})
             : _ni(ni), _nj(nj), _nk(nk) {
             if (!initial_data.empty()) {
@@ -349,7 +321,6 @@ class Matrix3D {
             }
         }
 
-        // Resize the matrix
         void resize(size_t ni, size_t nj, size_t nk) {
             _ni = ni;
             _nj = nj;
@@ -358,14 +329,10 @@ class Matrix3D {
         }
 
         void copyFrom(const Matrix3D<T>& other) {
-            // Dimensions must match; otherwise this would reallocate, which is costly.
             assert(_data.size() == other._data.size() && "Matrix3D::copyFrom data size mismatch");
-
-            // Copy the raw data (fast path)
             std::memcpy(_data.data(), other._data.data(), _data.size() * sizeof(T));
         }
 
-        // Access and modify using operator() with bounds checking
         T& operator()(size_t i, size_t j, size_t k) {
             check_bounds(i, j, k);
             return _data[i * _nj * _nk + j * _nk + k];
@@ -376,25 +343,23 @@ class Matrix3D {
             return _data[i * _nj * _nk + j * _nk + k];
         }
 
-        // Size getters
         size_t sizeI() const { return _ni; }
         size_t sizeJ() const { return _nj; }
         size_t sizeK() const { return _nk; }
 
-        // Compute L2 norm of all components of the matrix
+        // Compute L2 norm of all the matrix elements
         T norm() const {
             T sum = 0;
             for (size_t i = 0; i < _ni; ++i) {
                 for (size_t j = 0; j < _nj; ++j) {
                     for (size_t k = 0; k < _nk; ++k) {
-                        sum += std::pow(operator()(i, j, k), 2);  // Square each element
+                        sum += std::pow(operator()(i, j, k), 2); 
                     }
                 }
             }
-            return std::sqrt(sum);  // Return the square root of the sum
+            return std::sqrt(sum); 
         }
 
-        // In-place addition
         Matrix3D& operator+=(const Matrix3D& other) {
             assert(_ni == other._ni && "Matrix3D::operator+= dimension mismatch on ni");
             assert(_nj == other._nj && "Matrix3D::operator+= dimension mismatch on nj");
@@ -412,7 +377,6 @@ class Matrix3D {
             }
         }
 
-        // In-place multiplication
         Matrix3D& operator*=(const Matrix3D& other) {
             assert(_ni == other._ni && "Matrix3D::operator+= dimension mismatch on ni");
             assert(_nj == other._nj && "Matrix3D::operator+= dimension mismatch on nj");
@@ -423,7 +387,6 @@ class Matrix3D {
             return *this;
         }
 
-        // In-place division
         Matrix3D& operator/=(const Matrix3D& other) {
             assert(_ni == other._ni && "Matrix3D::operator+= dimension mismatch on ni");
             assert(_nj == other._nj && "Matrix3D::operator+= dimension mismatch on nj");
@@ -479,12 +442,11 @@ class Matrix3D {
         }
 
         Matrix3D operator*(T scalar) const {
-            Matrix3D result(*this);  // make a copy of the current matrix
-            result *= scalar;        // reuse your operator*=
+            Matrix3D result(*this);  
+            result *= scalar;        
             return result;
         }
 
-        // In-place subtraction
         Matrix3D& operator-=(const Matrix3D& other) {
             assert(_ni == other._ni && "Matrix3D::operator+= dimension mismatch on ni");
             assert(_nj == other._nj && "Matrix3D::operator+= dimension mismatch on nj");
@@ -500,26 +462,26 @@ class Matrix3D {
             assert(_nj == other._nj && "Matrix3D::operator- dimension mismatch on nj");
             assert(_nk == other._nk && "Matrix3D::operator- dimension mismatch on nk");
 
-            Matrix3D result(*this);  // copy current matrix
-            result -= other;         // reuse your operator-=
+            Matrix3D result(*this);  
+            result -= other;         
             return result;
         }
 
         std::vector<T> getData() const {return _data;}
 
         // get a slice of one of the boundary
-        Matrix2D<T> getBoundarySlice(BoundaryIndices index) const {
+        Matrix2D<T> getBoundarySlice(BoundaryIndex index) const {
             Matrix2D<T> slice;
             size_t ni = sizeI();
             size_t nj = sizeJ();
             size_t nk = sizeK();
             
             // i slices
-            if (index==BoundaryIndices::I_START || index==BoundaryIndices::I_END){
+            if (index==BoundaryIndex::I_START || index==BoundaryIndex::I_END){
                 
                 slice.resize(nj, nk);
 
-                if (index==BoundaryIndices::I_START){
+                if (index==BoundaryIndex::I_START){
                     for (size_t j=0; j<nj; j++){
                         for (size_t k=0; k<nk; k++){
                             slice(j,k) = (*this)(0, j, k);
@@ -534,11 +496,11 @@ class Matrix3D {
                 }
             }
 
-        // j slices
-            if (index==BoundaryIndices::J_START || index==BoundaryIndices::J_END){
+            // j slices
+            if (index==BoundaryIndex::J_START || index==BoundaryIndex::J_END){
                 slice.resize(ni, nk);
 
-                if (index==BoundaryIndices::J_START){
+                if (index==BoundaryIndex::J_START){
                     for (size_t i=0; i<ni; i++){
                         for (size_t k=0; k<nk; k++){
                             slice(i,k) = (*this)(i, 0, k);
@@ -554,10 +516,10 @@ class Matrix3D {
             }
 
             // k slices
-            if (index==BoundaryIndices::K_START || index==BoundaryIndices::K_END){
+            if (index==BoundaryIndex::K_START || index==BoundaryIndex::K_END){
                 slice.resize(ni, nj);
 
-                if (index==BoundaryIndices::K_START){
+                if (index==BoundaryIndex::K_START){
                     for (size_t i=0; i<ni; i++){
                         for (size_t j=0; j<nj; j++){
                             slice(i,j) = (*this)(i, j, 0);
@@ -600,27 +562,26 @@ class Matrix3D {
         }
 };
 
-/** \brief State vector class, holding 5 float values, with overloaded operators */
+
+/** \brief State vector class (conservative or primitive), holding 5 float values, with overloaded operators */
 class StateVector {
     private:
-        static constexpr std::size_t Size = 5; // for the moment always 5, later it could grow
+        static constexpr std::size_t Size = 5; 
         std::array<FloatType, Size> _data;
     
     public:
-        // Default constructor
         StateVector() = default;
     
-        // Constructor from std::array
         explicit StateVector(const std::array<FloatType, Size>& arr) : _data(arr) {}
 
         size_t size() const { return Size; }
     
-        // Access operators
-        FloatType& operator[](std::size_t idx) { return _data[idx]; }
+        FloatType& operator[](std::size_t idx) { 
+            return _data[idx]; }
 
-        const FloatType& operator[](std::size_t idx) const { return _data[idx]; }
+        const FloatType& operator[](std::size_t idx) const { 
+            return _data[idx]; }
     
-        // Element-wise addition
         StateVector operator+(const StateVector& other) const {
             StateVector result;
             for (std::size_t i = 0; i < Size; ++i)
@@ -628,7 +589,6 @@ class StateVector {
             return result;
         }
     
-        // Element-wise subtraction
         StateVector operator-(const StateVector& other) const {
             StateVector result;
             for (std::size_t i = 0; i < Size; ++i)
@@ -636,7 +596,6 @@ class StateVector {
             return result;
         }
     
-        // Element-wise multiplication
         StateVector operator*(const StateVector& other) const {
             StateVector result;
             for (std::size_t i = 0; i < Size; ++i)
@@ -644,7 +603,6 @@ class StateVector {
             return result;
         }
     
-        // Element-wise division
         StateVector operator/(const StateVector& other) const {
             StateVector result;
             for (std::size_t i = 0; i < Size; ++i) {
@@ -655,7 +613,6 @@ class StateVector {
             return result;
         }
     
-        // Scalar operations
         StateVector operator*(FloatType scalar) const {
             StateVector result;
             for (std::size_t i = 0; i < Size; ++i)
@@ -686,7 +643,6 @@ class StateVector {
             return result;
         }
     
-        // Assignment operators
         StateVector& operator+=(const StateVector& other) {
             for (std::size_t i = 0; i < Size; ++i)
                 _data[i] += other[i];
@@ -699,27 +655,21 @@ class StateVector {
             return *this;
         }
     
-        // Convenience conversion to std::array
         operator std::array<FloatType, Size>() const {
             return _data;
         }
     
-        // dot product
         FloatType dot(const StateVector& other) const {
             FloatType result = 0.0;
             for (std::size_t i = 0; i < Size; ++i)
                 result += _data[i] * other[i];
             return result;
         }
-    
-        // Optional: L2 norm
-        FloatType norm() const {
-            return std::sqrt(this->dot(*this));
-        }
+
     };
 
 
-/** \brief FlowSolution class, holding 5 matrix3D, with overloaded operators */
+/** \brief FlowSolution class, holding 3D arrays of conserviative variables */
 struct FlowSolution {
     Matrix3D<FloatType> _rho;
     Matrix3D<FloatType> _rhoU;
@@ -727,7 +677,6 @@ struct FlowSolution {
     Matrix3D<FloatType> _rhoW;
     Matrix3D<FloatType> _rhoE;
 
-    // Constructor
     FlowSolution(size_t ni, size_t nj, size_t nk) {
         resize(ni, nj, nk);
     }
@@ -877,14 +826,12 @@ struct FlowSolution {
         _rhoE.resize(i,j,k);
     }
 
-    // Addition: FlowSolution + FlowSolution
     FlowSolution operator+(const FlowSolution& other) const {
         FlowSolution result = *this;
         result += other;
         return result;
     }
 
-    // In-place addition: FlowSolution += FlowSolution
     FlowSolution& operator+=(const FlowSolution& other) {
         _rho  += other._rho;
         _rhoU += other._rhoU;
@@ -912,14 +859,12 @@ struct FlowSolution {
         return *this;
     }
 
-    // Subtraction: FlowSolution - FlowSolution
     FlowSolution operator-(const FlowSolution& other) const {
         FlowSolution result = *this;
         result -= other;
         return result;
     }
 
-    // In-place subtraction: FlowSolution -= FlowSolution
     FlowSolution& operator-=(const FlowSolution& other) {
         _rho  -= other._rho;
         _rhoU -= other._rhoU;
@@ -938,81 +883,21 @@ struct FlowSolution {
         return *this;
     }
 
-    // Multiplication: FlowSolution * scalar
     FlowSolution operator*(FloatType scalar) const {
         FlowSolution result = *this;
-        result *= scalar;   // GOOD: calls the in-place multiplication, no recursion
+        result *= scalar;  
         return result;
     }
 };
 
 
-/** Enum class for flux directions. */
 enum class FluxDirection {
-    I=0,
-    J=1,
-    K=2,
+    I,
+    J,
+    K,
 };
 
-
-/** Enum class for field names directions. */
-enum class FieldNames {
-    X_COORDS=0,
-    Y_COORDS=1,
-    Z_COORDS=2,
-    RHO=3,
-    RHO_U=4,
-    RHO_V=5,
-    RHO_W=6,
-    RHO_E=7,
-    BLOCKAGE=8,
-    NORMAL_AXIAL=9,
-    NORMAL_RADIAL=10,
-    NORMAL_TANGENTIAL=11,
-    RPM=12,
-    STREAMWISE_LENGTH=13,
-    BLADE_PRESENT=14,
-    NUMBER_BLADES=15,
-    LIFT_DRAG_BETA_0=16,
-    LIFT_DRAG_KP_ETA_MAX=17,
-    LIFT_DRAG_BETA_ETA_MAX=18,
-    SOLIDITY=19,
-    LIFT_DRAG_H_PARAMETER=20,
-    AXIAL_FORCE=21,
-    RADIAL_FORCE=22,
-    TANGENTIAL_FORCE=23,
-    ANGULAR_MOMENTUM_DERIVATIVE=24,
-    ENTROPY_DERIVATIVE=25,
-    LIFT_DRAG_KN_TURNING=26,
-    DEVIATION_ANGLE_PIVOT=27,
-    INFERENCE_FN_0=28,
-    INFERENCE_FN_1=29,
-    INFERENCE_FN_2=30,
-    INFERENCE_FN_3=31,
-    INFERENCE_FP_0=32,
-    INFERENCE_FP_1=33,
-    INFERENCE_FP_2=34,
-    INFERENCE_FP_3=35,
-    SPANWISE_LENGTH=36,
-    DELTA_TOT_ENTHALPY_DM=37,
-    DELTA_ENTROPY_DM=38,
-    CHIMA_MASS_FLOW=39,
-    CHIMA_SCALING_TURNING=40,
-    CHIMA_SCALING_LOSS=41,
-    CHIMA_SCALING_DEVIATION=42,
-    BLADE_METAL_ANGLE=43,
-    BLADE_GAS_PATH_ANGLE=44,
-    BLADE_LEAN_ANGLE=45,
-    BLADE_CAMBER_CURVATURE=46,
-    TOTAL_PRESSURE=47,
-    TOTAL_TEMPERATURE=48,
-    INLET_NX=49,
-    INLET_NY=50,
-    INLET_NZ=51,
-    BLADE_DANGLE_DMERIDIONAL=52,
-};
-
-enum class SolutionNames {
+enum class SolutionName {
     DENSITY=0,
     VELOCITY_X=1,
     VELOCITY_Y=2,
@@ -1021,128 +906,127 @@ enum class SolutionNames {
     TEMPERATURE=5
 };
 
+enum class InputField {
+    X_COORDS,
+    Y_COORDS,
+    Z_COORDS,
+    RHO,
+    RHO_U,
+    RHO_V,
+    RHO_W,
+    RHO_E,
+    BLOCKAGE,
+    NORMAL_AXIAL,
+    NORMAL_RADIAL,
+    NORMAL_TANGENTIAL,
+    RPM,
+    STREAMWISE_LENGTH,
+    BLADE_PRESENT,
+    NUMBER_BLADES,
+    SPANWISE_LENGTH,
+    DELTA_TOT_ENTHALPY_DM,
+    DELTA_ENTROPY_DM,
+    CHIMA_MASS_FLOW,
+    CHIMA_SCALING_TURNING,
+    CHIMA_SCALING_LOSS,
+    CHIMA_SCALING_DEVIATION,
+    BLADE_METAL_ANGLE,
+    BLADE_GAS_PATH_ANGLE,
+    BLADE_LEAN_ANGLE,
+    BLADE_CAMBER_CURVATURE,
+    TOTAL_PRESSURE,
+    TOTAL_TEMPERATURE,
+    INLET_NX,
+    INLET_NY,
+    INLET_NZ,
+    BLADE_DANGLE_DMERIDIONAL,
+    DEVIATION_ANGLE_PIVOT
+};
+
 
 class FieldNameMapper {
 public:
-    static const std::map<std::string, FieldNames>& stringToEnum() {
-        static const std::map<std::string, FieldNames> map = {
-            {"x", FieldNames::X_COORDS},
-            {"y", FieldNames::Y_COORDS},
-            {"z", FieldNames::Z_COORDS},
-            {"rho", FieldNames::RHO},
-            {"rho_u", FieldNames::RHO_U},
-            {"rho_v", FieldNames::RHO_V},
-            {"rho_w", FieldNames::RHO_W},
-            {"rho_e", FieldNames::RHO_E},
-            {"blockage", FieldNames::BLOCKAGE},
-            {"normalAxial", FieldNames::NORMAL_AXIAL},
-            {"normalRadial", FieldNames::NORMAL_RADIAL},
-            {"normalTangential", FieldNames::NORMAL_TANGENTIAL},
-            {"rpm", FieldNames::RPM},
-            {"streamwiseLength", FieldNames::STREAMWISE_LENGTH},
-            {"bladePresent", FieldNames::BLADE_PRESENT},
-            {"numberBlades", FieldNames::NUMBER_BLADES},
-            {"beta_0", FieldNames::LIFT_DRAG_BETA_0},
-            {"kp_etaMax", FieldNames::LIFT_DRAG_KP_ETA_MAX},
-            {"beta_etaMax", FieldNames::LIFT_DRAG_BETA_ETA_MAX},
-            {"solidity", FieldNames::SOLIDITY},
-            {"h_parameter", FieldNames::LIFT_DRAG_H_PARAMETER},
-            {"axialForce", FieldNames::AXIAL_FORCE},
-            {"radialForce", FieldNames::RADIAL_FORCE},
-            {"tangentialForce", FieldNames::TANGENTIAL_FORCE},
-            {"angularMomentumDerivative", FieldNames::ANGULAR_MOMENTUM_DERIVATIVE},
-            {"entropyDerivative", FieldNames::ENTROPY_DERIVATIVE},
-            {"kn_turning", FieldNames::LIFT_DRAG_KN_TURNING},
-            {"deviationAnglePivot", FieldNames::DEVIATION_ANGLE_PIVOT},
-            {"fn_0", FieldNames::INFERENCE_FN_0},
-            {"fn_1", FieldNames::INFERENCE_FN_1},
-            {"fn_2", FieldNames::INFERENCE_FN_2},
-            {"fn_3", FieldNames::INFERENCE_FN_3},
-            {"fp_0", FieldNames::INFERENCE_FP_0},
-            {"fp_1", FieldNames::INFERENCE_FP_1},
-            {"fp_2", FieldNames::INFERENCE_FP_2},
-            {"fp_3", FieldNames::INFERENCE_FP_3},
-            {"spanwiseLength", FieldNames::SPANWISE_LENGTH},
-            {"Dht_Dm", FieldNames::DELTA_TOT_ENTHALPY_DM},
-            {"Ds_Dm", FieldNames::DELTA_ENTROPY_DM},
-            {"MassFlow", FieldNames::CHIMA_MASS_FLOW},
-            {"PhiTurn", FieldNames::CHIMA_SCALING_TURNING},
-            {"PhiLoss", FieldNames::CHIMA_SCALING_LOSS},
-            {"PhiDev", FieldNames::CHIMA_SCALING_DEVIATION},
-            {"bladeMetalAngle", FieldNames::BLADE_METAL_ANGLE},
-            {"bladeGasPathAngle", FieldNames::BLADE_GAS_PATH_ANGLE},
-            {"bladeLeanAngle", FieldNames::BLADE_LEAN_ANGLE},
-            {"bladeCamberCurvature", FieldNames::BLADE_CAMBER_CURVATURE},
-            {"Pt", FieldNames::TOTAL_PRESSURE},
-            {"Tt", FieldNames::TOTAL_TEMPERATURE},
-            {"nx", FieldNames::INLET_NX},
-            {"ny", FieldNames::INLET_NY},
-            {"nz", FieldNames::INLET_NZ},
-            {"dbladeMetalAngle_dm", FieldNames::BLADE_DANGLE_DMERIDIONAL},
+    static const std::map<std::string, InputField>& stringToEnum() {
+        static const std::map<std::string, InputField> map = {
+            {"x", InputField::X_COORDS},
+            {"y", InputField::Y_COORDS},
+            {"z", InputField::Z_COORDS},
+            {"rho", InputField::RHO},
+            {"rho_u", InputField::RHO_U},
+            {"rho_v", InputField::RHO_V},
+            {"rho_w", InputField::RHO_W},
+            {"rho_e", InputField::RHO_E},
+            {"blockage", InputField::BLOCKAGE},
+            {"normalAxial", InputField::NORMAL_AXIAL},
+            {"normalRadial", InputField::NORMAL_RADIAL},
+            {"normalTangential", InputField::NORMAL_TANGENTIAL},
+            {"rpm", InputField::RPM},
+            {"streamwiseLength", InputField::STREAMWISE_LENGTH},
+            {"bladePresent", InputField::BLADE_PRESENT},
+            {"numberBlades", InputField::NUMBER_BLADES},
+            {"spanwiseLength", InputField::SPANWISE_LENGTH},
+            {"Dht_Dm", InputField::DELTA_TOT_ENTHALPY_DM},
+            {"Ds_Dm", InputField::DELTA_ENTROPY_DM},
+            {"MassFlow", InputField::CHIMA_MASS_FLOW},
+            {"PhiTurn", InputField::CHIMA_SCALING_TURNING},
+            {"PhiLoss", InputField::CHIMA_SCALING_LOSS},
+            {"PhiDev", InputField::CHIMA_SCALING_DEVIATION},
+            {"bladeMetalAngle", InputField::BLADE_METAL_ANGLE},
+            {"bladeGasPathAngle", InputField::BLADE_GAS_PATH_ANGLE},
+            {"bladeLeanAngle", InputField::BLADE_LEAN_ANGLE},
+            {"bladeCamberCurvature", InputField::BLADE_CAMBER_CURVATURE},
+            {"Pt", InputField::TOTAL_PRESSURE},
+            {"Tt", InputField::TOTAL_TEMPERATURE},
+            {"nx", InputField::INLET_NX},
+            {"ny", InputField::INLET_NY},
+            {"nz", InputField::INLET_NZ},
+            {"dbladeMetalAngle_dm", InputField::BLADE_DANGLE_DMERIDIONAL},
+            {"deviationAnglePivot", InputField::DEVIATION_ANGLE_PIVOT}
         };
         return map;
     }
 
-    static const std::map<FieldNames, std::string>& enumToString() {
-        static const std::map<FieldNames, std::string> map = {
-            {FieldNames::X_COORDS, "x"},
-            {FieldNames::Y_COORDS, "y"},
-            {FieldNames::Z_COORDS, "z"},
-            {FieldNames::RHO, "rho"},
-            {FieldNames::RHO_U, "rho_u"},
-            {FieldNames::RHO_V, "rho_v"},
-            {FieldNames::RHO_W, "rho_w"},
-            {FieldNames::RHO_E, "rho_e"},
-            {FieldNames::BLOCKAGE, "blockage"},
-            {FieldNames::NORMAL_AXIAL, "normalAxial"},
-            {FieldNames::NORMAL_RADIAL, "normalRadial"},
-            {FieldNames::NORMAL_TANGENTIAL, "normalTangential"},
-            {FieldNames::RPM, "rpm"},
-            {FieldNames::STREAMWISE_LENGTH, "streamwiseLength"},
-            {FieldNames::BLADE_PRESENT, "bladePresent"},
-            {FieldNames::NUMBER_BLADES, "numberBlades"},
-            {FieldNames::LIFT_DRAG_BETA_0, "beta_0"},
-            {FieldNames::LIFT_DRAG_KP_ETA_MAX, "kp_etaMax"},
-            {FieldNames::LIFT_DRAG_BETA_ETA_MAX, "beta_etaMax"},
-            {FieldNames::SOLIDITY, "solidity"},
-            {FieldNames::LIFT_DRAG_H_PARAMETER, "h_parameter"},
-            {FieldNames::AXIAL_FORCE, "axialForce"},
-            {FieldNames::RADIAL_FORCE, "radialForce"},
-            {FieldNames::TANGENTIAL_FORCE, "tangentialForce"},
-            {FieldNames::ANGULAR_MOMENTUM_DERIVATIVE, "angularMomentumDerivative"},
-            {FieldNames::ENTROPY_DERIVATIVE, "entropyDerivative"},
-            {FieldNames::LIFT_DRAG_KN_TURNING, "kn_turning"},
-            {FieldNames::DEVIATION_ANGLE_PIVOT, "deviationAnglePivot"},
-            {FieldNames::INFERENCE_FN_0, "fn_0"},
-            {FieldNames::INFERENCE_FN_1, "fn_1"},
-            {FieldNames::INFERENCE_FN_2, "fn_2"},
-            {FieldNames::INFERENCE_FN_3, "fn_3"},
-            {FieldNames::INFERENCE_FP_0, "fp_0"},
-            {FieldNames::INFERENCE_FP_1, "fp_1"},
-            {FieldNames::INFERENCE_FP_2, "fp_2"},
-            {FieldNames::INFERENCE_FP_3, "fp_3"},
-            {FieldNames::SPANWISE_LENGTH, "spanwiseLength"},
-            {FieldNames::DELTA_TOT_ENTHALPY_DM, "Dht_Dm"},
-            {FieldNames::DELTA_ENTROPY_DM, "Ds_Dm"},
-            {FieldNames::CHIMA_MASS_FLOW, "MassFlow"},
-            {FieldNames::CHIMA_SCALING_TURNING, "PhiTurn"},
-            {FieldNames::CHIMA_SCALING_LOSS, "PhiLoss"},
-            {FieldNames::CHIMA_SCALING_DEVIATION, "PhiDev"},
-            {FieldNames::BLADE_METAL_ANGLE, "bladeMetalAngle"},
-            {FieldNames::BLADE_GAS_PATH_ANGLE, "bladeGasPathAngle"},
-            {FieldNames::BLADE_LEAN_ANGLE, "bladeLeanAngle"},
-            {FieldNames::BLADE_CAMBER_CURVATURE, "bladeCamberCurvature"},
-            {FieldNames::TOTAL_PRESSURE, "Pt"},
-            {FieldNames::TOTAL_TEMPERATURE, "Tt"},
-            {FieldNames::INLET_NX, "nx"},
-            {FieldNames::INLET_NY, "ny"},
-            {FieldNames::INLET_NZ, "nz"},
-            {FieldNames::BLADE_DANGLE_DMERIDIONAL, "dbladeMetalAngle_dm"},
+    static const std::map<InputField, std::string>& enumToString() {
+        static const std::map<InputField, std::string> map = {
+            {InputField::X_COORDS, "x"},
+            {InputField::Y_COORDS, "y"},
+            {InputField::Z_COORDS, "z"},
+            {InputField::RHO, "rho"},
+            {InputField::RHO_U, "rho_u"},
+            {InputField::RHO_V, "rho_v"},
+            {InputField::RHO_W, "rho_w"},
+            {InputField::RHO_E, "rho_e"},
+            {InputField::BLOCKAGE, "blockage"},
+            {InputField::NORMAL_AXIAL, "normalAxial"},
+            {InputField::NORMAL_RADIAL, "normalRadial"},
+            {InputField::NORMAL_TANGENTIAL, "normalTangential"},
+            {InputField::RPM, "rpm"},
+            {InputField::STREAMWISE_LENGTH, "streamwiseLength"},
+            {InputField::BLADE_PRESENT, "bladePresent"},
+            {InputField::NUMBER_BLADES, "numberBlades"},
+            {InputField::SPANWISE_LENGTH, "spanwiseLength"},
+            {InputField::DELTA_TOT_ENTHALPY_DM, "Dht_Dm"},
+            {InputField::DELTA_ENTROPY_DM, "Ds_Dm"},
+            {InputField::CHIMA_MASS_FLOW, "MassFlow"},
+            {InputField::CHIMA_SCALING_TURNING, "PhiTurn"},
+            {InputField::CHIMA_SCALING_LOSS, "PhiLoss"},
+            {InputField::CHIMA_SCALING_DEVIATION, "PhiDev"},
+            {InputField::BLADE_METAL_ANGLE, "bladeMetalAngle"},
+            {InputField::BLADE_GAS_PATH_ANGLE, "bladeGasPathAngle"},
+            {InputField::BLADE_LEAN_ANGLE, "bladeLeanAngle"},
+            {InputField::BLADE_CAMBER_CURVATURE, "bladeCamberCurvature"},
+            {InputField::TOTAL_PRESSURE, "Pt"},
+            {InputField::TOTAL_TEMPERATURE, "Tt"},
+            {InputField::INLET_NX, "nx"},
+            {InputField::INLET_NY, "ny"},
+            {InputField::INLET_NZ, "nz"},
+            {InputField::BLADE_DANGLE_DMERIDIONAL, "dbladeMetalAngle_dm"},
+            {InputField::DEVIATION_ANGLE_PIVOT, "deviationAnglePivot"}
         };
         return map;
     }
 
-    static FieldNames fromString(const std::string& str) {
+    static InputField fromString(const std::string& str) {
         const auto& map = stringToEnum();
         auto it = map.find(str);
         if (it == map.end()) {
@@ -1151,7 +1035,7 @@ public:
         return it->second;
     }
 
-    static std::string toString(FieldNames field) {
+    static std::string toString(InputField field) {
         const auto& map = enumToString();
         auto it = map.find(field);
         if (it == map.end()) {
@@ -1162,7 +1046,6 @@ public:
 };
 
 
-/** Struct for computing and storing statistics. */
 struct Statistics {
     FloatType mean = 0;
     FloatType min = 0;
@@ -1211,28 +1094,27 @@ private:
     }
 };
 
-
 enum class Direction3D {
-    WEST=0,
-    EAST=1,
-    NORTH=2,
-    SOUTH=3,
-    BOTTOM=4,
-    TOP=5
+    WEST,
+    EAST,
+    NORTH,
+    SOUTH,
+    BOTTOM,
+    TOP
 };
 
 enum class FluidModel {
-    IDEAL = 0,
-    REAL = 1
+    IDEAL,
+    REAL
 };
 
 enum class ReferenceFrame {
-    CARTESIAN = 0,
-    CYLINDRICAL = 1
+    CARTESIAN,
+    CYLINDRICAL
 };
 
 enum class OutputFields {
-    PRIMARY = 0,
-    SECONDARY = 1,
-    TURBO_BFM = 2
+    PRIMARY,
+    SECONDARY,
+    TURBO_BFM
 };

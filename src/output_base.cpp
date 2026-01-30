@@ -133,6 +133,8 @@ void OutputBase::storeFields(
 
                     if (isBFMActive && _outputFields == OutputFields::TURBO_BFM){
                         omega = _mesh.getInputFields(InputField::RPM)(i, j, k) * 2.0 * M_PI / 60.0;
+                        FloatType scalingFactor = _config.getRotationalSpeedScalingFactor();
+                        omega *= scalingFactor;
                         radius = std::sqrt(_mesh.getVertex(i, j, k).z() * _mesh.getVertex(i, j, k).z() +
                                                     _mesh.getVertex(i, j, k).y() * _mesh.getVertex(i, j, k).y());
                         theta = std::atan2(_mesh.getVertex(i, j, k).z(), _mesh.getVertex(i, j, k).y());

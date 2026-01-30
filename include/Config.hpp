@@ -159,6 +159,8 @@ public:
 
     int getSaveIterationsInterval() const {return static_cast<int>(parseFloat("SAVE_ITERATIONS_INTERVAL"));}
 
+    FloatType getRotationalSpeedScalingFactor() const {return parseFloat("ROTATIONAL_SPEED_SCALING_FACTOR", 1.0);}
+
     std::string getSolutionName() const {return parseString("SOLUTION_NAME");}
 
     std::string getInlet2DfilePath() const {return parseString("INLET_2D_FILEPATH");}

@@ -171,8 +171,6 @@ void SolverBase::readBoundaryConditions(){
                 bound);
         }
         else if (_boundaryTypes[bound] == BoundaryType::TRANSPARENT){
-            assert (_mesh.getNumberPointsJ() == 1 && "Transparent boundary only valid for 1D meshes.");
-            assert (_mesh.getNumberPointsK() == 1 && "Transparent boundary only valid for 1D meshes.");
             _boundaryConditions[bound] = std::make_unique<BoundaryTransparent>(
                 _config, 
                 _mesh, 

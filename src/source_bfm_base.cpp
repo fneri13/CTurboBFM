@@ -107,6 +107,8 @@ void SourceBFMBase::computeFlowState(
     _velCylindrical = computeCylindricalComponentsFromCartesian(_velCartesian, _theta);
     
     _omega = _mesh.getInputFields(InputField::RPM, i, j, k) * 2 * M_PI / 60;
+    FloatType scalingOmega = _config.getRotationalSpeedScalingFactor();
+    _omega *= scalingOmega;
     _dragVelCylindrical = {0, 0, _omega * _radius};
     _relVelCylindric = _velCylindrical - _dragVelCylindrical;
     _relVelCartesian = computeCartesianComponentsFromCylindrical(_relVelCylindric, _theta);

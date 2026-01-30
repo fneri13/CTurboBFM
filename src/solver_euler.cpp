@@ -1294,6 +1294,8 @@ void SolverEuler::computeSourceResiduals(
 
                 if (gongSourceFlag){
                     omega = _mesh.getInputFields(InputField::RPM, i, j, k) * 2 * M_PI / 60;
+                    FloatType scalingFactor = _config.getRotationalSpeedScalingFactor();
+                    omega *= scalingFactor;
                     gongSource = computeGongSource(radius, theta, omega, i, j, k, volume);
                     residuals.subtract(i, j, k, gongSource);
                 }

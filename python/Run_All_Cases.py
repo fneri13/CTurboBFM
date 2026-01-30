@@ -58,7 +58,7 @@ def run_cases(inputFolder):
             print(f"Starting CTurboBFM in {run_path} ...")
 
             p = subprocess.Popen(
-                ["CTurboBFM", "input.ini"],
+                ["turbobfm", "input.ini"],
                 cwd=run_path
             )
             processes.append((run, p))

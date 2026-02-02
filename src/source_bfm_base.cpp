@@ -30,7 +30,8 @@ StateVector SourceBFMBase::computeTotalSource(
     Matrix3D<Vector3D> &viscousForce, 
     Matrix3D<FloatType> &deviationAngle, 
     FloatType &timePhysical,
-    FlowSolution &conservativeVars) {
+    FlowSolution &conservativeVars,
+    Matrix3D<FloatType> &timestep) {
 
     StateVector blockageSource({0,0,0,0,0});
     if (_isBlockageActive){
@@ -42,12 +43,14 @@ StateVector SourceBFMBase::computeTotalSource(
         return blockageSource;
     }
 
+    FloatType dt = timestep(i, j, k);
     StateVector bodyForceSource = computeBodyForceSource(
         i, j, k, 
         primitive, 
         inviscidForce, 
         viscousForce, 
-        conservativeVars);
+        conservativeVars,
+        dt);
     
     FloatType perturbFactor = computePerturbationFactor(i, j, k, timePhysical);
     
@@ -85,7 +88,8 @@ StateVector SourceBFMBase::computeBodyForceSource(
     const StateVector& primitive, 
     Matrix3D<Vector3D> &inviscidForce, 
     Matrix3D<Vector3D> &viscousForce, 
-    FlowSolution &conservativeVars) {
+    FlowSolution &conservativeVars,
+    FloatType &dt) {
 
     inviscidForce(i, j, k) = {0, 0, 0};
     viscousForce(i, j, k) = {0, 0, 0};

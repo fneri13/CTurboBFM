@@ -46,6 +46,7 @@ private:
         const std::map<SolutionName, Matrix3D<Vector3D>>& solutionGrad, 
         const size_t itCounter, 
         const FloatType timePhysical, 
+        Matrix3D<FloatType> &timestep,
         FlowSolution &residuals);
     
     /** @brief compute the advection flux contribution to the residuals */
@@ -109,7 +110,8 @@ private:
         Matrix3D<Vector3D> &inviscidForce, 
         Matrix3D<Vector3D> &viscousForce, 
         Matrix3D<FloatType> &deviationAngle, 
-        FloatType timePhysical);
+        FloatType timePhysical,
+        Matrix3D<FloatType> &timestep);
 
     void readRestartFile(
         const std::string &restartFileName, 

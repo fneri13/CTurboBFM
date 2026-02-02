@@ -7,7 +7,8 @@ StateVector SourceBFMThollet::computeBodyForceSource(
     const StateVector& primitive, 
     Matrix3D<Vector3D> &inviscidForce, 
     Matrix3D<Vector3D> &viscousForce, 
-    FlowSolution &conservativeVars) {
+    FlowSolution &conservativeVars,
+    FloatType &dt) {
 
     computeFlowState(i, j, k, primitive, conservativeVars);
 

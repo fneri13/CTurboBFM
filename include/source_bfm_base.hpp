@@ -26,7 +26,8 @@ public:
         Matrix3D<Vector3D> &viscousForce, 
         Matrix3D<FloatType> &deviationAngle, 
         FloatType &timePhysical, 
-        FlowSolution &conservativeVars);
+        FlowSolution &conservativeVars,
+        Matrix3D<FloatType> &timestep);
 
 protected:
     /** Thollet formulation */
@@ -39,7 +40,8 @@ protected:
         const StateVector& primitive, 
         Matrix3D<Vector3D> &inviscidForce, 
         Matrix3D<Vector3D> &viscousForce, 
-        FlowSolution &conservativeVars);
+        FlowSolution &conservativeVars,
+        FloatType &dt);
     
     void computeFlowState(size_t i, size_t j, size_t k, const StateVector& primitive, FlowSolution &conservativeVars);
 

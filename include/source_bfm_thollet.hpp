@@ -22,7 +22,8 @@ protected:
         const StateVector& primitive, 
         Matrix3D<Vector3D> &inviscidForce, 
         Matrix3D<Vector3D> &viscousForce, 
-        FlowSolution &conservativeVars);
+        FlowSolution &conservativeVars,
+        FloatType &dt) override;
 
     StateVector computeInviscidComponent(
         size_t i, 

@@ -392,7 +392,7 @@ void SolverEuler::solve(){
         for (const auto &integrationCoeff: timeIntegrationCoeffs){
             preprocessSolution(solutionTmp);
             computeSolutionGradient(solutionTmp, solutionGradTmp);
-            computeResiduals(solutionTmp, solutionGradTmp, it, _time.back(), residuals);
+            computeResiduals(solutionTmp, solutionGradTmp, it, _time.back(), timestep, residuals);
             updateSolution(_conservativeSolution, solutionTmp, residuals, integrationCoeff, timestep);   
             enforcePeriodicityOnSolution(solutionTmp);
         }
@@ -677,6 +677,7 @@ void SolverEuler::computeResiduals(
     const std::map<SolutionName, Matrix3D<Vector3D>> &solutionGrad, 
     const size_t iterationCounter, 
     const FloatType timePhysical, 
+    Matrix3D<FloatType> &timestep,
     FlowSolution &residuals) {
         
     residuals.setToZero(); 
@@ -708,7 +709,8 @@ void SolverEuler::computeResiduals(
         _inviscidForce, 
         _viscousForce, 
         _deviationAngle, 
-        timePhysical);
+        timePhysical,
+        timestep);
 
     // periodicity enforcement on residuals
     if (_mesh.isPeriodicityActive()){
@@ -1245,7 +1247,8 @@ void SolverEuler::computeSourceResiduals(
     FlowSolution &residuals, Matrix3D<Vector3D> &inviscidForce, 
     Matrix3D<Vector3D> &viscousForce, 
     Matrix3D<FloatType> &deviationAngle, 
-    FloatType timePhysical) {
+    FloatType timePhysical,
+    Matrix3D<FloatType> &timestep) {
     
     if (_topology == Topology::THREE_DIMENSIONAL && _isBfmActive == false) {
         return;
@@ -1310,7 +1313,8 @@ void SolverEuler::computeSourceResiduals(
                             viscousForce, 
                             deviationAngle, 
                             timePhysical, 
-                            solution);
+                            solution,
+                            timestep);
                         residuals.subtract(i, j, k, bfmSource);
                     }
                 }

@@ -940,7 +940,10 @@ enum class InputField {
     INLET_NY,
     INLET_NZ,
     BLADE_DANGLE_DMERIDIONAL,
-    DEVIATION_ANGLE_PIVOT
+    DEVIATION_ANGLE_PIVOT,
+    DELTA_ANGULAR_MOMENTUM,
+    DELTA_ENTROPY,
+    DELTA_FLOW_ANGLE
 };
 
 
@@ -981,7 +984,10 @@ public:
             {"ny", InputField::INLET_NY},
             {"nz", InputField::INLET_NZ},
             {"dbladeMetalAngle_dm", InputField::BLADE_DANGLE_DMERIDIONAL},
-            {"deviationAnglePivot", InputField::DEVIATION_ANGLE_PIVOT}
+            {"deviationAnglePivot", InputField::DEVIATION_ANGLE_PIVOT},
+            {"deltaAngularMomentum", InputField::DELTA_ANGULAR_MOMENTUM},
+            {"deltaEntropy", InputField::DELTA_ENTROPY},
+            {"deltaFlowAngle", InputField::DELTA_FLOW_ANGLE}
         };
         return map;
     }
@@ -1021,7 +1027,10 @@ public:
             {InputField::INLET_NY, "ny"},
             {InputField::INLET_NZ, "nz"},
             {InputField::BLADE_DANGLE_DMERIDIONAL, "dbladeMetalAngle_dm"},
-            {InputField::DEVIATION_ANGLE_PIVOT, "deviationAnglePivot"}
+            {InputField::DEVIATION_ANGLE_PIVOT, "deviationAnglePivot"},
+            {InputField::DELTA_ANGULAR_MOMENTUM, "deltaAngularMomentum"},
+            {InputField::DELTA_ENTROPY, "deltaEntropy"},
+            {InputField::DELTA_FLOW_ANGLE, "deltaFlowAngle"}
         };
         return map;
     }

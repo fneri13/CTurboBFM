@@ -41,6 +41,8 @@ SolverBase::SolverBase(Config& config, Mesh& mesh)
     }
 
     readBoundaryConditions();
+
+    
     
 }
 

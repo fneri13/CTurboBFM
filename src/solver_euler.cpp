@@ -11,6 +11,10 @@
 SolverEuler::SolverEuler(Config& config, Mesh& mesh)
     : SolverBase(config, mesh)  
 {
+    _isGreitzerModelingActive = _config.enableGreitzerModeling();
+    if (_isGreitzerModelingActive) {
+        _greitzerModel = std::make_unique<GreitzerModel>(_config, *_fluid);
+    }
     
     initializeSolutionArrays();
     
@@ -44,8 +48,11 @@ SolverEuler::SolverEuler(Config& config, Mesh& mesh)
     else {
         throw std::runtime_error("Unsupported BFM model selected.");
     }
+    
     _isBfmActive = _config.isBFMActive();
+    
     _isGongFormulationActive = _config.isGongFormulationActive();
+
 }
 
 
@@ -83,6 +90,17 @@ void SolverEuler::initializeSolutionArrays(){
     for (size_t j = 0; j < nj; j++) {
         _radialProfileRadialCoords[j] = std::sqrt(_mesh.getVertex(ni-1,j,0).y() * _mesh.getVertex(ni-1,j,0).y() + 
                                             _mesh.getVertex(ni-1,j,0).z() * _mesh.getVertex(ni-1,j,0).z());
+    }
+
+
+    if (_isGreitzerModelingActive){
+        updateMassFlows(_conservativeSolution);
+        updateTurboPerformance(_conservativeSolution);
+        FloatType massflow = _turboPerformance[TurboPerformance::MASS_FLOW].back();
+        StateVector conservativeHubOutlet = _conservativeSolution.at(_nPointsI-1, 0, 0);
+        StateVector primitiveHubOutlet = getPrimitiveVariablesFromConservative(conservativeHubOutlet);
+        FloatType outletPressureHub = _fluid->computePressure_primitive(primitiveHubOutlet);
+        _greitzerModel->initializeState(outletPressureHub, massflow, massflow);
     }
 
 }
@@ -417,6 +435,7 @@ void SolverEuler::solve(){
             writeLogResidualsToCsvFile();
             if (turboOutput) writeTurboPerformanceToCsvFile();
             if (monitorPointsActive) writeMonitorPointsToCsvFile();
+            if (_isGreitzerModelingActive) writeGreitzerDynamicsToCsvFile();
             break;
         }
 
@@ -430,6 +449,7 @@ void SolverEuler::solve(){
             writeLogResidualsToCsvFile();
             if (turboOutput) writeTurboPerformanceToCsvFile();
             if (monitorPointsActive) writeMonitorPointsToCsvFile();
+            if (_isGreitzerModelingActive) writeGreitzerDynamicsToCsvFile();
         } 
         
     }
@@ -1155,7 +1175,7 @@ void SolverEuler::writeTurboPerformanceToCsvFile() const {
 
     size_t size = _turboPerformance.at(TurboPerformance::MASS_FLOW).size();
     for (size_t i = 0; i < size; i++) {
-        file << _time.at(i+1)*1E6 << ",";
+        file << _time.at(i)*1E6 << ",";
         file    << _turboPerformance.at(TurboPerformance::MASS_FLOW)[i] << "," 
                 << _turboPerformance.at(TurboPerformance::TOTAL_PRESSURE_RATIO)[i] << "," 
                 << _turboPerformance.at(TurboPerformance::TOTAL_TEMPERATURE_RATIO)[i] << "," 
@@ -1167,6 +1187,35 @@ void SolverEuler::writeTurboPerformanceToCsvFile() const {
     std::cout << "Turbo performance written to " << filename << std::endl;
     std::cout << std::endl;
 }
+
+
+void SolverEuler::writeGreitzerDynamicsToCsvFile() const {
+
+    std::string filename = "greitzer_dynamics.csv";
+    std::ofstream file(filename);
+
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open turbo performance file: " << filename << std::endl;
+        return;
+    }
+
+    // Write header
+    file << "Time[s],PlenumPressure[Pa],PlenumInletMassflow[kg/s],PlenumOutletMassflow[kg/s]\n";
+    size_t size = _greitzerModel->getSize();
+    for (size_t i = 0; i < size; i++) {
+        file << _greitzerModel->getTime(i) << ",";
+        file << _greitzerModel->getPlenumPressure(i) << ",";
+        file << _greitzerModel->getPlenumInletMassflow(i) << ",";
+        file << _greitzerModel->getPlenumOutletMassflow(i) << std::endl;
+    }
+
+    file.close();
+    std::cout << std::endl;
+    std::cout << "Greitzer dynamics written to " << filename << std::endl;
+    std::cout << std::endl;
+}
+
+
 
 void SolverEuler::writeMonitorPointsToCsvFile() const {
 
@@ -1222,13 +1271,19 @@ void SolverEuler::updateRadialProfiles(FlowSolution &solution){
         velTangProfile[j] = std::abs(velocityCyl.z());
     }
 
-    // if the outlet is a throttle boundary condition the hub static pressure needs to be updated
-    if (_boundaryTypes[BoundaryIndex::I_END] == BoundaryType::THROTTLE){
+    if (_boundaryTypes[BoundaryIndex::I_END] == BoundaryType::THROTTLE && _isGreitzerModelingActive==false){
+        FloatType mflow = _turboPerformance[TurboPerformance::MASS_FLOW].back();
         FloatType totPressureInlet = _config.getInletBCValues().at(0);
         FloatType throttleCoeff = _config.getOutletBCValues()[0];
-        FloatType mflow = _turboPerformance[TurboPerformance::MASS_FLOW].back();
         _hubStaticPressure = totPressureInlet + throttleCoeff * mflow*mflow;
     }
+    else if (_boundaryTypes[BoundaryIndex::I_END] == BoundaryType::THROTTLE && _isGreitzerModelingActive==true){
+        FloatType mflow = _turboPerformance[TurboPerformance::MASS_FLOW].back();
+        _hubStaticPressure = _greitzerModel->computePlenumPressure(mflow);
+    }
+    else {
+        // nothing needed in other cases
+        }
 
     integrateRadialEquilibrium(
         densityProfile, 

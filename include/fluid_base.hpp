@@ -66,6 +66,8 @@ public:
 
     virtual FloatType getGamma() const = 0;
 
+    virtual FloatType getRconstant() const = 0;
+
     virtual Matrix3D<FloatType> computeTemperature_conservative(
         Matrix3D<FloatType>& rho, 
         Matrix3D<FloatType>& ux, 

@@ -83,6 +83,7 @@ void AdvectionRoe::computeRoeAvgVariables(const StateVector& Wl, const StateVect
     _u3AVG = roeAverage(rhoL, rhoR, u3L, u3R);
     _htAVG = roeAverage(rhoL, rhoR, htL, htR);
     _aAVG = std::sqrt((_fluid.getGamma() -1.0) * (_htAVG - 0.5 * (_u1AVG*_u1AVG + _u2AVG*_u2AVG + _u3AVG*_u3AVG)));
+
 }
 
 

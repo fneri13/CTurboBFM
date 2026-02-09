@@ -8,6 +8,7 @@
 #include "source_bfm_thollet.hpp"
 #include "source_bfm_chima.hpp"
 #include "source_bfm_correlations.hpp"
+#include "greitzer_model.hpp"   
 #include <unordered_map>
 
 class SolverEuler : public SolverBase {
@@ -94,6 +95,8 @@ private:
     void writeLogResidualsToCsvFile() const;
 
     void writeTurboPerformanceToCsvFile() const;
+
+    void writeGreitzerDynamicsToCsvFile() const;
 
     void writeMonitorPointsToCsvFile() const;
 
@@ -202,5 +205,8 @@ private:
 
     std::vector<unsigned int> _monitorPointsIdxI, _monitorPointsIdxJ, _monitorPointsIdxK;
     unsigned int _numberMonitorPoints = 0;
+
+    std::unique_ptr<GreitzerModel> _greitzerModel;
+    bool _isGreitzerModelingActive{false};
     
 };

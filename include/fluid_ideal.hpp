@@ -56,6 +56,8 @@ public:
 
     FloatType getGamma() const override { return _gamma; }
 
+    FloatType getRconstant() const override { return _R; }
+
     /** Compute compressor total-to-total efficiency
      * @param pressureRatio Total pressure ratio P0_exit / P0_inlet [-]
      * @param temperatureRatio Total temperature ratio T0_exit / T0_inlet [-]

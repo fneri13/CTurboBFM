@@ -238,6 +238,8 @@ public:
 
     bool getMUSCLreconstruction() const {return parseBool("MUSCL_RECONSTRUCTION", false);}
 
+    bool enableGreitzerModeling() const;
+
     FluxLimiter getFluxLimiter() const ;
 
     std::vector<FloatType> getPerturbationCenter() const {return parseVector<FloatType>("PERTURBATION_CENTER");}
@@ -259,4 +261,8 @@ public:
     FloatType getFluidHeatCapacity() const {return parseFloat("FLUID_CP");}
 
     FloatType getKnCorrelationBfmCoefficient() const {return parseFloat("KN_CORRELATION_BFM_COEFFICIENT");}
+
+    FloatType getGreitzerPlenumVolume() const {return parseFloat("GREITZER_PENUM_VOLUME");} 
+
+    FloatType getGreitzerThrottleCoefficient() const {return getOutletBCValues()[0];} 
 };

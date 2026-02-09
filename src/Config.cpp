@@ -526,3 +526,14 @@ std::vector<FloatType> Config::getPeriodicityInfo() const {
     
     return periodicityInfo;
 }
+
+bool Config::enableGreitzerModeling() const {
+    bool isEnabled = parseBool("ENABLE_GREITZER_MODELING", false);
+
+    if (isEnabled && getTimeStepMethod() != TimeStepMethod::FIXED) {
+        throw std::logic_error(
+            "Greitzer modeling is only compatible with fixed time step method");
+    }
+
+    return isEnabled;
+}

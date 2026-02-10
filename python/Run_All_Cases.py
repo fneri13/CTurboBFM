@@ -23,7 +23,7 @@ def run_cases(inputFolder):
         P_XXX
         MF_XXX
     run the command:
-        CTurboBFM input.ini
+        turbobfm input.ini
     """
     possibleNames = ['KT', 'PREQ', 'P', 'MF']
     
@@ -55,7 +55,7 @@ def run_cases(inputFolder):
                 print(f"WARNING: input.ini not found in {run_path}, skipping.")
                 continue
 
-            print(f"Starting CTurboBFM in {run_path} ...")
+            print(f"Starting turbobfm in {run_path} ...")
 
             p = subprocess.Popen(
                 ["turbobfm", "input.ini"],
@@ -82,15 +82,15 @@ def run_cases(inputFolder):
                 print(f"WARNING: input.ini not found in {run_path}, skipping.")
                 continue
 
-            print(f"Running CTurboBFM in {run_path} ...")
+            print(f"Running turbobfm in {run_path} ...")
             try:
                 subprocess.run(
-                    ["CTurboBFM", "input.ini"],
+                    ["turbobfm", "input.ini"],
                     cwd=run_path,
                     check=True
                 )
             except Exception as e:
-                print(f"ERROR running CTurboBFM in {run}: {e}")
+                print(f"ERROR running turbobfm in {run}: {e}")
 
     return all_data
 

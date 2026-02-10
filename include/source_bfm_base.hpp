@@ -51,7 +51,12 @@ protected:
      * aligned in the normal camber direction. 
      * Furthermore, any component out of the blade-to-blade plane is removed.
      */
-    Vector3D computeInviscidForceDirection(const Vector3D& relativeVelocity, const Vector3D& normalCamber);
+    Vector3D computeInviscidForceDirection(
+        const Vector3D& relativeVelocity, 
+        const Vector3D& normalCamber, 
+        size_t i, 
+        size_t j, 
+        size_t k);
 
     FloatType computeTangentialComponent(
         FloatType fAxial, 
@@ -91,5 +96,5 @@ protected:
     FloatType _perturbationTimeStart = 0.0;
     FloatType _perturbationTimeDuration = 0.0;
 
-    
+    bool _isStalledBfmActive {false};
 };

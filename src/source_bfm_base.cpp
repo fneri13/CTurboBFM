@@ -17,6 +17,7 @@ SourceBFMBase::SourceBFMBase(const Config &config, const FluidBase &fluid, const
                 _perturbationTimeStart = _config.getPerturbationStartTime();
                 _perturbationTimeDuration = _config.getPerturbationTimeDuration();
             }
+            _isStalledBfmActive = _config.isStalledBfmActive();
   
         };
 
@@ -133,17 +134,9 @@ void SourceBFMBase::computeFlowState(
     _metalAngle = _mesh.getInputFields(InputField::BLADE_METAL_ANGLE, i, j, k);
     _flowAngle = std::atan2(_relVelCylindric.z(), _velMeridional);
     _deviationAngle = computeDeviationAngle(_relVelCylindric, _normalCamberCylindric);
-    
-    // CONVENTION: deviation is positive when the blade should push the flow (flow is currently under-turned)
-    if (_omega > 0.0){
-        _deviationAngle = - _flowAngle + _metalAngle;
-    }
-    else {
-        _deviationAngle = + _flowAngle - _metalAngle;
-    }
 
     // CONVENTION: positive inviscid force means a positive force directed from suction to pressure side
-    _inviscidForceDirCylindrical = computeInviscidForceDirection(_relVelCylindric, _normalCamberCylindric);
+    _inviscidForceDirCylindrical = computeInviscidForceDirection(_relVelCylindric, _normalCamberCylindric, i, j, k);
     _inviscidForceDirCartesian = computeCartesianComponentsFromCylindrical(_inviscidForceDirCylindrical, _theta);
     _viscousForceDirCylindrical = - _relVelCylindric.normalized();
     _viscousForceDirCartesian = - _relVelCartesian.normalized();
@@ -167,12 +160,28 @@ FloatType SourceBFMBase::computeDeviationAngle(Vector3D relativeVelocityCyl, Vec
     return deviationAngle;
 }
 
-Vector3D SourceBFMBase::computeInviscidForceDirection(const Vector3D& relativeVelocity, const Vector3D& normalCamber){
+Vector3D SourceBFMBase::computeInviscidForceDirection(
+    const Vector3D& relativeVelocity, 
+    const Vector3D& normalCamber, 
+    size_t i, size_t j, size_t k){
 
     // remove component along relative velocity
     Vector3D relVelDir = relativeVelocity.normalized();
     Vector3D normalDir = normalCamber.normalized();
-    Vector3D versor = (normalDir - relVelDir * normalDir.dot(relVelDir)).normalized();
+
+    Vector3D versor{0, 0, 0};
+    if (_isStalledBfmActive){
+        FloatType deviationAngleStall = _mesh.getInputFields(InputField::DEVIATION_ANGLE_STALL, i, j, k);
+        if (_deviationAngle > deviationAngleStall){
+            versor =  normalDir;
+        }
+        else{
+            versor = (normalDir - relVelDir * normalDir.dot(relVelDir)).normalized();
+        }
+    }
+    else{
+        versor = (normalDir - relVelDir * normalDir.dot(relVelDir)).normalized();
+    }
 
     // remove component out of blade-to-blade plane
     Vector3D velMeridional{relativeVelocity.x(), relativeVelocity.y(), 0.0};

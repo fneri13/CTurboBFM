@@ -943,7 +943,8 @@ enum class InputField {
     DEVIATION_ANGLE_PIVOT,
     DELTA_ANGULAR_MOMENTUM,
     DELTA_ENTROPY,
-    DELTA_FLOW_ANGLE
+    DELTA_FLOW_ANGLE,
+    DEVIATION_ANGLE_STALL,
 };
 
 
@@ -987,7 +988,8 @@ public:
             {"deviationAnglePivot", InputField::DEVIATION_ANGLE_PIVOT},
             {"deltaAngularMomentum", InputField::DELTA_ANGULAR_MOMENTUM},
             {"deltaEntropy", InputField::DELTA_ENTROPY},
-            {"deltaFlowAngle", InputField::DELTA_FLOW_ANGLE}
+            {"deltaFlowAngle", InputField::DELTA_FLOW_ANGLE},
+            {"deviationAngleStall", InputField::DEVIATION_ANGLE_STALL}
         };
         return map;
     }
@@ -1030,7 +1032,8 @@ public:
             {InputField::DEVIATION_ANGLE_PIVOT, "deviationAnglePivot"},
             {InputField::DELTA_ANGULAR_MOMENTUM, "deltaAngularMomentum"},
             {InputField::DELTA_ENTROPY, "deltaEntropy"},
-            {InputField::DELTA_FLOW_ANGLE, "deltaFlowAngle"}
+            {InputField::DELTA_FLOW_ANGLE, "deltaFlowAngle"},
+            {InputField::DEVIATION_ANGLE_STALL, "deviationAngleStall"}
         };
         return map;
     }

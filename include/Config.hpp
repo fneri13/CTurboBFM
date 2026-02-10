@@ -238,6 +238,8 @@ public:
 
     bool getMUSCLreconstruction() const {return parseBool("MUSCL_RECONSTRUCTION", false);}
 
+    bool isStalledBfmActive() const {return parseBool("STALLED_BFM_ACTIVE", false);}
+
     bool enableGreitzerModeling() const;
 
     FluxLimiter getFluxLimiter() const ;

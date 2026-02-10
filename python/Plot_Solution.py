@@ -135,7 +135,7 @@ def Plot2DCylindrical(data, iSlice, jSlice, kSlice, fieldName):
         raise ValueError("Exactly one slice index should be numeric, others ':'")
     
     plt.figure()
-    plt.contourf(x, y, values, cmap = 'turbo', levels=NLEVELS)
+    plt.contourf(x, y, values, cmap = 'coolwarm', levels=NLEVELS)
     plt.colorbar()
     plt.title(f"{fieldName} at {title}")
     plt.xlabel(xlabel)

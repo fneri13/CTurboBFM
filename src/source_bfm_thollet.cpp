@@ -75,6 +75,13 @@ StateVector SourceBFMThollet::computeViscousComponent(
     const StateVector& primitive, 
     Matrix3D<Vector3D> &viscousForce) {
     
+    if (_isStalledBfmActive){
+        FloatType deviationAngleStall = _mesh.getInputFields(InputField::DEVIATION_ANGLE_STALL, i, j, k);
+        if (_deviationAngle > deviationAngleStall){
+            return StateVector({0,0,0,0,0});
+        }
+    }
+    
     FloatType nu = _config.getFluidKinematicViscosity();
     FloatType stwl = _mesh.getInputFields(InputField::STREAMWISE_LENGTH, i, j, k);
 

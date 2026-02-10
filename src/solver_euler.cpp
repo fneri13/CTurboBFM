@@ -407,8 +407,8 @@ void SolverEuler::solve(){
         computeTimestepArray(solutionTmp, timestep);                                        
         
         // runge-kutta steps
+        preprocessSolution(solutionTmp);
         for (const auto &integrationCoeff: timeIntegrationCoeffs){
-            preprocessSolution(solutionTmp);
             computeSolutionGradient(solutionTmp, solutionGradTmp);
             computeResiduals(solutionTmp, solutionGradTmp, it, _time.back(), timestep, residuals);
             updateSolution(_conservativeSolution, solutionTmp, residuals, integrationCoeff, timestep);   

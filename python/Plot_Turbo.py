@@ -31,6 +31,7 @@ def plot_turbo(data):
     ax2.plot(data["PRtt"], color='C1')
     ax2.set_ylabel(r"$\beta_{tt}$ [-]", color='C1')
     ax2.tick_params(axis='y', labelcolor='C1')
+    plt.tight_layout()
     plt.savefig("Pictures/massflow_betatt.pdf", bbox_inches='tight')
     
     # eta-m plot
@@ -44,6 +45,7 @@ def plot_turbo(data):
     ax2.plot(data["ETAtt"], color='C2')
     ax2.set_ylabel(r"$\eta_{tt}$ [-]", color='C2')
     ax2.tick_params(axis='y', labelcolor='C2')
+    plt.tight_layout()
     plt.savefig("Pictures/massflow_etatt.pdf", bbox_inches='tight')
     
     # beta-eta plot
@@ -57,6 +59,7 @@ def plot_turbo(data):
     ax2.plot(data["ETAtt"], color='C2')
     ax2.set_ylabel(r"$\eta_{tt}$ [-]", color='C2')
     ax2.tick_params(axis='y', labelcolor='C2')
+    plt.tight_layout()
     plt.savefig("Pictures/betatt_etatt.pdf", bbox_inches='tight')
     
     # beta evolution plot
@@ -67,6 +70,7 @@ def plot_turbo(data):
     plt.xlabel(r"$\dot{m}$ [kg/s]")
     plt.ylabel(r"$\beta_{tt}$ [-]")
     plt.colorbar()
+    plt.tight_layout()
     plt.savefig("Pictures/betaTrajectory.pdf", bbox_inches='tight')
     
     # eta evolution plot
@@ -77,6 +81,7 @@ def plot_turbo(data):
     plt.xlabel(r"$\dot{m}$ [kg/s]")
     plt.ylabel(r"$\eta_{tt}$ [-]")
     plt.colorbar()
+    plt.tight_layout()
     plt.savefig("Pictures/etaTrajectory.pdf", bbox_inches='tight')
         
     plt.show()

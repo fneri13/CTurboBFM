@@ -43,6 +43,7 @@ def plot_residuals(data):
     plt.xlabel("Iteration [-]")
     plt.ylabel("Residuals [-]")
     plt.savefig("Pictures/residuals.pdf", bbox_inches='tight')
+    plt.tight_layout()
     plt.show()
     
 

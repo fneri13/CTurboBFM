@@ -51,6 +51,7 @@ def plot_normalized_sensors_oscillation(sensors, time, time_per_revolution, name
     plt.ylabel(r"$\theta$ [deg]")
     plt.grid(alpha=.3)
     plt.title(name)
+    plt.tight_layout()
     try:
         plt.savefig(f"Pictures/{name}_sensors.pdf", bbox_inches='tight')
     except:

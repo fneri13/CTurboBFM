@@ -101,6 +101,7 @@ def Plot1D(data, iSlice, jSlice, kSlice, fieldName):
     plt.ylabel(fieldName)
     plt.grid(alpha=0.2)
     plt.title(f"{title}")
+    plt.tight_layout()
     plt.savefig(f"Pictures/{fieldName}_1D_plot_{title}.pdf", bbox_inches='tight')
 
 
@@ -141,6 +142,7 @@ def Plot2DCylindrical(data, iSlice, jSlice, kSlice, fieldName):
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.gca().set_aspect('equal', adjustable='box')
+    plt.tight_layout()
     plt.savefig(f"Pictures/{fieldName}_2D_plot_{title}.pdf", bbox_inches='tight')
 
 

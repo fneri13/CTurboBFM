@@ -66,6 +66,7 @@ def main():
 
         # plt.legend()
         plt.grid(alpha=0.3)
+        plt.tight_layout()
         plt.savefig(f"Pictures/Monitor_Points_{fieldNames[ii]}.pdf", bbox_inches='tight')
     
 if __name__ == "__main__":

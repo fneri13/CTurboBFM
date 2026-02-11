@@ -30,6 +30,7 @@ def plot_normalized_hist(data, color, title):
     plt.title(f"{title} (N={N})")
     plt.xlabel("Value")
     # plt.ylabel("Probability")
+    plt.tight_layout()
     plt.grid(alpha=0.3)
 
 plt.figure(figsize=(15, 4))

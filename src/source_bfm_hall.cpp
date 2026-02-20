@@ -8,9 +8,10 @@ StateVector SourceBFMHall::computeBodyForceSource(
     Matrix3D<Vector3D> &inviscidForce, 
     Matrix3D<Vector3D> &viscousForce, 
     FlowSolution &conservativeVars,
-    FloatType &dt) {
+    FloatType &dt,
+    FloatType &timePhysical) {
 
-    computeFlowState(i, j, k, primitive, conservativeVars);
+    computeFlowState(i, j, k, primitive, conservativeVars, timePhysical);
     
     FloatType volume = _mesh.getVolume(i, j, k);
 

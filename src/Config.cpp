@@ -537,3 +537,28 @@ bool Config::enableGreitzerModeling() const {
 
     return isEnabled;
 }
+
+FloatType Config::getRotationalSpeedScalingFactor(FloatType currentTime) const {
+    if (!isAccelerationActive()) {
+        return getRotationalSpeedScalingFactor();
+    }
+    else {
+        TimeStepMethod timeStepMethod = getTimeStepMethod();
+        if (timeStepMethod != TimeStepMethod::FIXED) {
+            throw std::logic_error(
+                "Rotational speed scaling factor is only active for fixed time step method");
+        }
+        FloatType initialTime = getAccelerationInitialTime();
+        FloatType finalTime = getAccelerationFinalTime();
+
+        if (currentTime < initialTime || currentTime > finalTime) {
+            return getRotationalSpeedScalingFactor();
+        }
+        else{
+            FloatType scalingInitial = getRotationalSpeedScalingFactorInitial();
+            FloatType scalingFinal = getRotationalSpeedScalingFactorFinal();
+            return scalingInitial + (scalingFinal - scalingInitial) * (
+                currentTime - initialTime) / (finalTime - initialTime);
+        }
+    }
+}

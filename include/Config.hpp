@@ -159,7 +159,9 @@ public:
 
     int getSaveIterationsInterval() const {return static_cast<int>(parseFloat("SAVE_ITERATIONS_INTERVAL"));}
 
-    FloatType getRotationalSpeedScalingFactor() const {return parseFloat("ROTATIONAL_SPEED_SCALING_FACTOR", 1.0);}
+    FloatType getRotationalSpeedScalingFactor() const {return parseFloat("ROTATIONAL_SPEED_SCALING_FACTOR", 1.0);};
+
+    FloatType getRotationalSpeedScalingFactor(FloatType currentTime) const;
 
     std::string getSolutionName() const {return parseString("SOLUTION_NAME");}
 
@@ -267,4 +269,18 @@ public:
     FloatType getGreitzerPlenumVolume() const {return parseFloat("GREITZER_PENUM_VOLUME");} 
 
     FloatType getGreitzerThrottleCoefficient() const {return getOutletBCValues()[0];} 
+
+    bool isAccelerationActive() const {return parseBool("ACCELERATION_ACTIVE", false);}
+
+    FloatType getAccelerationInitialTime() const {return parseFloat("ACCELERATION_INITIAL_TIME");}
+
+    FloatType getAccelerationFinalTime() const {return parseFloat("ACCELERATION_FINAL_TIME");}
+
+    FloatType getRotationalSpeedScalingFactorInitial() const {
+        return parseFloat("ROTATIONAL_SPEED_SCALING_FACTOR_INITIAL");
+    }
+
+    FloatType getRotationalSpeedScalingFactorFinal() const {
+        return parseFloat("ROTATIONAL_SPEED_SCALING_FACTOR_FINAL");
+    }
 };

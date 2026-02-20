@@ -1352,7 +1352,7 @@ void SolverEuler::computeSourceResiduals(
 
                 if (gongSourceFlag){
                     omega = _mesh.getInputFields(InputField::RPM, i, j, k) * 2 * M_PI / 60;
-                    FloatType scalingFactor = _config.getRotationalSpeedScalingFactor();
+                    FloatType scalingFactor = _config.getRotationalSpeedScalingFactor(timePhysical);
                     omega *= scalingFactor;
                     gongSource = computeGongSource(radius, theta, omega, i, j, k, volume);
                     residuals.subtract(i, j, k, gongSource);
@@ -1369,7 +1369,8 @@ void SolverEuler::computeSourceResiduals(
                             deviationAngle, 
                             timePhysical, 
                             solution,
-                            timestep);
+                            timestep,
+                            timePhysical);
                         residuals.subtract(i, j, k, bfmSource);
                     }
                 }

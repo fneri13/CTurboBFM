@@ -32,7 +32,8 @@ StateVector SourceBFMBase::computeTotalSource(
     Matrix3D<FloatType> &deviationAngle, 
     FloatType &timePhysical,
     FlowSolution &conservativeVars,
-    Matrix3D<FloatType> &timestep) {
+    Matrix3D<FloatType> &timestep,
+    FloatType &currentPhysicalTime) {
 
     StateVector blockageSource({0,0,0,0,0});
     if (_isBlockageActive){
@@ -51,7 +52,8 @@ StateVector SourceBFMBase::computeTotalSource(
         inviscidForce, 
         viscousForce, 
         conservativeVars,
-        dt);
+        dt,
+        currentPhysicalTime);
     
     FloatType perturbFactor = computePerturbationFactor(i, j, k, timePhysical);
     
@@ -90,7 +92,8 @@ StateVector SourceBFMBase::computeBodyForceSource(
     Matrix3D<Vector3D> &inviscidForce, 
     Matrix3D<Vector3D> &viscousForce, 
     FlowSolution &conservativeVars,
-    FloatType &dt) {
+    FloatType &dt,
+    FloatType &timePhysical) {
 
     inviscidForce(i, j, k) = {0, 0, 0};
     viscousForce(i, j, k) = {0, 0, 0};
@@ -103,7 +106,8 @@ void SourceBFMBase::computeFlowState(
     size_t j, 
     size_t k, 
     const StateVector& primitive, 
-    FlowSolution &conservativeVars) {
+    FlowSolution &conservativeVars,
+    FloatType &timePhysical) {
     
     _radius = _mesh.getRadius(i, j, k);
     _theta = _mesh.getTheta(i, j, k);
@@ -112,7 +116,7 @@ void SourceBFMBase::computeFlowState(
     _velCylindrical = computeCylindricalComponentsFromCartesian(_velCartesian, _theta);
     
     _omega = _mesh.getInputFields(InputField::RPM, i, j, k) * 2 * M_PI / 60;
-    FloatType scalingOmega = _config.getRotationalSpeedScalingFactor();
+    FloatType scalingOmega = _config.getRotationalSpeedScalingFactor(timePhysical);
     _omega *= scalingOmega;
     _dragVelCylindrical = {0, 0, _omega * _radius};
     _relVelCylindric = _velCylindrical - _dragVelCylindrical;

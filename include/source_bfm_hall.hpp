@@ -23,6 +23,7 @@ protected:
         Matrix3D<Vector3D> &inviscidForce, 
         Matrix3D<Vector3D> &viscousForce, 
         FlowSolution &conservativeVars,
-        FloatType &dt) override;
+        FloatType &dt,
+        FloatType &timePhysical) override;
     
 };

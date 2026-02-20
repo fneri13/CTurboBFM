@@ -27,7 +27,8 @@ public:
         Matrix3D<FloatType> &deviationAngle, 
         FloatType &timePhysical, 
         FlowSolution &conservativeVars,
-        Matrix3D<FloatType> &timestep);
+        Matrix3D<FloatType> &timestep,
+        FloatType &currentPhysicalTime);
 
 protected:
     /** Thollet formulation */
@@ -41,9 +42,14 @@ protected:
         Matrix3D<Vector3D> &inviscidForce, 
         Matrix3D<Vector3D> &viscousForce, 
         FlowSolution &conservativeVars,
-        FloatType &dt);
+        FloatType &dt,
+        FloatType &timePhysical);
     
-    void computeFlowState(size_t i, size_t j, size_t k, const StateVector& primitive, FlowSolution &conservativeVars);
+    void computeFlowState(
+        size_t i, size_t j, size_t k, 
+        const StateVector& primitive, 
+        FlowSolution &conservativeVars, 
+        FloatType &timePhysical);
 
     FloatType computeDeviationAngle(Vector3D relativeVelocity, Vector3D normalCamber);
     

@@ -42,7 +42,7 @@ def plot_normalized_sensors_oscillation(sensors, time, time_per_revolution, name
     for i in range(0, len(sensors)):
         deltaTheta = 360 / (nSensors)
         theta = i * 360 / (nSensors)
-        plt.plot(time/time_per_revolution, scale_oscillations(sensors[i], sensors[-1], deltaTheta) + theta, label=f"probe {i}")
+        plt.plot(time/time_per_revolution, scale_oscillations(sensors[i], sensors[-2], deltaTheta) + theta, label=f"probe {i}")
 
     if time_per_revolution != 1:
         plt.xlabel("Revs [-]")

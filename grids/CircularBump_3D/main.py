@@ -4,7 +4,7 @@ import pyvista as pv
 import os
 import pickle
 from scipy.optimize import fsolve
-from TurboBFM.Preprocess.grid_generation import transfinite_grid_generation
+from unsflow.grid.functions import transfinite_grid_generation, plot_twodimensional_grid
 
 
 """
@@ -71,14 +71,14 @@ y_up = [np.zeros(NX_bump)+L,
         np.zeros(NX_bump)+L]
 
 Xmulti, Ymulti = [], []
-stretch_stream = ['right', 'both', 'left']
+blocks_topology = ['inlet', 'internal', 'outlet']
 stretch_span = ['bottom', 'bottom', 'bottom']
 for i in range(3):
     xgrid, ygrid = transfinite_grid_generation(np.vstack((x_inlet[i], y_inlet[i])), 
                                                np.vstack((x_wall[i], y_wall[i])), 
                                                np.vstack((x_outlet[i], y_outlet[i])), 
                                                np.vstack((x_up[i], y_up[i])),
-                                               stretch_type_stream=stretch_stream[i], stretch_type_span=stretch_span[i],
+                                               block_topology=blocks_topology[i],
                                                streamwise_coeff=STREAMWISE_COEFF, spanwise_coeff=SPANWISE_COEFF)
     Xmulti.append(xgrid)
     Ymulti.append(ygrid)

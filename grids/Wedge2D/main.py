@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pyvista as pv
 import os
 import pickle
-from TurboBFM.Preprocess.grid_generation import transfinite_grid_generation
+from unsflow.grid.functions import transfinite_grid_generation, plot_twodimensional_grid
 
 
 OUTPUT_FOLDER = 'Grid'
@@ -37,10 +37,15 @@ x_top = x_low.copy()
 y_top = np.zeros(NI)+1
 
 
-X, Y = transfinite_grid_generation(np.vstack((x_inlet, y_inlet)), 
-                                            np.vstack((x_low, y_low)), 
-                                            np.vstack((x_outlet, y_outlet)), 
-                                            np.vstack((x_top, y_top)))
+X, Y = transfinite_grid_generation(
+    np.vstack((x_inlet, y_inlet)), 
+    np.vstack((x_low, y_low)), 
+    np.vstack((x_outlet, y_outlet)), 
+    np.vstack((x_top, y_top)),
+    block_topology='internal',
+    streamwise_coeff=1.0, 
+    spanwise_coeff=1.0,
+    )
 
 
 # Create a 3D scatter plots

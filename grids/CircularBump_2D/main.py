@@ -1,10 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pyvista as pv
 import os
 import pickle
 from scipy.optimize import fsolve
-from TurboBFM.Preprocess.grid_generation import transfinite_grid_generation
+from unsflow.grid.functions import transfinite_grid_generation, plot_twodimensional_grid
 
 
 """
@@ -14,11 +13,11 @@ The Fundamentals of Computational Fluid Dynamics (Second Edition) by Charles Hir
 
 OUTPUT_FOLDER = 'Grid'
 L = 1
-NX = 24
-NY = 12
+NX = 128
+NY = 64
 SPAN = L/32
-STREAMWISE_COEFF = 1
-SPANWISE_COEFF = 1
+STREAMWISE_COEFF = 1.0
+SPANWISE_COEFF = 1.0
 
 
 
@@ -68,14 +67,14 @@ y_up = [np.zeros(NX_bump)+L,
         np.zeros(NX_bump)+L]
 
 Xmulti, Ymulti = [], []
-stretch_stream = ['right', 'both', 'left']
+blocks_topology = ['inlet', 'internal', 'outlet']
 stretch_span = ['bottom', 'bottom', 'bottom']
 for i in range(3):
     xgrid, ygrid = transfinite_grid_generation(np.vstack((x_inlet[i], y_inlet[i])), 
                                                np.vstack((x_wall[i], y_wall[i])), 
                                                np.vstack((x_outlet[i], y_outlet[i])), 
                                                np.vstack((x_up[i], y_up[i])),
-                                               stretch_type_stream=stretch_stream[i], stretch_type_span=stretch_span[i],
+                                               block_topology=blocks_topology[i],
                                                streamwise_coeff=STREAMWISE_COEFF, spanwise_coeff=SPANWISE_COEFF)
     Xmulti.append(xgrid)
     Ymulti.append(ygrid)
@@ -88,17 +87,11 @@ NI, NJ = X.shape
 
 
 # Create a 3D scatter plots
-mesh = pv.StructuredGrid(X, Y, np.zeros_like(X))
-plotter = pv.Plotter()
-plotter.add_mesh(mesh, cmap='viridis', show_edges=True)
-plotter.show_axes()
+plot_twodimensional_grid(X, Y, frame='cartesian')
 
 
 # Create output directory
-if os.path.exists(OUTPUT_FOLDER):
-    print('Output Folder already present')
-else:
-    os.mkdir(OUTPUT_FOLDER)
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 with open(OUTPUT_FOLDER + '/grid_%02i_%02i.csv' %(NX, NY), 'w') as file:
     file.write(f"NDIMENSIONS=2\n")
     file.write(f"NI={NI}\n")
@@ -110,8 +103,6 @@ with open(OUTPUT_FOLDER + '/grid_%02i_%02i.csv' %(NX, NY), 'w') as file:
             for k in range(1):
                 file.write(f"{X[i,j]:.6f},{Y[i,j]:.6f},{0:.6f}\n")
 
-
-plotter.show()
 plt.show()
 
 

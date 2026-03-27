@@ -42,6 +42,9 @@ SolverEuler::SolverEuler(Config& config, Mesh& mesh)
     else if (bfmModel == BodyForceModel::CORRELATIONS){
         _bfmSource = std::make_unique<SourceBFMCorrelations>(_config, *_fluid, _mesh);
     }
+    else if (bfmModel == BodyForceModel::LIFT_DRAG){
+        _bfmSource = std::make_unique<SourceBFMLiftDrag>(_config, *_fluid, _mesh);
+    }
     else if (bfmModel == BodyForceModel::NONE) {
         _bfmSource = std::make_unique<SourceBFMBase>(_config, *_fluid, _mesh);
     }

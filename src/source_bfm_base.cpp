@@ -136,6 +136,7 @@ void SourceBFMBase::computeFlowState(
     _leanAngle = _mesh.getInputFields(InputField::BLADE_LEAN_ANGLE, i, j, k);
     _gasPathAngle = _mesh.getInputFields(InputField::BLADE_GAS_PATH_ANGLE, i, j, k);
     _metalAngle = _mesh.getInputFields(InputField::BLADE_METAL_ANGLE, i, j, k);
+    _staggeredPitch = _tangentialPitch * std::cos(_metalAngle);
     _flowAngle = std::atan2(_relVelCylindric.z(), _velMeridional);
     _deviationAngle = computeDeviationAngle(_relVelCylindric, _normalCamberCylindric);
 

@@ -8,6 +8,7 @@
 #include "source_bfm_thollet.hpp"
 #include "source_bfm_chima.hpp"
 #include "source_bfm_correlations.hpp"
+#include "source_bfm_lift_drag.hpp"
 #include "greitzer_model.hpp"   
 #include <unordered_map>
 

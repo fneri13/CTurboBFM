@@ -84,7 +84,7 @@ protected:
     FloatType _blockage, _isBladePresent;
     FloatType _omega;
     FloatType _bladesNumber;
-    FloatType _tangentialPitch;
+    FloatType _tangentialPitch, _staggeredPitch;
     FloatType _velMeridional;
     Vector3D _velCartesian, _velCylindrical;
     Vector3D _relVelCartesian, _dragVelCylindrical, _relVelCylindric;

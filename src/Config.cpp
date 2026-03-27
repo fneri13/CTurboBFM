@@ -181,7 +181,9 @@ BodyForceModel Config::getBFMModel() const {
         model = BodyForceModel::ONLY_BLOCKAGE;
     } else if (value == "Correlations") {
         model = BodyForceModel::CORRELATIONS;
-    } 
+    } else if (value == "Lift-Drag") {
+        model = BodyForceModel::LIFT_DRAG;
+    }
     else {
         throw std::runtime_error("Invalid value for key \"BFM_MODEL\" in configuration.");
     }

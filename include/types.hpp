@@ -130,6 +130,7 @@ enum class BodyForceModel {
     CHIMA,
     ONLY_BLOCKAGE,
     CORRELATIONS,
+    LIFT_DRAG,
 };
 
 
@@ -945,6 +946,9 @@ enum class InputField {
     DELTA_ENTROPY,
     DELTA_FLOW_ANGLE,
     DEVIATION_ANGLE_STALL,
+    LIFT_DRAG_BFM_BETA0,
+    LIFT_DRAG_BFM_BETA_ETAMAX,
+    LIFT_DRAG_BFM_KP_ETAMAX,
 };
 
 
@@ -989,7 +993,10 @@ public:
             {"deltaAngularMomentum", InputField::DELTA_ANGULAR_MOMENTUM},
             {"deltaEntropy", InputField::DELTA_ENTROPY},
             {"deltaFlowAngle", InputField::DELTA_FLOW_ANGLE},
-            {"deviationAngleStall", InputField::DEVIATION_ANGLE_STALL}
+            {"deviationAngleStall", InputField::DEVIATION_ANGLE_STALL},
+            {"liftDragBeta0", InputField::LIFT_DRAG_BFM_BETA0},
+            {"liftDragBetaEtamax", InputField::LIFT_DRAG_BFM_BETA_ETAMAX},
+            {"liftDragKpEtamax", InputField::LIFT_DRAG_BFM_KP_ETAMAX}
         };
         return map;
     }
@@ -1033,7 +1040,10 @@ public:
             {InputField::DELTA_ANGULAR_MOMENTUM, "deltaAngularMomentum"},
             {InputField::DELTA_ENTROPY, "deltaEntropy"},
             {InputField::DELTA_FLOW_ANGLE, "deltaFlowAngle"},
-            {InputField::DEVIATION_ANGLE_STALL, "deviationAngleStall"}
+            {InputField::DEVIATION_ANGLE_STALL, "deviationAngleStall"},
+            {InputField::LIFT_DRAG_BFM_BETA0, "liftDragBeta0"},
+            {InputField::LIFT_DRAG_BFM_BETA_ETAMAX, "liftDragBetaEtamax"},
+            {InputField::LIFT_DRAG_BFM_KP_ETAMAX, "liftDragKpEtamax"}
         };
         return map;
     }

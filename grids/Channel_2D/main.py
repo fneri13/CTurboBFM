@@ -15,8 +15,8 @@ OUTPUT_FOLDER = 'Grid'
 LX = 3
 R_IN = 1
 R_OUT = 2
-NX = 16
-NY = 8
+NX = 64
+NY = 64
 
 x = np.linspace(0, LX, NX)
 y = np.linspace(R_IN, R_OUT, NY)

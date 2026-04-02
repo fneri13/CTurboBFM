@@ -47,6 +47,7 @@ ux = [0,1.206,1.206,0]
 uy = [0,0,1.206,1.206]
 
 Rgas = 287
+cp = 1005
 
 for i in range(NI):
     for j in range(NJ):
@@ -71,6 +72,9 @@ for i in range(NI):
             velocity_y[i,j] = uy[3]
             temperature[i,j] = p[3] / (Rgas * rho[3])
 
+static_energy = cp * temperature
+kinetic_energy = 0.5 * (velocity_x**2 + velocity_y**2)
+total_energy = static_energy + kinetic_energy
 
 
 grid = {'X': X, 'Y': Y}
@@ -83,11 +87,11 @@ with open(OUTPUT_FOLDER + '/grid_%02i_%02i_fullData.csv' %(NX, NY), 'w') as file
     file.write(f"NI={NI}\n")
     file.write(f"NJ={NJ}\n")
     file.write(f"NK=1\n")
-    file.write("x,y,z,Density,Velocity X,Velocity Y,Velocity Z,Temperature\n")
+    file.write("x,y,z,Density,Velocity X,Velocity Y,Velocity Z,Total Energy\n")
     for i in range(NI):
         for j in range(NJ):
             for k in range(1):
-                file.write(f"{X[i,j]:.6f},{Y[i,j]:.6f},{0:.6f},{density[i,j]:.6f},{velocity_x[i,j]:.6f},{velocity_y[i,j]:.6f},{velocity_z[i,j]:.6f},{temperature[i,j]:.6f}\n")
+                file.write(f"{X[i,j]:.6f},{Y[i,j]:.6f},{0:.6f},{density[i,j]:.6f},{velocity_x[i,j]:.6f},{velocity_y[i,j]:.6f},{velocity_z[i,j]:.6f},{total_energy[i,j]:.6f}\n")
 with open(OUTPUT_FOLDER + '/grid_%02i_%02i_onlyCoords.csv' %(NX, NY), 'w') as file:
     file.write(f"NI={NI}\n")
     file.write(f"NJ={NJ}\n")

@@ -313,11 +313,11 @@ void SolverEuler::readRestartFile(
     }
 
     // Get indexes of the fields of interest (primary fields should always be available in the restart)
-    size_t iDensity     = columnIndex["Density"];
-    size_t iVelX        = columnIndex["Velocity X"];
-    size_t iVelY        = columnIndex["Velocity Y"];
-    size_t iVelZ        = columnIndex["Velocity Z"];
-    size_t iTotEnergy = columnIndex["Total Energy"];
+    size_t iDensity   = columnIndex.at("Density");
+    size_t iVelX      = columnIndex.at("Velocity X");
+    size_t iVelY      = columnIndex.at("Velocity Y");
+    size_t iVelZ      = columnIndex.at("Velocity Z");
+    size_t iTotEnergy = columnIndex.at("Total Energy");
 
     // these could also not be there, not a problem
     size_t iForceInviscidX{1000};

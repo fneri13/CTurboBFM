@@ -8,7 +8,7 @@ to mimic the blades effects on the flow field
 * Calculation of inviscid fluid dynamics problems (2D, Axisymmetric and 3D). Viscous and turbulent fluxes currently on development.
 * Simulation of turbomachinery flows through the concept of body force models (axisymmetric and full-annulus grids)
 * Complete description of the capabilities in the associated article (pending, under review).
-* The Python [Unsflow/grid](link_pending) package is needed to generate grid files. 
+* The Python [Unsflow](link_pending) package is needed to generate grid files. 
 
 
 ### Requirements
@@ -16,7 +16,7 @@ to mimic the blades effects on the flow field
 - Python 3.x
 - GoogleTest (for unit tests)
 - Make
-- [Unsflow/grid](link_pending)
+- [Unsflow](link_pending)
 
 
 ### Build system ###

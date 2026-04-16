@@ -41,6 +41,8 @@ src/        → solver and physics
 
 test/       → unit & regression tests
 
+testcases/  → various example calculations
+
 
 
 

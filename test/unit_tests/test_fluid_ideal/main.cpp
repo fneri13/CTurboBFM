@@ -1,11 +1,11 @@
 #include <iostream>
-#include "../../../include/CFluid.hpp"
+#include "../../../include/fluid_ideal.hpp"
 #include "gtest/gtest.h"
 
 
-TEST(CFluidTest, TestStaticEnergy_p_rho) {
+TEST(FluidIdealTest, TestStaticEnergy_p_rho) {
     FloatType gamma {2.0}, R {1.0};
-    CFluid fluid(gamma, R);
+    FluidIdeal fluid(gamma, R);
 
     std::vector<FloatType> testDensity {1.0};
     std::vector<FloatType> testPressure {1.0};
@@ -17,9 +17,9 @@ TEST(CFluidTest, TestStaticEnergy_p_rho) {
     
 }
 
-TEST(CFluidTest, TestSoundSpeed_p_rho) {
+TEST(FluidIdealTest, TestSoundSpeed_p_rho) {
     FloatType gamma {2.0}, R {1.0};
-    CFluid fluid(gamma, R);
+    FluidIdeal fluid(gamma, R);
     
     FloatType rho {1.0};
     FloatType p {1.0};

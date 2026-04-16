@@ -27,9 +27,8 @@ def plot_normalized_hist(data, color, title):
     N = len(data)
     weights = np.ones(N) / N  # Each entry contributes 1/N
     plt.hist(data, bins=30, weights=weights, color=color, edgecolor='black', alpha=0.7)
-    plt.title(f"{title} (N={N})")
-    plt.xlabel("Value")
-    # plt.ylabel("Probability")
+    plt.xlabel(title)
+    plt.title(f"N={N}")
     plt.tight_layout()
     plt.grid(alpha=0.3)
 

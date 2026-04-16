@@ -8,12 +8,8 @@ to mimic the blades effects on the flow field
 * Calculation of inviscid fluid dynamics problems (2D, Axisymmetric and 3D). Viscous and turbulent fluxes currently on development.
 * Simulation of turbomachinery flows through the concept of body force models (axisymmetric and full-annulus grids)
 * Complete description of the capabilities in the associated article (pending, under review).
-
-### How do I get set up? ###
-
-* Build system based on Makefile, tested for Mac OS. Three commands (make clean, make debug, make release).
-
 * The Python [Unsflow/grid](link_pending) package is needed to generate grid files. 
+
 
 ### Requirements
 - C++17 compiler (GCC/Clang)
@@ -21,6 +17,15 @@ to mimic the blades effects on the flow field
 - GoogleTest (for unit tests)
 - Make
 - [Unsflow/grid](link_pending)
+
+
+### Build system ###
+Based on Makefile, tested for Mac OS. Commands:
+```bash
+make release
+make debug
+make clean
+```
 
 
 ### Running a test case

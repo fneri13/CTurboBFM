@@ -180,6 +180,53 @@ enum class BoundaryType {
     TRANSPARENT
 };
 
+static std::string toLower(std::string s)
+{
+    std::transform(s.begin(), s.end(), s.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+    return s;
+}
+
+inline BoundaryType boundaryTypeFromString(const std::string& s)
+{
+    static const std::unordered_map<std::string, BoundaryType> lut = {
+        {"inlet", BoundaryType::INLET},
+        {"inlet_supersonic", BoundaryType::INLET_SUPERSONIC},
+        {"outlet_supersonic", BoundaryType::OUTLET_SUPERSONIC},
+        {"outlet", BoundaryType::OUTLET},
+        {"radial_equilibrium", BoundaryType::RADIAL_EQUILIBRIUM},
+        {"inviscid_wall", BoundaryType::INVISCID_WALL},
+        {"empty", BoundaryType::EMPTY},
+        {"wedge", BoundaryType::WEDGE},
+        {"periodic", BoundaryType::PERIODIC},
+        {"throttle", BoundaryType::THROTTLE},
+        {"inlet_2d", BoundaryType::INLET_2D},
+        {"no_slip_wall", BoundaryType::NO_SLIP_WALL},
+        {"transparent", BoundaryType::TRANSPARENT}
+    };
+
+    std::string key = toLower(s);
+
+    auto it = lut.find(key);
+    if (it == lut.end()) {
+        throw std::runtime_error("Unknown BoundaryType: " + s);
+    }
+
+    return it->second;
+}
+
+struct Index {
+    size_t i;
+    size_t j;
+    size_t k;
+};
+
+struct Boundary {
+    std::string name;
+    BoundaryType type;
+    std::vector<FloatType> values;
+    std::vector<Index> indices; // indices of the boundary cells
+};
 
 enum class TimeIntegration {
     RUNGE_KUTTA_4,

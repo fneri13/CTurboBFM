@@ -246,7 +246,15 @@ public:
 
     FluxLimiter getFluxLimiter() const ;
 
+    std::string getBoundaryConditionsFilePath() const {return parseString("BOUNDARY_CONDITIONS_FILEPATH");}
+
     std::vector<FloatType> getPerturbationCenter() const {return parseVector<FloatType>("PERTURBATION_CENTER");}
+
+    std::vector<std::string> getBoundaryInfo(std::string name) const {return parseVector<std::string>(name);}
+
+    BoundaryType getBoundaryType(std::string name) const;
+
+    std::vector<FloatType> getBoundaryValues(std::string name) const;
 
     FloatType getPerturbationScalingFactor() const {return parseFloat("PERTURBATION_SCALING_FACTOR");} 
 

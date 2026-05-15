@@ -564,3 +564,32 @@ FloatType Config::getRotationalSpeedScalingFactor(FloatType currentTime) const {
         }
     }
 }
+
+
+BoundaryType Config::getBoundaryType(std::string name) const{
+    std::vector<std::string> boundaryInfo = getBoundaryInfo(name);
+    if (boundaryInfo.size() < 1) {
+        throw std::runtime_error("Boundary info for " + name + " is missing in configuration.");
+    }
+    BoundaryType boundaryType = boundaryTypeFromString(boundaryInfo[0]);
+    return boundaryType;
+}
+
+std::vector<FloatType> Config::getBoundaryValues(std::string name) const{
+    std::vector<std::string> boundaryInfo = getBoundaryInfo(name);
+    // if (boundaryInfo.size() < 2) {
+    //     throw std::runtime_error("Boundary values for " + name + " are missing in configuration.");
+    // }
+
+    std::vector<FloatType> values;
+    for (size_t i = 1; i < boundaryInfo.size(); ++i) {
+        try {
+            values.push_back(std::stod(boundaryInfo[i]));
+        } catch (const std::invalid_argument& e) {
+            throw std::runtime_error("Invalid float format for boundary value \"" + boundaryInfo[i] + "\" in configuration.");
+        } catch (const std::out_of_range& e) {
+            throw std::runtime_error("Float value out of range for boundary value \"" + boundaryInfo[i] + "\" in configuration.");
+        }
+    }
+    return values;
+}

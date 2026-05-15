@@ -1,4 +1,6 @@
 #include "solver_base.hpp"
+#include <fstream>
+#include <sstream>
 #include <iostream>
 
 SolverBase::SolverBase(Config& config, Mesh& mesh)
@@ -47,140 +49,197 @@ SolverBase::SolverBase(Config& config, Mesh& mesh)
 }
 
 void SolverBase::readBoundaryConditions(){
+    std::string filename = _config.getBoundaryConditionsFilePath();
+    std::ifstream file(filename);
 
-    std::array<BoundaryIndex, 6> bounds = {
-        BoundaryIndex::I_START,
-        BoundaryIndex::I_END,
-        BoundaryIndex::J_START,
-        BoundaryIndex::J_END,
-        BoundaryIndex::K_START,
-        BoundaryIndex::K_END};
+    if (!file.is_open()) {
+        throw std::runtime_error("Cannot open file: " + filename);
+    }
+
+    std::vector<Boundary> boundaries;
+    Boundary* currentBoundary = nullptr;
+
+    std::string line;
+
+    while (std::getline(file, line)) {
+
+        // Skip empty lines
+        if (line.empty())
+            continue;
+
+        // Detect new boundary
+        if (line.rfind("BOUNDARY_NAME:", 0) == 0) {
+
+            std::string name = line.substr(std::string("BOUNDARY_NAME:").size());
+
+            boundaries.push_back(Boundary{});
+            boundaries.back().name = name;
+            boundaries.back().type = _config.getBoundaryType(name);
+            boundaries.back().values = _config.getBoundaryValues(name);
+            
+            currentBoundary = &boundaries.back();
+
+            continue;
+        }
+
+        // Skip metadata/header lines
+        if (line.find('=') != std::string::npos || line == "i,j,k")
+            continue;
+
+        // Read indices
+        if (currentBoundary) {
+
+            std::stringstream ss(line);
+
+            std::string token;
+            Index idx;
+
+            std::getline(ss, token, ',');
+            idx.i = std::stoi(token);
+
+            std::getline(ss, token, ',');
+            idx.j = std::stoi(token);
+
+            std::getline(ss, token, ',');
+            idx.k = std::stoi(token);
+
+            currentBoundary->indices.push_back(idx);
+        }
+    }
+
+    // std::array<BoundaryIndex, 6> bounds = {
+    //     BoundaryIndex::I_START,
+    //     BoundaryIndex::I_END,
+    //     BoundaryIndex::J_START,
+    //     BoundaryIndex::J_END,
+    //     BoundaryIndex::K_START,
+    //     BoundaryIndex::K_END};
     
-    // read the boundaries type
-    for (auto& bound : bounds) {
-        _boundaryTypes[bound] = _config.getBoundaryType(bound);
-    }
+    // // read the boundaries type
+    // for (auto& bound : bounds) {
+    //     _boundaryTypes[bound] = _config.getBoundaryType(bound);
+    // }
 
-    // read the boundary conditions values
-    for (auto& bound : bounds) {
-        if (_boundaryTypes[bound] == BoundaryType::INLET || _boundaryTypes[bound] == BoundaryType::INLET_SUPERSONIC) {
-            _boundaryValues[bound] = _config.getInletBCValues();
-        }
-        else if (_boundaryTypes[bound] == BoundaryType::INLET_2D){
-            _boundaryValues[bound] = std::vector<FloatType> {};
-            _inlet2DfilePath = _config.getInlet2DfilePath();
-        }
-        else if (_boundaryTypes[bound] == BoundaryType::OUTLET 
-                 || _boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC 
-                 || _boundaryTypes[bound] == BoundaryType::THROTTLE){
+    // // read the boundary conditions values
+    // for (auto& bound : bounds) {
+    //     if (_boundaryTypes[bound] == BoundaryType::INLET || _boundaryTypes[bound] == BoundaryType::INLET_SUPERSONIC) {
+    //         _boundaryValues[bound] = _config.getInletBCValues();
+    //     }
+    //     else if (_boundaryTypes[bound] == BoundaryType::INLET_2D){
+    //         _boundaryValues[bound] = std::vector<FloatType> {};
+    //         _inlet2DfilePath = _config.getInlet2DfilePath();
+    //     }
+    //     else if (_boundaryTypes[bound] == BoundaryType::OUTLET 
+    //              || _boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC 
+    //              || _boundaryTypes[bound] == BoundaryType::THROTTLE){
 
-            _boundaryValues[bound] = _config.getOutletBCValues();
-        }
-        else if (_boundaryTypes[bound] == BoundaryType::RADIAL_EQUILIBRIUM){
-            _boundaryValues[bound] = _config.getOutletBCValues();
-            _hubStaticPressure = _boundaryValues[bound][0];
-        }
-        else if (_boundaryTypes[bound] == BoundaryType::PERIODIC){
-            _mesh.checkPeriodicity();
-            _boundaryValues[bound] = _config.getPeriodicityInfo();
-        }
-        else if (_boundaryTypes[bound] == BoundaryType::NO_SLIP_WALL){
-            _boundaryVelocities[bound] = _config.getNoSlipWallVelocity(bound);
-        }
-        else {
-            // others type of boundaries don't need any other information -> zero length vector
-            _boundaryValues[bound] = std::vector<FloatType> {};
-        }
-    }
+    //         _boundaryValues[bound] = _config.getOutletBCValues();
+    //     }
+    //     else if (_boundaryTypes[bound] == BoundaryType::RADIAL_EQUILIBRIUM){
+    //         _boundaryValues[bound] = _config.getOutletBCValues();
+    //         _hubStaticPressure = _boundaryValues[bound][0];
+    //     }
+    //     else if (_boundaryTypes[bound] == BoundaryType::PERIODIC){
+    //         _mesh.checkPeriodicity();
+    //         _boundaryValues[bound] = _config.getPeriodicityInfo();
+    //     }
+    //     else if (_boundaryTypes[bound] == BoundaryType::NO_SLIP_WALL){
+    //         _boundaryVelocities[bound] = _config.getNoSlipWallVelocity(bound);
+    //     }
+    //     else {
+    //         // others type of boundaries don't need any other information -> zero length vector
+    //         _boundaryValues[bound] = std::vector<FloatType> {};
+    //     }
+    // }
 
-    // instantiate boundary objects
-    for (auto& bound : bounds) {
-        if (_boundaryTypes[bound] == BoundaryType::INVISCID_WALL || _boundaryTypes[bound] == BoundaryType::NO_SLIP_WALL){
-            _boundaryConditions[bound] = std::make_unique<BoundaryInviscidWall>(
-                _config, 
-                _mesh, 
-                *_fluid, 
-                bound);
-        }
-        else if (_boundaryTypes[bound] == BoundaryType::INLET){
-            _boundaryConditions[bound] = std::make_unique<BoundaryInlet>(
-                _config, 
-                _mesh, 
-                *_fluid, 
-                bound, 
-                _boundaryValues[bound]);
-        }
-        else if (_boundaryTypes[bound] == BoundaryType::INLET_2D){
-            _boundaryConditions[bound] = std::make_unique<BoundaryInlet2D>(
-                _config, 
-                _mesh, 
-                *_fluid, 
-                bound, 
-                _inlet2DfilePath);
-        }
-        else if (_boundaryTypes[bound] == BoundaryType::INLET_SUPERSONIC){
-            _boundaryConditions[bound] = std::make_unique<BoundaryInletSupersonic>(
-                _config, 
-                _mesh, 
-                *_fluid, 
-                bound, 
-                _boundaryValues[bound]);
-        }
-        else if (_boundaryTypes[bound] == BoundaryType::OUTLET){
-            _boundaryConditions[bound] = std::make_unique<BoundaryOutlet>(
-                _config, 
-                _mesh, 
-                *_fluid, 
-                bound, 
-                _boundaryValues[bound]);
-        }
-        else if (_boundaryTypes[bound] == BoundaryType::RADIAL_EQUILIBRIUM){
-            _boundaryConditions[bound] = std::make_unique<BoundaryOutletRadialEquilibrium>(
-                _config, 
-                _mesh, 
-                *_fluid, 
-                bound, 
-                _radialProfilePressure);
-        }
-        else if (_boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC){
-            _boundaryConditions[bound] = std::make_unique<BoundaryOutletSupersonic>(
-                _config, 
-                _mesh, 
-                *_fluid, 
-                bound, 
-                _boundaryValues[bound]);
-        }
-        else if (_boundaryTypes[bound] == BoundaryType::THROTTLE){
-            _boundaryConditions[bound] = std::make_unique<BoundaryOutletThrottle>(
-                _config, 
-                _mesh, 
-                *_fluid, 
-                bound, 
-                _radialProfilePressure);
-        }
-        else if (_boundaryTypes[bound] == BoundaryType::WEDGE){
-            _boundaryConditions[bound] = std::make_unique<BoundaryFake>(
-                _config, 
-                _mesh, 
-                *_fluid, 
-                bound);
-        }
-        else if (_boundaryTypes[bound] == BoundaryType::PERIODIC){
-            _boundaryConditions[bound] = std::make_unique<BoundaryFake>(
-                _config, 
-                _mesh, 
-                *_fluid, 
-                bound);
-        }
-        else if (_boundaryTypes[bound] == BoundaryType::TRANSPARENT){
-            _boundaryConditions[bound] = std::make_unique<BoundaryTransparent>(
-                _config, 
-                _mesh, 
-                *_fluid, 
-                bound, 
-                *_advection);
-        }
-    }
+    // // instantiate boundary objects
+    // for (auto& bound : bounds) {
+    //     if (_boundaryTypes[bound] == BoundaryType::INVISCID_WALL || _boundaryTypes[bound] == BoundaryType::NO_SLIP_WALL){
+    //         _boundaryConditions[bound] = std::make_unique<BoundaryInviscidWall>(
+    //             _config, 
+    //             _mesh, 
+    //             *_fluid, 
+    //             bound);
+    //     }
+    //     else if (_boundaryTypes[bound] == BoundaryType::INLET){
+    //         _boundaryConditions[bound] = std::make_unique<BoundaryInlet>(
+    //             _config, 
+    //             _mesh, 
+    //             *_fluid, 
+    //             bound, 
+    //             _boundaryValues[bound]);
+    //     }
+    //     else if (_boundaryTypes[bound] == BoundaryType::INLET_2D){
+    //         _boundaryConditions[bound] = std::make_unique<BoundaryInlet2D>(
+    //             _config, 
+    //             _mesh, 
+    //             *_fluid, 
+    //             bound, 
+    //             _inlet2DfilePath);
+    //     }
+    //     else if (_boundaryTypes[bound] == BoundaryType::INLET_SUPERSONIC){
+    //         _boundaryConditions[bound] = std::make_unique<BoundaryInletSupersonic>(
+    //             _config, 
+    //             _mesh, 
+    //             *_fluid, 
+    //             bound, 
+    //             _boundaryValues[bound]);
+    //     }
+    //     else if (_boundaryTypes[bound] == BoundaryType::OUTLET){
+    //         _boundaryConditions[bound] = std::make_unique<BoundaryOutlet>(
+    //             _config, 
+    //             _mesh, 
+    //             *_fluid, 
+    //             bound, 
+    //             _boundaryValues[bound]);
+    //     }
+    //     else if (_boundaryTypes[bound] == BoundaryType::RADIAL_EQUILIBRIUM){
+    //         _boundaryConditions[bound] = std::make_unique<BoundaryOutletRadialEquilibrium>(
+    //             _config, 
+    //             _mesh, 
+    //             *_fluid, 
+    //             bound, 
+    //             _radialProfilePressure);
+    //     }
+    //     else if (_boundaryTypes[bound] == BoundaryType::OUTLET_SUPERSONIC){
+    //         _boundaryConditions[bound] = std::make_unique<BoundaryOutletSupersonic>(
+    //             _config, 
+    //             _mesh, 
+    //             *_fluid, 
+    //             bound, 
+    //             _boundaryValues[bound]);
+    //     }
+    //     else if (_boundaryTypes[bound] == BoundaryType::THROTTLE){
+    //         _boundaryConditions[bound] = std::make_unique<BoundaryOutletThrottle>(
+    //             _config, 
+    //             _mesh, 
+    //             *_fluid, 
+    //             bound, 
+    //             _radialProfilePressure);
+    //     }
+    //     else if (_boundaryTypes[bound] == BoundaryType::WEDGE){
+    //         _boundaryConditions[bound] = std::make_unique<BoundaryFake>(
+    //             _config, 
+    //             _mesh, 
+    //             *_fluid, 
+    //             bound);
+    //     }
+    //     else if (_boundaryTypes[bound] == BoundaryType::PERIODIC){
+    //         _boundaryConditions[bound] = std::make_unique<BoundaryFake>(
+    //             _config, 
+    //             _mesh, 
+    //             *_fluid, 
+    //             bound);
+    //     }
+    //     else if (_boundaryTypes[bound] == BoundaryType::TRANSPARENT){
+    //         _boundaryConditions[bound] = std::make_unique<BoundaryTransparent>(
+    //             _config, 
+    //             _mesh, 
+    //             *_fluid, 
+    //             bound, 
+    //             *_advection);
+    //     }
+    // }
 }
 
 
